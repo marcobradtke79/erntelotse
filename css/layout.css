@@ -1,0 +1,221 @@
+/*
+  App shell – docs/design-rules.md §5
+  < 720px: bottom navigation · 720–1100px: icon rail · > 1100px: side navigation with labels
+*/
+
+.app {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: auto 1fr auto;
+  grid-template-areas:
+    'header'
+    'main'
+    'nav';
+}
+
+.app-header {
+  grid-area: header;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: var(--header-height);
+  padding: var(--space-2) var(--space-4);
+  padding-top: max(var(--space-2), env(safe-area-inset-top));
+  padding-left: max(var(--space-4), env(safe-area-inset-left));
+  padding-right: max(var(--space-4), env(safe-area-inset-right));
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.app-brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-weight: 800;
+  font-size: var(--font-size-section);
+  color: var(--color-primary);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.app-brand .icon {
+  color: var(--color-accent);
+}
+
+.app-header-spacer {
+  flex: 1;
+}
+
+.app-main {
+  grid-area: main;
+  min-width: 0;
+  padding: var(--space-4);
+  padding-left: max(var(--space-4), env(safe-area-inset-left));
+  padding-right: max(var(--space-4), env(safe-area-inset-right));
+  padding-bottom: var(--space-6);
+}
+
+.page {
+  max-width: var(--content-max-width);
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.page-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  justify-content: space-between;
+}
+
+/* Navigation */
+
+.app-nav {
+  grid-area: nav;
+  position: sticky;
+  bottom: 0;
+  z-index: 20;
+  background: var(--color-surface);
+  border-top: 1px solid var(--color-border);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.app-nav ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+}
+
+.app-nav li {
+  flex: 1;
+  min-width: 0;
+}
+
+.nav-link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-height: var(--bottom-nav-height);
+  padding: var(--space-1);
+  color: var(--color-text-muted);
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: var(--radius-small);
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.nav-link:hover {
+  color: var(--color-text);
+}
+
+.nav-link.active {
+  color: var(--color-primary);
+}
+
+.nav-link.active .icon {
+  background: var(--color-primary-soft);
+  border-radius: var(--radius-round);
+}
+
+.nav-link .icon {
+  width: 40px;
+  height: 28px;
+  padding: 2px 8px;
+}
+
+/* Only on phones: secondary entries live in the "More" sheet */
+.nav-secondary {
+  display: none;
+}
+
+@media (min-width: 720px) {
+  .app {
+    grid-template-columns: auto 1fr;
+    grid-template-rows: auto 1fr;
+    grid-template-areas:
+      'nav header'
+      'nav main';
+  }
+
+  .app-nav {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    height: 100dvh;
+    border-top: 0;
+    border-right: 1px solid var(--color-border);
+    padding: var(--space-3) var(--space-2);
+    padding-left: max(var(--space-2), env(safe-area-inset-left));
+  }
+
+  .app-nav ul {
+    flex-direction: column;
+    gap: var(--space-1);
+  }
+
+  .nav-link {
+    width: 80px;
+    min-height: 64px;
+  }
+
+  .nav-secondary {
+    display: block;
+  }
+
+  .nav-more {
+    display: none;
+  }
+
+  .app-main {
+    padding: var(--space-5);
+  }
+}
+
+@media (min-width: 1100px) {
+  .app-nav {
+    width: 232px;
+    padding: var(--space-4) var(--space-3);
+  }
+
+  .nav-link {
+    width: auto;
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: var(--space-3);
+    min-height: var(--touch-target);
+    padding: var(--space-2) var(--space-3);
+    font-size: var(--font-size-body);
+    text-align: left;
+  }
+
+  .nav-link.active {
+    background: var(--color-primary-soft);
+  }
+
+  .nav-link.active .icon {
+    background: none;
+  }
+
+  .nav-link .icon {
+    width: 24px;
+    height: 24px;
+    padding: 0;
+  }
+
+  .app-main {
+    padding: var(--space-6);
+  }
+}

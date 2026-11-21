@@ -1,0 +1,114 @@
+/*
+  Design tokens – see docs/design-rules.md §2–3.
+  Components use only these custom properties, never literal colours or spacing.
+  Contrast checked (WCAG): text tokens ≥ 4.5:1 on bg, surface and surface-alt;
+  graphic tokens and --color-border-strong ≥ 3:1 on surface.
+*/
+
+:root {
+  color-scheme: light;
+
+  /* Base */
+  --color-bg: #FFF9EC;
+  --color-surface: #FFFFFF;
+  --color-surface-alt: #F4EEDD;
+  --color-border: #E2D9C3;          /* decorative dividers */
+  --color-border-strong: #8C8471;   /* input outlines, ≥ 3:1 */
+  --color-text: #2B2A33;
+  --color-text-muted: #66636F;
+  --color-primary: #187533;
+  --color-primary-hover: #12602A;
+  --color-primary-soft: #DFF3E3;
+  --color-on-primary: #FFFFFF;
+  --color-accent: #D9531A;
+  --color-accent-soft: #FFE6D6;
+  --color-success: #187533;
+  --color-warning: #8F5500;
+  --color-danger: #C62F3B;
+  --color-on-danger: #FFFFFF;
+  --color-info: #1B64B0;
+  --color-focus: #1B64B0;
+  --color-backdrop: rgba(43, 42, 51, 0.45);
+
+  /* Task types */
+  --task-sow: #A67C00;
+  --task-plant: #2E9E4F;
+  --task-fertilize: #A8622A;
+  --task-prune: #8A4FD3;
+  --task-water: #1F86D6;
+  --task-harvest: #D93A4A;
+
+  /* Elevation */
+  --shadow-1: 0 1px 2px rgba(60, 45, 10, 0.08), 0 2px 8px rgba(60, 45, 10, 0.06);
+  --shadow-2: 0 4px 12px rgba(60, 45, 10, 0.14), 0 12px 32px rgba(60, 45, 10, 0.12);
+
+  /* Typography */
+  --font-family: 'Nunito', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-size-small: 14px;
+  --font-size-body: 16px;
+  --font-size-section: 20px;
+  --font-size-title: 26px;
+  --line-height-text: 1.5;
+  --line-height-heading: 1.2;
+
+  /* Spacing */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+
+  /* Shape */
+  --radius-small: 8px;
+  --radius-large: 16px;
+  --radius-round: 999px;
+
+  /* Motion */
+  --duration-short: 150ms;
+  --duration-medium: 250ms;
+  --easing: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  /* Sizes */
+  --touch-target: 44px;
+  --content-max-width: 1100px;
+  --header-height: 56px;
+  --bottom-nav-height: 64px;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --color-bg: #1B1D22;
+  --color-surface: #262A31;
+  --color-surface-alt: #30353E;
+  --color-border: #424956;
+  --color-border-strong: #7D8696;
+  --color-text: #F3F1EA;
+  --color-text-muted: #B4B1A8;
+  --color-primary: #5FD07C;
+  --color-primary-hover: #7EDC96;
+  --color-primary-soft: #23402B;
+  --color-on-primary: #10210F;
+  --color-accent: #FF9A66;
+  --color-accent-soft: #4A2E20;
+  --color-success: #5FD07C;
+  --color-warning: #FFC04D;
+  --color-danger: #FF7D86;
+  --color-on-danger: #2A0D10;
+  --color-info: #74B6FF;
+  --color-focus: #74B6FF;
+  --color-backdrop: rgba(0, 0, 0, 0.6);
+
+  --task-sow: #FFD54A;
+  --task-plant: #6FD98A;
+  --task-fertilize: #E3A06A;
+  --task-prune: #BE97F5;
+  --task-water: #74B6FF;
+  --task-harvest: #FF7D86;
+
+  /* In dark theme elevation is shown by lighter surfaces, not shadows */
+  --shadow-1: none;
+  --shadow-2: 0 0 0 1px var(--color-border);
+}
