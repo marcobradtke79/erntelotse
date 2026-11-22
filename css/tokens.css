@@ -38,6 +38,26 @@
   --task-water: #1F86D6;
   --task-harvest: #D93A4A;
 
+  /* Map (docs/design-rules.md §2.3); read by js/components/map/styles.js */
+  --map-plan-bg: #FBF6E9;
+  --map-grid-minor: rgba(43, 42, 51, 0.08);
+  --map-grid-major: rgba(43, 42, 51, 0.2);
+  --map-parcel: #2B2A33;
+  --map-bed-fill: rgba(185, 138, 90, 0.35);
+  --map-bed-stroke: #8A5F33;
+  --map-canopy-fill: rgba(63, 167, 90, 0.35);
+  --map-canopy-stroke: #2A7A40;
+  --map-lawn-fill: rgba(168, 219, 140, 0.4);
+  --map-pond-fill: rgba(111, 183, 232, 0.6);
+  --map-pond-stroke: #3B8BC4;
+  --map-path: #D9C7A3;
+  --map-building-fill: rgba(154, 154, 165, 0.6);
+  --map-building-stroke: #6B6B76;
+  --map-fence: #8A5F33;
+  --map-hedge: #3FA75A;
+  --map-selected: #1B64B0;
+  --map-measure: #D9531A;
+
   /* Elevation */
   --shadow-1: 0 1px 2px rgba(60, 45, 10, 0.08), 0 2px 8px rgba(60, 45, 10, 0.06);
   --shadow-2: 0 4px 12px rgba(60, 45, 10, 0.14), 0 12px 32px rgba(60, 45, 10, 0.12);
@@ -107,6 +127,25 @@
   --task-prune: #BE97F5;
   --task-water: #74B6FF;
   --task-harvest: #FF7D86;
+
+  --map-plan-bg: #20242A;
+  --map-grid-minor: rgba(243, 241, 234, 0.07);
+  --map-grid-major: rgba(243, 241, 234, 0.18);
+  --map-parcel: #F3F1EA;
+  --map-bed-fill: rgba(185, 138, 90, 0.45);
+  --map-bed-stroke: #D9A877;
+  --map-canopy-fill: rgba(63, 167, 90, 0.4);
+  --map-canopy-stroke: #6FD98A;
+  --map-lawn-fill: rgba(168, 219, 140, 0.25);
+  --map-pond-fill: rgba(111, 183, 232, 0.45);
+  --map-pond-stroke: #74B6FF;
+  --map-path: #8F7F62;
+  --map-building-fill: rgba(154, 154, 165, 0.45);
+  --map-building-stroke: #B9B9C4;
+  --map-fence: #D9A877;
+  --map-hedge: #6FD98A;
+  --map-selected: #74B6FF;
+  --map-measure: #FF9A66;
 
   /* In dark theme elevation is shown by lighter surfaces, not shadows */
   --shadow-1: none;

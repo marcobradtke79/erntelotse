@@ -1,0 +1,641 @@
+/* Map view – docs/design-rules.md §6 */
+
+/* Full-height layout for the map route */
+.app:has(.app-main--full) {
+  height: 100vh;
+  height: 100dvh;
+  min-height: 0;
+}
+
+.app-main--full {
+  padding: 0 !important;
+  display: flex;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.map-view {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
+
+.map-stage {
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 240px;
+}
+
+.garden-map,
+.garden-map-canvas {
+  position: absolute;
+  inset: 0;
+}
+
+.garden-map-canvas.leaflet-container {
+  background: var(--map-plan-bg);
+  font-family: var(--font-family);
+  font-size: var(--font-size-small);
+}
+
+.garden-map-canvas.is-placing,
+.garden-map-canvas.is-placing .leaflet-interactive {
+  cursor: crosshair;
+}
+
+.map-error {
+  position: absolute;
+  inset: auto var(--space-4) 50% var(--space-4);
+  z-index: 700;
+  padding: var(--space-4);
+  background: var(--color-surface);
+  border-radius: var(--radius-large);
+  box-shadow: var(--shadow-2);
+  text-align: center;
+}
+
+/* Cross in the middle while placing the garden */
+.map-crosshair {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 550;
+  width: 48px;
+  height: 48px;
+  margin: -24px 0 0 -24px;
+  pointer-events: none;
+}
+
+.map-crosshair::before,
+.map-crosshair::after {
+  content: '';
+  position: absolute;
+  background: var(--color-accent);
+  box-shadow: 0 0 0 2px var(--color-surface);
+  border-radius: 2px;
+}
+
+.map-crosshair::before {
+  left: 22px;
+  top: 0;
+  width: 4px;
+  height: 48px;
+}
+
+.map-crosshair::after {
+  top: 22px;
+  left: 0;
+  width: 48px;
+  height: 4px;
+}
+
+/* Tool palette */
+
+.tool-palette {
+  position: absolute;
+  z-index: 600;
+  left: var(--space-3);
+  bottom: var(--space-3);
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: var(--space-1);
+  max-width: calc(100% - 2 * var(--space-3));
+  background: var(--color-surface);
+  border-radius: var(--radius-large);
+  box-shadow: var(--shadow-2);
+}
+
+.tool-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--touch-target);
+  height: var(--touch-target);
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-small);
+  background: transparent;
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+.tool-button:hover:not(:disabled) {
+  background: var(--color-surface-alt);
+}
+
+.tool-button[aria-pressed="true"] {
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+}
+
+.tool-button:disabled {
+  opacity: 0.5;
+}
+
+.tool-separator {
+  width: 1px;
+  align-self: stretch;
+  margin: var(--space-1);
+  background: var(--color-border);
+}
+
+.tool-more {
+  position: relative;
+}
+
+.tool-more-list {
+  right: auto;
+  left: 0;
+  top: auto;
+  bottom: calc(100% + var(--space-2));
+}
+
+@media (max-width: 719px) {
+  .tool-palette {
+    overflow-x: auto;
+    overflow-y: visible;
+  }
+
+  /* The list must not be clipped by the scrolling palette */
+  .tool-more {
+    position: static;
+  }
+
+  .tool-more-list {
+    position: fixed;
+    left: var(--space-3);
+    bottom: auto;
+    top: calc(var(--header-height) + var(--space-3));
+  }
+
+  .map-stage .leaflet-bottom {
+    bottom: calc(var(--touch-target) + 2 * var(--space-3));
+  }
+}
+
+@media (min-width: 720px) {
+  .tool-palette {
+    top: var(--space-3);
+    bottom: auto;
+    flex-direction: column;
+  }
+
+  .tool-separator {
+    width: auto;
+    height: 1px;
+    align-self: stretch;
+  }
+
+  .tool-more-list {
+    left: calc(100% + var(--space-2));
+    bottom: auto;
+    top: 0;
+  }
+}
+
+/* Top bar: background, location, fit, undo/redo */
+
+.map-topbar {
+  position: absolute;
+  z-index: 600;
+  top: var(--space-3);
+  right: var(--space-3);
+  left: var(--space-3);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  pointer-events: none;
+}
+
+.map-topbar > * {
+  pointer-events: auto;
+}
+
+@media (min-width: 720px) {
+  .map-topbar {
+    left: calc(var(--touch-target) + 3 * var(--space-3));
+  }
+}
+
+.map-button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: var(--touch-target);
+  height: var(--touch-target);
+  padding: 0 var(--space-3);
+  justify-content: center;
+  border: 0;
+  border-radius: var(--radius-round);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-weight: 700;
+  box-shadow: var(--shadow-2);
+  cursor: pointer;
+}
+
+.map-button:hover:not(:disabled) {
+  background: var(--color-surface-alt);
+}
+
+.map-button:disabled {
+  color: var(--color-text-muted);
+  cursor: not-allowed;
+}
+
+@media (max-width: 719px) {
+  .map-button-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+  }
+}
+
+.segmented {
+  display: inline-flex;
+  padding: 2px;
+  border-radius: var(--radius-round);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-2);
+}
+
+.segmented button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--touch-target);
+  height: 40px;
+  padding: 0 var(--space-3);
+  border: 0;
+  border-radius: var(--radius-round);
+  background: transparent;
+  color: var(--color-text);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.segmented button[aria-pressed="true"] {
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+}
+
+/* Drawing hint with Done / Cancel */
+
+.draw-bar {
+  position: absolute;
+  z-index: 650;
+  left: 50%;
+  transform: translateX(-50%);
+  top: calc(var(--touch-target) + 2 * var(--space-3));
+  width: min(560px, calc(100% - 2 * var(--space-3)));
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-3);
+  padding: var(--space-2) var(--space-2) var(--space-2) var(--space-4);
+  background: var(--color-surface);
+  border-radius: var(--radius-large);
+  box-shadow: var(--shadow-2);
+}
+
+.draw-bar p {
+  flex: 1 1 200px;
+  font-weight: 700;
+}
+
+.draw-bar .segmented {
+  box-shadow: none;
+  background: var(--color-surface-alt);
+}
+
+/* Placing the garden */
+
+.location-bar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.location-search {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.location-search .input {
+  flex: 1;
+  min-width: 0;
+}
+
+.location-results .menu-item span {
+  font-size: var(--font-size-small);
+}
+
+/* Side panel / bottom sheet */
+
+.map-panel {
+  position: relative;
+  flex: 0 0 auto;
+  max-height: 45dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-surface);
+  border-top: 1px solid var(--color-border);
+}
+
+.map-panel-toggle {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 28px;
+  flex: none;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.map-panel-handle {
+  width: 48px;
+  height: 5px;
+  border-radius: var(--radius-round);
+  background: var(--color-border-strong);
+}
+
+.map-panel-content {
+  overflow: auto;
+  padding: 0 var(--space-4) var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.map-panel.is-collapsed .map-panel-content {
+  display: none;
+}
+
+@media (min-width: 720px) {
+  .map-view {
+    flex-direction: row;
+  }
+
+  .map-panel {
+    width: 320px;
+    max-height: none;
+    border-top: 0;
+    border-left: 1px solid var(--color-border);
+  }
+
+  .map-panel-toggle {
+    display: none;
+  }
+
+  .map-panel.is-collapsed .map-panel-content {
+    display: flex;
+  }
+
+  .map-panel-content {
+    padding: var(--space-4);
+  }
+}
+
+@media (min-width: 1100px) {
+  .map-panel {
+    width: 360px;
+  }
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  justify-content: space-between;
+}
+
+.element-panel .panel-header {
+  justify-content: flex-start;
+  flex-wrap: nowrap;
+}
+
+.element-panel .panel-header h2 {
+  overflow-wrap: anywhere;
+}
+
+.element-panel,
+.element-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.element-row-name {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.hint-card {
+  display: flex;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border-radius: var(--radius-large);
+  background: var(--color-accent-soft);
+}
+
+.hint-card > .icon {
+  color: var(--color-accent);
+}
+
+.hint-card > div {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+
+.measure-list {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: var(--space-2);
+}
+
+.measure-list div {
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-small);
+  background: var(--color-surface-alt);
+}
+
+.measure-list dt {
+  font-size: var(--font-size-small);
+  color: var(--color-text-muted);
+}
+
+.measure-list dd {
+  margin: 0;
+  font-weight: 700;
+}
+
+.size-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: var(--space-3);
+}
+
+.input-with-unit {
+  position: relative;
+}
+
+.input-with-unit .input {
+  padding-right: 44px;
+}
+
+.input-unit {
+  position: absolute;
+  right: var(--space-3);
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-text-muted);
+  pointer-events: none;
+}
+
+.choice span .icon {
+  width: 18px;
+  height: 18px;
+}
+
+/* Labels on the map */
+
+.map-measure-label {
+  pointer-events: none;
+}
+
+.map-measure-label span {
+  display: inline-block;
+  transform: translate(-50%, -50%);
+  padding: 1px 6px;
+  border-radius: var(--radius-small);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: 12px;
+  font-weight: 800;
+  white-space: nowrap;
+  box-shadow: 0 0 0 1px var(--map-selected);
+}
+
+.map-measure-label.is-area span {
+  transform: translate(-50%, 6px);
+  background: var(--map-selected);
+  color: var(--color-surface);
+  box-shadow: none;
+}
+
+/* Above the cursor: Geoman's own hint tooltip sits below it */
+.map-measure-label.is-drawing span {
+  transform: translate(-50%, calc(-100% - 16px));
+  box-shadow: 0 0 0 1px var(--color-accent);
+}
+
+.map-measure-label.is-measure span {
+  transform: translate(10px, -50%);
+  background: var(--map-measure);
+  color: var(--color-surface);
+  box-shadow: none;
+}
+
+.leaflet-tooltip.map-name-label {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  color: var(--color-text);
+  font-family: var(--font-family);
+  font-size: 13px;
+  font-weight: 800;
+  text-shadow: 0 0 3px var(--color-surface), 0 0 3px var(--color-surface), 0 0 6px var(--color-surface);
+}
+
+.leaflet-tooltip.map-name-label::before {
+  display: none;
+}
+
+/* Geoman handles: visible 18px, touch area 44px (design-rules §6) */
+.garden-map .marker-icon {
+  width: 18px !important;
+  height: 18px !important;
+  margin-left: -9px !important;
+  margin-top: -9px !important;
+  border-radius: 50%;
+  border: 3px solid var(--map-selected);
+  background: var(--color-surface);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+
+.garden-map .marker-icon::after {
+  content: '';
+  position: absolute;
+  inset: -13px;
+}
+
+.garden-map .marker-icon.marker-icon-middle {
+  opacity: 0.7;
+  transform-origin: center;
+  border-width: 2px;
+}
+
+/* Hairline seams between map tiles in Chrome: overlap tiles by half a pixel.
+   Leaflet's plus-lighter blending would brighten the overlap, so use normal blending. */
+.garden-map .leaflet-container img.leaflet-tile {
+  mix-blend-mode: normal;
+  width: 256.5px !important;
+  height: 256.5px !important;
+}
+
+/* Leaflet controls in our theme */
+
+.garden-map .leaflet-bar {
+  border: 0;
+  box-shadow: var(--shadow-2);
+  border-radius: var(--radius-large);
+  overflow: hidden;
+}
+
+.garden-map .leaflet-bar a {
+  width: var(--touch-target);
+  height: var(--touch-target);
+  line-height: var(--touch-target);
+  background: var(--color-surface);
+  color: var(--color-text);
+  border-bottom-color: var(--color-border);
+}
+
+.garden-map .leaflet-bar a:hover {
+  background: var(--color-surface-alt);
+}
+
+.garden-map .leaflet-control-attribution {
+  background: color-mix(in srgb, var(--color-surface) 85%, transparent);
+  color: var(--color-text-muted);
+}
+
+.garden-map .leaflet-control-attribution a {
+  color: var(--color-primary);
+}
+
+.garden-map .leaflet-control-scale-line {
+  border-color: var(--color-text);
+  background: color-mix(in srgb, var(--color-surface) 75%, transparent);
+  color: var(--color-text);
+}
+
+.garden-map .leaflet-container a.leaflet-popup-close-button {
+  color: var(--color-text);
+}

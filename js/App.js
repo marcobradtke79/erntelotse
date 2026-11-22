@@ -38,7 +38,9 @@ export default {
       main.value?.focus();
     }
 
-    return { t, main, announcement, moreActive, skipToContent, primary: PRIMARY_NAV, secondary: SECONDARY_NAV };
+    const fullBleed = computed(() => Boolean(route.meta.fullBleed));
+
+    return { t, main, announcement, moreActive, fullBleed, skipToContent, primary: PRIMARY_NAV, secondary: SECONDARY_NAV };
   },
   template: `
     <div class="app">
@@ -76,7 +78,7 @@ export default {
         </ul>
       </nav>
 
-      <main id="main" ref="main" class="app-main" tabindex="-1">
+      <main id="main" ref="main" class="app-main" :class="{ 'app-main--full': fullBleed }" tabindex="-1">
         <router-view />
       </main>
 

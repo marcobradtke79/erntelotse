@@ -7,6 +7,8 @@ Third-party files are copied into this folder so the app runs without a build st
 | Vue | 3.5.46 | `vue/vue.esm-browser.prod.js` (includes the template compiler) | MIT | `https://cdn.jsdelivr.net/npm/vue@3.5.46/dist/vue.esm-browser.prod.js` |
 | vue-router | 5.5.1 | `vue-router/vue-router.esm-browser.prod.js` | MIT | `https://cdn.jsdelivr.net/npm/vue-router@5.5.1/dist/vue-router.esm-browser.prod.js` |
 | vue-i18n | 11.4.23 | `vue-i18n/vue-i18n.esm-browser.prod.js` | MIT | `https://cdn.jsdelivr.net/npm/vue-i18n@11.4.23/dist/vue-i18n.esm-browser.prod.js` |
+| Leaflet | 1.9.4 | `leaflet/leaflet.js`, `leaflet/leaflet.css`, `leaflet/images/` | BSD-2-Clause | `https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/` |
+| Leaflet-Geoman (free) | 2.20.8 | `leaflet-geoman/leaflet-geoman.min.js`, `leaflet-geoman/leaflet-geoman.css` | MIT | `https://cdn.jsdelivr.net/npm/@geoman-io/leaflet-geoman-free@2.20.8/dist/` |
 | Nunito (variable) | @fontsource-variable/nunito 5.3.0 | `fonts/nunito/nunito-latin-wght-normal.woff2`, `fonts/nunito/nunito-latin-ext-wght-normal.woff2` | SIL OFL 1.1 | `https://cdn.jsdelivr.net/npm/@fontsource-variable/nunito@5.3.0/files/` |
 
 Each folder contains the library's `LICENSE` file.
@@ -19,4 +21,4 @@ Each folder contains the library's `LICENSE` file.
 3. Update the version in this table.
 4. Run the tests (`/tests/`) and click through the app.
 
-The import map in `index.html` maps `vue`, `vue-router` and `vue-i18n` to these files. The font's `@font-face` rules (with their `unicode-range`) are in `css/base.css`.
+The import map in `index.html` maps `vue`, `vue-router` and `vue-i18n` to these files. Leaflet and Leaflet-Geoman are classic scripts that define the global `L`; `js/services/leaflet.js` loads them (and their CSS) on first use of the map. Leaflet 2.0 was still in beta when vendored, and Geoman 2.x requires Leaflet 1.x. The font's `@font-face` rules (with their `unicode-range`) are in `css/base.css`.

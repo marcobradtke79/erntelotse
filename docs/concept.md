@@ -30,7 +30,7 @@ Related documents: [design rules](design-rules.md) · [implementation plan](impl
 |---|---|
 | **Gardens** | List of garden projects; create, rename, duplicate, delete, export, import. |
 | **Dashboard** | The current month for the active garden: tasks due now, overdue tasks, weather notes, what can be sown or planted this month, warnings (rotation, frost). |
-| **Map / Plan** | The garden drawn to scale. Two backgrounds: real map (street or satellite tiles) for tracing, and plan (clean metre grid). Year switcher shows the plantings of any year. |
+| **Map / Plan** | The garden drawn to scale. Two backgrounds: street map (OpenStreetMap) for tracing, and grid (clean metre or foot grid). Year switcher shows the plantings of any year. A satellite/aerial background is postponed (see §8). |
 | **Bed editor** | Zoomed view of one bed. Draw planting areas, place individual plants, set dates, see rotation and companion feedback, browse the bed's history. |
 | **Calendar** | Month grid with tasks per day/week, plus a year overview with one row per planting showing its sowing, growing and harvest windows. |
 | **Plants** | The catalog: built-in plants and custom plants, with care data, calendar, companions. Create and edit custom plants, override values of built-in ones. |
@@ -40,7 +40,7 @@ Related documents: [design rules](design-rules.md) · [implementation plan](impl
 ## 3. Core workflows
 
 1. **Create a garden.** Name it, optionally search for or pan to its location, choose the climate setting.
-2. **Trace the parcel** on the satellite or street map, or skip the map and draw it on the plan grid by entering dimensions.
+2. **Trace the parcel** on the street map, or skip the map and draw it on the grid, or add it by entering dimensions.
 3. **Add elements.** Beds (polygon or quick rectangle), trees and shrubs (circle with canopy diameter, plant type, planting year), and other elements such as house, path, lawn, pond, compost, greenhouse, fence or hedge.
 4. **Plan plantings.** Open a bed, draw an area and pick a plant, or place single plants. Start and end dates are proposed from the catalog and can be changed. The app estimates the number of plants from the area and the plant spacing.
 5. **Follow hints.** The dashboard and calendar show what is due. A hint is marked done or skipped; done tasks appear in the journal.
@@ -127,7 +127,11 @@ Each garden document carries a `schemaVersion`. On load and on import, documents
 
 ### 4.4 Coordinates
 
-Geometry is stored in **local metres**: `x` to the east, `y` to the north, relative to the garden origin. If the garden has a `location`, the origin sits at that latitude/longitude and the app converts between metres and map coordinates with a local flat-earth projection, which is accurate to well below a centimetre at garden size. A garden without a location uses the same model and simply has no tile background. This keeps area and length calculation simple and independent of the map library.
+Geometry is stored in **local metres**: `x` to the east, `y` to the north, relative to the garden origin. If the garden has a `location`, the origin sits at that latitude/longitude and the app converts between metres and map coordinates with a local flat projection. A garden without a location uses the same model around 0°/0° and simply has no street map. This keeps area and length calculation simple and independent of the map library.
+
+The projection uses the same sphere as Web Mercator (the model of Leaflet and the map tiles), not the WGS84 ellipsoid. Shapes are therefore undistorted on screen, and editing on the map (rotating a rectangle, for example) keeps exact sizes. Compared with the ellipsoid, absolute distances are off by at most about 0.3 % in Central Europe (6 cm over 20 m), which is below what tracing from a map can achieve.
+
+Moving the garden on the map changes only the origin; all coordinates stay as they are.
 
 ### 4.5 Years and history
 
@@ -259,12 +263,14 @@ Stores are small modules built on Vue's `reactive`. The active garden store hold
 
 ### 7.4 Map
 
-One Leaflet map component serves the map view and the bed editor.
+One Leaflet map component (`js/components/map/GardenMap.js`) serves the map view and, from milestone 3, the bed editor.
 
-- **Backgrounds**: street tiles (OpenStreetMap), satellite tiles, and plan (no tiles, metre grid). Tiles are enlarged beyond their native zoom so that single beds can be worked on.
-- **Drawing and editing** with Leaflet-Geoman: polygons, rectangles, circles, lines; move, reshape, rotate; snapping to vertices and edges.
-- The component translates between stored metre geometry and Leaflet layers; all other code only sees metre geometry.
-- The **bed editor** is the same component restricted to one bed, with the rest of the garden dimmed.
+- Leaflet and Leaflet-Geoman are classic scripts (global `L`); they are loaded on first use of the map (`js/services/leaflet.js`), so the rest of the app starts without them.
+- **Backgrounds**: street tiles (OpenStreetMap) and grid (no tiles, metre or foot grid drawn on canvas). Tiles are enlarged beyond their native zoom 19 so that single beds can be worked on. A garden without a location shows only the grid.
+- **Placing the garden**: place search with OpenStreetMap Nominatim (on submit only, at most one request per second), the device position, or panning the map under a cross.
+- **Drawing and editing** with Leaflet-Geoman: rectangles, polygons and lines are drawn with Geoman; trees and shrubs are placed with one tap at a default crown size. Selected shapes can be reshaped, moved or rotated; snapping to vertices and edges can be switched off. Exact sizes can be typed in the detail panel; elements can also be added by size.
+- The component translates between stored metre geometry and Leaflet layers and reports changes as events; all other code only sees metre geometry. Undo and redo keep snapshots of the element list in memory.
+- The **bed editor** (milestone 3) is the same component restricted to one bed, with the rest of the garden dimmed.
 
 ### 7.5 Internationalisation and units
 
@@ -277,17 +283,18 @@ One Leaflet map component serves the map view and the bed editor.
 
 - Web app manifest for installation on phone and desktop.
 - The service worker precaches the app shell (HTML, CSS, JS, vendor files, icons) under a versioned cache name; a new version is announced in the app and activated on reload.
-- Map tiles the user has looked at are cached at runtime with a size limit, so a garden that was viewed online stays visible offline. Tiles are not downloaded in bulk.
-- Everything except map tiles and weather works offline.
+- OpenStreetMap's tile usage policy does not permit offline use of `tile.openstreetmap.org` (no prefetching, no "save for offline"); re-visits served from the browser's normal HTTP cache are allowed. The service worker therefore does not store these tiles. Offline, the map view falls back to the grid, which shows the whole garden.
+- Everything except the street map, place search and weather works offline.
 
 ### 7.7 External services and privacy
 
 | Service | Used for | Data sent |
 |---|---|---|
-| Tile servers (OpenStreetMap, satellite provider) | Map background | Requested map tiles, i.e. roughly where the garden is |
+| OpenStreetMap tile server | Street map background | Requested map tiles, i.e. roughly where the garden is |
+| OpenStreetMap Nominatim | Place search when placing the garden | The search text and the UI language |
 | Open-Meteo | Weather forecast | Garden coordinates |
 
-Nothing else leaves the browser. Both services are optional: a garden without a location uses neither. The app states this in the settings.
+Nothing else leaves the browser. All services are optional: a garden without a location uses none of them. The app states this in the settings.
 
 ### 7.8 Testing
 
@@ -299,7 +306,8 @@ A browser test page (`tests/index.html`) runs unit tests for the pure logic modu
 |---|---|
 | `localStorage` holds roughly 5 MB per origin | Garden documents are small (text only, no images). Storage use is shown in settings; quota errors are caught and reported; regular export is recommended in the app. |
 | Browser data can be cleared by the user or the browser | Export reminder when a garden has not been exported for a long time. |
-| Tile providers have usage terms; satellite imagery is often not sharp enough for single beds | Terms of the chosen satellite provider are checked before it is integrated; correct attribution is shown; the plan background works without tiles. |
+| Tile providers have usage terms | OpenStreetMap tiles are used as their policy requires: attribution, the browser's default Referer, no offline storage. The grid background works without tiles. |
+| No free, sharp, worldwide aerial imagery with clear terms (checked in milestone 2: Esri World Imagery terms for keyless use could not be confirmed; Spain (PNOA, CC BY 4.0), France (IGN) and several German states publish open aerial photos; commercial providers need an API key) | Satellite background postponed by decision. Options for later: open national aerial photos chosen by location, and/or a user-supplied tile URL or API key. |
 | Template compilation in the browser needs `unsafe-eval` if a content security policy is set | GitHub Pages sets none; documented for other hosts. |
 | Catalog content for 60 plants in 5 languages is a large part of the work | Catalog format is fixed early; content is filled in batches and can be overridden by the user. |
 | Climate shift is a rough model | Presented as guidance; all dates of a planting and all catalog windows can be edited. |

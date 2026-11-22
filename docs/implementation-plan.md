@@ -35,10 +35,13 @@ python3 -m http.server 8000      # from the repository root
 - App: `http://localhost:8000/`
 - All tests: `http://localhost:8000/tests/`
 - One test file or test: `http://localhost:8000/tests/?filter=<text>` (runs only tests whose file or name contains the text)
+- Without a browser: `node tests/node.mjs [filter]` runs the same unit tests (Node 22 or newer, no npm)
 
 ---
 
 ## Milestone 1 – Foundation
+
+**Status: done.**
 
 **Scope**
 
@@ -75,7 +78,15 @@ Units conversion and formatting; validation of good and bad documents; migration
 
 ## Milestone 2 – Map and drawing
 
-**Scope**
+**Status: done.** Deviations from the original scope:
+
+- **No satellite background** (decision after checking provider terms, see concept §8). Backgrounds are street map (OpenStreetMap) and grid.
+- **Place search** with OpenStreetMap Nominatim was added for placing the garden, besides the device position and panning under a cross.
+- **Projection** uses the Web Mercator sphere instead of the WGS84 ellipsoid, so rotating shapes on the map keeps exact sizes (concept §4.4).
+- Trees and shrubs are placed with one tap at a default crown size instead of being drawn as circles.
+- Plant type of trees and shrubs stays in milestone 3/4; the planting year is already editable.
+
+**Scope (as planned)**
 
 - Vendor Leaflet and Leaflet-Geoman.
 - Geometry module: metre ↔ lat/lng conversion around the garden origin, polygon area, edge lengths, circle and line helpers, point-in-polygon, polygon overlap.
@@ -207,7 +218,7 @@ Rotation (same family inside and outside the gap, overlapping and separate areas
 - Weather service: Open-Meteo forecast for gardens with a location, cached with a maximum age, switchable off, silent when offline.
 - Weather rules: frost warning for frost-tender plantings, watering hint in dry warm spells, "no watering needed" after rain. Weather card on the dashboard.
 - Web app manifest, app icons, install hint.
-- Service worker: precache of the app shell with versioning, update notice, runtime cache for viewed map tiles with a size limit.
+- Service worker: precache of the app shell with versioning, update notice. No service-worker cache for OpenStreetMap tiles: its tile policy forbids offline use (concept §7.6); offline, the map view shows the grid.
 - Privacy note in the settings about tile and weather requests.
 - Publication on GitHub Pages from the repository; all paths relative.
 - Final pass: accessibility check against the design rules (keyboard, contrast, screen reader announcements, text zoom), performance with a large garden, review of all translations.
@@ -219,7 +230,7 @@ Rotation (same family inside and outside the gap, overlapping and separate areas
 **Acceptance criteria**
 
 - With a forecast below 0 °C and tomatoes planted out, the dashboard shows a frost warning; without network the dashboard works and shows no weather card.
-- The app can be installed on a phone and on a desktop browser and starts without network after the first visit; a garden viewed online shows its map background offline.
+- The app can be installed on a phone and on a desktop browser and starts without network after the first visit; offline, the map view shows the garden on the grid.
 - After publishing a new version, the app announces the update and uses it after reload.
 - The published app on GitHub Pages passes the acceptance criteria of all earlier milestones.
 
@@ -231,6 +242,7 @@ Weather rules against prepared forecast data; cache age handling of the weather 
 
 ## Later ideas (not planned)
 
+- Satellite/aerial background: open national aerial photos chosen by location (e.g. Spain PNOA, France IGN, German states) and/or a user-supplied tile URL or API key
 - Notifications or calendar file export for reminders
 - Own background image (sketch or drone photo) for the plan
 - Photos in the journal

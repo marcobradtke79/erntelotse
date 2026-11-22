@@ -6,6 +6,7 @@ import PlaceholderView from './views/PlaceholderView.js';
 import GardensView from './views/GardensView.js';
 import SettingsView from './views/SettingsView.js';
 import MoreView from './views/MoreView.js';
+import MapView from './views/MapView.js';
 
 const placeholder = (section) => ({
   path: `/${section}`,
@@ -17,7 +18,7 @@ const placeholder = (section) => ({
 const routes = [
   { path: '/', redirect: () => (gardens.index.length > 0 ? '/dashboard' : '/gardens') },
   placeholder('dashboard'),
-  placeholder('map'),
+  { path: '/map', component: MapView, meta: { titleKey: 'nav.map', fullBleed: true } },
   placeholder('calendar'),
   placeholder('plants'),
   placeholder('journal'),

@@ -3,6 +3,8 @@
 
 import { reactive, toRaw } from 'vue';
 import { createGarden as buildGarden, duplicateGarden } from '../logic/gardenModel.js';
+import { createHistory } from '../logic/history.js';
+import { normaliseGeometry } from '../logic/elements.js';
 import { StorageQuotaError, StorageReadError } from '../services/storage.js';
 import { settings, setActiveGardenId, replaceSettings, resetSettings } from './settings.js';
 import { showError } from './toast.js';
@@ -18,9 +20,23 @@ export const gardens = reactive({
   loadErrors: {},
 });
 
+/** Undo/redo state of the drawing of the active garden (in memory only) */
+export const editor = reactive({ canUndo: false, canRedo: false });
+
 let storage = null;
 let saveTimer = null;
 let dirty = false;
+const history = createHistory(100);
+
+function syncHistory() {
+  editor.canUndo = history.canUndo();
+  editor.canRedo = history.canRedo();
+}
+
+function resetHistory() {
+  history.clear();
+  syncHistory();
+}
 
 function reportWriteError(error) {
   console.error(error);
@@ -51,6 +67,7 @@ function nameOf(id) {
 }
 
 function loadActive(id) {
+  resetHistory();
   gardens.active = null;
   if (!id) return;
   try {
@@ -114,6 +131,73 @@ export function mutateActive(change) {
   scheduleSave();
 }
 
+// --- Elements of the active garden (with undo) -------------------------------
+
+function snapshot() {
+  return JSON.stringify(toRaw(gardens.active.elements));
+}
+
+/** Records the current elements for undo, then applies the change. */
+function changeElements(change) {
+  if (!gardens.active) return;
+  history.record(snapshot());
+  mutateActive((garden) => change(garden.elements));
+  syncHistory();
+}
+
+export function addElement(element) {
+  changeElements((elements) => elements.push(element));
+}
+
+export function updateElementGeometry(id, geometry) {
+  changeElements((elements) => {
+    const element = elements.find((item) => item.id === id);
+    if (element) element.geometry = normaliseGeometry(geometry);
+  });
+}
+
+/** Changes plain fields such as name or plantedYear. */
+export function updateElement(id, fields) {
+  changeElements((elements) => {
+    const element = elements.find((item) => item.id === id);
+    if (element) Object.assign(element, fields);
+  });
+}
+
+export function deleteElement(id) {
+  changeElements((elements) => {
+    const index = elements.findIndex((item) => item.id === id);
+    if (index !== -1) elements.splice(index, 1);
+  });
+}
+
+export function undo() {
+  if (!gardens.active) return;
+  const previous = history.undo(snapshot());
+  if (previous === null) return;
+  mutateActive((garden) => {
+    garden.elements = JSON.parse(previous);
+  });
+  syncHistory();
+}
+
+export function redo() {
+  if (!gardens.active) return;
+  const next = history.redo(snapshot());
+  if (next === null) return;
+  mutateActive((garden) => {
+    garden.elements = JSON.parse(next);
+  });
+  syncHistory();
+}
+
+/** Places the garden on the map. Element coordinates are relative, so they move along. */
+export function setLocation(location) {
+  mutateActive((garden) => {
+    garden.location = location ? { lat: location.lat, lng: location.lng } : null;
+  });
+}
+
 export function selectGarden(id) {
   flush();
   setActiveGardenId(id);
@@ -125,6 +209,7 @@ export function createGarden(name) {
   const garden = buildGarden({ name });
   if (!write(garden)) return null;
   setActiveGardenId(garden.id);
+  resetHistory();
   gardens.active = garden;
   return garden;
 }
@@ -207,6 +292,7 @@ export function putGarden(garden, { select = false } = {}) {
   if (!write(garden)) return false;
   if (select || gardens.active?.id === garden.id) {
     setActiveGardenId(garden.id);
+    resetHistory();
     gardens.active = plain(garden);
     delete gardens.loadErrors[garden.id];
   } else if (!gardens.active && !settings.activeGardenId) {
@@ -239,6 +325,7 @@ export function clearAllData() {
   clearTimeout(saveTimer);
   dirty = false;
   storage.clearAll();
+  resetHistory();
   resetSettings();
   gardens.index = [];
   gardens.active = null;

@@ -114,7 +114,9 @@
   font-weight: 700;
   border-radius: var(--radius-small);
   text-align: center;
-  overflow-wrap: anywhere;
+  /* Long words ("Einstellungen") break with a hyphen in the narrow rail */
+  hyphens: auto;
+  overflow-wrap: break-word;
 }
 
 .nav-link:hover {
@@ -167,8 +169,10 @@
   }
 
   .nav-link {
-    width: 80px;
+    /* Wide enough for the longest label, German "Einstellungen" */
+    width: 88px;
     min-height: 64px;
+    padding: var(--space-1) 2px;
   }
 
   .nav-secondary {

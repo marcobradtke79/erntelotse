@@ -89,8 +89,9 @@ export function expect(actual) {
   };
 }
 
-export async function run(root) {
-  const filter = (new URLSearchParams(location.search).get('filter') ?? '').toLowerCase();
+/** Runs registered tests (no DOM needed). */
+export async function runAll(filterText = '') {
+  const filter = filterText.toLowerCase();
   const selected = registered.filter(({ file, group, name }) =>
     !filter || `${file} ${group} ${name}`.toLowerCase().includes(filter));
 
@@ -104,7 +105,12 @@ export async function run(root) {
       results.push({ ...entry, ok: false, error, ms: performance.now() - start });
     }
   }
+  return results;
+}
 
+export async function run(root) {
+  const filter = (new URLSearchParams(location.search).get('filter') ?? '').toLowerCase();
+  const results = await runAll(filter);
   const failed = results.filter((result) => !result.ok);
   const summary = `${results.length - failed.length}/${results.length} passed`;
   document.title = `${failed.length ? '✗' : '✓'} ${summary}`;

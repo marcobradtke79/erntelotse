@@ -1,6 +1,7 @@
 import { describe, test, expect } from './harness.js';
 import { validateGarden, validateSettings, validateIndex } from '../js/logic/validate.js';
 import { createGarden } from '../js/logic/gardenModel.js';
+import { createElementAt } from '../js/logic/elements.js';
 
 const valid = () => createGarden({ name: 'Garden', now: new Date('2026-11-21T10:00:00Z'), id: 'g_valid' });
 const codes = (problems) => problems.map((p) => `${p.path}:${p.code}`);
@@ -12,7 +13,9 @@ describe('validateGarden', () => {
   test('a garden with location and items is valid', () => {
     const garden = valid();
     garden.location = { lat: 52.52, lng: 13.4 };
-    garden.elements.push({ id: 'e_1', type: 'bed' });
+    garden.elements.push(createElementAt('bed', [2, 2], { width: 4, depth: 1.2 }));
+    garden.elements.push(createElementAt('tree', [10, 5]));
+    garden.elements.push(createElementAt('path', [5, 0]));
     garden.journal.push({ id: 'j_1', date: '2026-08-15', type: 'harvest' });
     expect(validateGarden(garden)).toEqual([]);
   });
@@ -49,6 +52,24 @@ describe('validateGarden', () => {
     const result = codes(validateGarden(garden));
     expect(result).toContain('climate.hemisphere:unknown');
     expect(result).toContain('climate.shiftWeeks:range');
+  });
+  test('element geometry is checked', () => {
+    const garden = valid();
+    const bed = createElementAt('bed', [0, 0]);
+    garden.elements = [
+      { ...bed, id: 'e_a', geometry: { kind: 'polygon', points: [[0, 0], [1, 1]] } },
+      { ...bed, id: 'e_b', type: 'tree' },
+      { ...bed, id: 'e_c', type: 'unknown' },
+      { ...createElementAt('path', [0, 0]), id: 'e_d', geometry: { kind: 'line', points: [[0, 0], [1, 0]], width: 0 } },
+    ];
+    expect(codes(validateGarden(garden))).toEqual([
+      'elements[0]:element.points', 'elements[1]:element.geometry', 'elements[2]:element.type', 'elements[3]:element.width',
+    ]);
+  });
+  test('only one parcel', () => {
+    const garden = valid();
+    garden.elements = [createElementAt('parcel', [0, 0]), createElementAt('parcel', [5, 5])];
+    expect(codes(validateGarden(garden))).toEqual(['elements:element.parcelCount']);
   });
   test('items need unique ids', () => {
     const garden = valid();

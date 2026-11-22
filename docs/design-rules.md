@@ -67,7 +67,7 @@ Each task type has a fixed colour and a fixed icon. Colour is never the only sig
 | Building, greenhouse, compost | grey `#9A9AA5` at 60 % | `#6B6B76` |
 | Fence / hedge | line, brown / green | – |
 
-Every catalog plant has its own colour, used for planting areas and calendar bars. On the satellite background, outlines get a white halo so shapes stay visible.
+Every catalog plant has its own colour, used for planting areas and calendar bars. The map colours are tokens (`--map-*` in `css/tokens.css`) with light and dark values; `js/components/map/styles.js` reads them, and the map restyles when the theme changes. Line elements (path, fence, hedge) are drawn at their real width in metres.
 
 ### 2.4 Themes
 
@@ -126,7 +126,8 @@ Empty states and onboarding use simple illustrations built from the plant icons.
 - **Measurements**: while drawing and editing, edge lengths and the area are shown at the shape, in the user's units. Exact sizes can be typed into the detail panel.
 - **Snapping** to vertices and edges of other shapes is on by default and can be switched off in the palette.
 - **Undo and redo** are available for all drawing and editing steps, as buttons and as `Ctrl/Cmd+Z` and `Shift+Ctrl/Cmd+Z`.
-- **Backgrounds**: a single switch for street, satellite and plan. Tile attribution is always visible on tile backgrounds.
+- **Backgrounds**: a single switch for street map and grid (only shown when the garden has a location). Tile attribution is always visible on the street map.
+- **Overlays never cover the middle of the map**: the place search lives in the side panel / bottom sheet, because the cross for placing the garden sits in the centre.
 - **Labels**: beds show their name; planting areas show the plant icon, and the plant name when there is room. Labels never cover handles of the selected shape.
 - **Year and date**: shapes of plantings outside the selected date are hidden; elements such as beds and trees are always visible. Past years are read-only until the user explicitly unlocks editing, to protect the history.
 - **Feedback on rules**: rotation and companion results appear as badges on the planting (check, warning, cross with icon) and in words in the detail panel.

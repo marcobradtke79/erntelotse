@@ -16,7 +16,7 @@ Erntelotse is a progressive web app for garden planning.
 
 ## Status
 
-Milestone 1 (foundation) is done: app shell, navigation, themes, i18n, settings, storage layer, garden management, export/import, test harness. Map, beds, catalog and hints are placeholder views. The specification is in `docs/`; read the relevant document before implementing anything:
+Milestones 1 (foundation) and 2 (map and drawing) are done. Dashboard, calendar, plants and journal are still placeholder views. There is no satellite background (decided; see `docs/concept.md` §8). The specification is in `docs/`; read the relevant document before implementing anything:
 
 - `docs/concept.md` – features, data model, plant catalog format, hint and planning rules, architecture
 - `docs/design-rules.md` – colours, typography, icons, layout, map interaction, text and accessibility rules
@@ -35,8 +35,10 @@ python3 -m http.server 8000      # serve the repository root
 - App: `http://localhost:8000/`
 - All tests: `http://localhost:8000/tests/` – the page title shows `✓ n/n passed`; `window.__testResults` holds `{ total, failed, failures }` for scripted checks
 - Single test file or test: `http://localhost:8000/tests/?filter=<text>` (matches file, group or test name)
-- New test files must be added to the `FILES` list in `tests/index.html`; tests use `describe/test/expect` from `tests/harness.js`
-- `node --check <file>` is a quick syntax check; the modules themselves only run in the browser
+- Same tests without a browser: `node tests/node.mjs [filter]` (Node 22+, no npm) – the quickest check for `js/logic`, storage and i18n
+- New test files must be added to `tests/files.js`; tests use `describe/test/expect` from `tests/harness.js`
+- `node --check <file>` is a quick syntax check for view and component modules, which only run in the browser
+- `python3 -m http.server` sends no cache headers, so Chrome may keep serving old CSS/JS after edits; hard-reload, or use a server that sends `Cache-Control: no-store` while testing
 
 The app must be served over http(s); ES modules and the service worker do not work from `file://`.
 
@@ -48,13 +50,24 @@ The app must be served over http(s); ES modules and the service worker do not wo
 - `js/stores/toast.js` – stores and services report problems as message keys; `ToastHost` translates them. Logic modules return error codes, never text.
 - `js/i18n/` – one message module per language; `tests/i18n.test.js` fails if keys, placeholders or plural forms differ between languages. Avoid `@` and `|` (vue-i18n syntax) except `|` for plurals.
 - `js/navigation.js` – nav entries (primary entries are the phone bottom bar, secondary ones move to `/more`).
+- Map: `js/views/MapView.js` holds UI state (tool, selection, edit mode, placing the garden) and writes to the store; `js/components/map/GardenMap.js` is the only Leaflet code and reports `create`/`change`/`select` events with metre geometry. Element types and their geometry kinds are in `js/logic/elements.js`; projection and shape maths in `js/logic/geometry.js`. Element changes go through `addElement`/`updateElementGeometry`/`updateElement`/`deleteElement` in the gardens store, which record undo snapshots.
+
+## Map pitfalls (each one cost a debugging round)
+
+- Never bind `:class` (or anything Vue patches) on the element Leaflet is mounted on; Vue rewrites `class` and erases Leaflet's own classes. Bind on the wrapper.
+- Build the map view (`setView`/`fitBounds`) before creating layers; line widths depend on the current scale.
+- Jumps to far places use `setView(..., { animate: false })`, not `flyTo`: after long animated jumps Leaflet keeps tile levels with huge pixel offsets and tiles end up misplaced.
+- Geoman keeps options passed to `layer.pm.enable()` on the layer: after `draggable: false`, `enableLayerDrag()` silently does nothing unless `setOptions({ draggable: true })` comes first.
+- Element layers must let clicks bubble to the map, otherwise drawing on top of existing shapes cannot place points.
+- Element names go into map labels as text nodes, never as HTML strings (names can come from imported files).
+- In a hidden browser tab (automation) `requestAnimationFrame` does not run, so Leaflet fade/zoom animations never finish; that is not an app bug.
 
 ## Fixed decisions
 
 Do not change these without asking the user.
 
 - **No build step.** Native ES modules; Vue 3 browser ESM build with template compiler; components are `.js` modules with template strings (no `.vue` files, no TypeScript, no npm).
-- **Vendored libraries only** (`vendor/`, resolved through the import map in `index.html`): Vue, vue-router in hash mode, vue-i18n, Leaflet, Leaflet-Geoman, the UI font. No CDN requests at runtime. Do not add a dependency without asking.
+- **Vendored libraries only** (`vendor/`, see `vendor/README.md`): Vue, vue-router in hash mode, vue-i18n (via the import map in `index.html`), Leaflet 1.9 and Leaflet-Geoman (classic scripts, loaded on first map use), the UI font. No CDN requests at runtime. Do not add a dependency without asking.
 - **State** in small stores built on Vue `reactive`; no Pinia.
 - **Persistence** in `localStorage` only, through `js/services/storage.js`. Garden documents carry a `schemaVersion`; any change to the stored format needs a migration and must keep older exports importable.
 - **Stored values are metric and language-neutral** (metres, kilograms, ISO dates). Unit conversion and formatting happen only at display and input.
@@ -63,5 +76,5 @@ Do not change these without asking the user.
 - **Hints are derived, never stored.** Only the user's decision per task (done/skipped) is stored, under a deterministic task key.
 - **No hard-coded UI text.** Every string, including plant names and hint texts, comes from `js/i18n/` and is added to all five languages in the same change.
 - **Colours and spacing only through the tokens** in `css/tokens.css`; every component must work in light and dark theme, on phone and desktop widths.
-- **External requests** are limited to map tiles and the Open-Meteo forecast; everything else works offline.
+- **External requests** are limited to OpenStreetMap tiles, Nominatim place search (on submit only, max one per second) and the Open-Meteo forecast; everything else works offline. OSM tiles must not be stored for offline use (tile policy).
 - Hosted on GitHub Pages as static files, so all paths are relative.

@@ -5,6 +5,7 @@ import {
 } from '../js/services/exportImport.js';
 import { createGarden } from '../js/logic/gardenModel.js';
 import { CURRENT_SCHEMA_VERSION } from '../js/logic/migrate.js';
+import { createElementAt } from '../js/logic/elements.js';
 
 const now = new Date('2026-11-21T10:00:00Z');
 const garden = (name, id) => createGarden({ name, id, now });
@@ -13,7 +14,7 @@ const settings = { language: 'es', units: 'imperial', theme: 'system', activeGar
 describe('garden export', () => {
   test('round trip', () => {
     const a = garden('Home garden', 'g_a');
-    a.elements.push({ id: 'e_1', type: 'bed', name: 'Bed 1' });
+    a.elements.push(createElementAt('bed', [2, 1], { width: 4, depth: 1.2, name: 'Bed 1' }));
     const text = JSON.stringify(buildGardenExport(a, now));
     expect(parseImport(text)).toEqual({ kind: 'garden', gardens: [a], settings: null });
   });
@@ -70,7 +71,7 @@ describe('rejected files', () => {
 describe('copyForImport', () => {
   test('gets a new id and name, keeps content', () => {
     const a = garden('A', 'g_a');
-    a.elements.push({ id: 'e_1', type: 'bed' });
+    a.elements.push(createElementAt('bed', [0, 0]));
     const copy = copyForImport(a, { name: 'A (copy)', now });
     expect(copy.id === 'g_a').toBeFalsy();
     expect(copy.name).toBe('A (copy)');

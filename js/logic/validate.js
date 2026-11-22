@@ -6,6 +6,7 @@ import { ID_PATTERN } from './ids.js';
 import { GARDEN_NAME_MAX_LENGTH } from './gardenModel.js';
 import { UNIT_SYSTEMS } from './units.js';
 import { LANGUAGE_CODES } from '../i18n/languages.js';
+import { validateElement } from './elements.js';
 
 export const THEMES = ['system', 'light', 'dark'];
 
@@ -66,6 +67,13 @@ export function validateGarden(doc) {
 
   for (const key of ['elements', 'plantings', 'customPlants', 'journal']) {
     checkItemsWithId(problems, key, doc[key]);
+  }
+  if (Array.isArray(doc.elements)) {
+    doc.elements.forEach((element, index) => {
+      if (!isObject(element)) return;
+      for (const code of validateElement(element)) problems.push({ path: `elements[${index}]`, code: `element.${code}` });
+    });
+    if (doc.elements.filter((element) => element?.type === 'parcel').length > 1) problems.push({ path: 'elements', code: 'element.parcelCount' });
   }
   for (const key of ['plantOverrides', 'taskStates']) {
     if (!isObject(doc[key])) problems.push({ path: key, code: 'type' });
