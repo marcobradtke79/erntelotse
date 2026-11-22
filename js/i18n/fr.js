@@ -253,6 +253,53 @@ export default {
     cherry: 'Cerisier',
     redcurrant: 'Groseillier rouge',
     raspberry: 'Framboisiers',
+    runnerBean: 'Haricots à rames',
+    pea: 'Petits pois',
+    cucumber: 'Concombres',
+    pumpkin: 'Potirons',
+    garlic: 'Ail',
+    leek: 'Poireaux',
+    springOnion: 'Ciboules',
+    beetroot: 'Betteraves',
+    spinach: 'Épinards',
+    chard: 'Blettes',
+    kale: 'Chou kale',
+    cabbage: 'Chou blanc',
+    cauliflower: 'Chou-fleur',
+    broccoli: 'Brocoli',
+    kohlrabi: 'Chou-rave',
+    brusselsSprouts: 'Choux de Bruxelles',
+    rocket: 'Roquette',
+    bellPepper: 'Poivrons',
+    chili: 'Piments',
+    eggplant: 'Aubergines',
+    sweetCorn: 'Maïs doux',
+    celeriac: 'Céleri-rave',
+    fennel: 'Fenouil',
+    parsnip: 'Panais',
+    lambsLettuce: 'Mâche',
+    asparagus: 'Asperges',
+    rhubarb: 'Rhubarbe',
+    chives: 'Ciboulette',
+    dill: 'Aneth',
+    thyme: 'Thym',
+    rosemary: 'Romarin',
+    sage: 'Sauge',
+    mint: 'Menthe',
+    oregano: 'Origan',
+    coriander: 'Coriandre',
+    blackberry: 'Mûriers',
+    blackcurrant: 'Cassissier',
+    gooseberry: 'Groseillier à maquereau',
+    blueberry: 'Myrtillier',
+    pear: 'Poirier',
+    sourCherry: 'Griottier',
+    plum: 'Prunier',
+    peach: 'Pêcher',
+    lavender: 'Lavande',
+    rose: 'Rosier',
+    hydrangea: 'Hortensia',
+    elder: 'Sureau',
   },
   plantCategories: {
     vegetable: 'Légumes',
@@ -406,6 +453,164 @@ export default {
     raspberry: {
       mulch: 'Paille avec du compost ou des feuilles ; les framboisiers ont des racines superficielles et aiment un sol frais.',
       cutCanes: 'Coupe au ras du sol les cannes qui ont fructifié cette année.',
+    },
+    runnerBean: {
+      poles: 'Installe des rames avant le semis et guide les jeunes pousses dessus.',
+      water: 'Arrose généreusement pendant la floraison, sinon les fleurs tombent.',
+    },
+    pea: {
+      support: 'Donne aux pois des branchages ou un filet pour grimper.',
+    },
+    cucumber: {
+      water: 'Arrose régulièrement au pied avec de l’eau tiède ; l’eau froide et la sécheresse rendent les fruits amers.',
+      fertilize: 'Apporte un engrais organique liquide toutes les deux semaines dès la formation des fruits.',
+    },
+    pumpkin: {
+      fertilize: 'Apporte du compost ou un engrais organique toutes les trois semaines ; les potirons sont très gourmands.',
+      raiseFruit: 'Place une planche ou de la paille sous les fruits pour qu’ils ne pourrissent pas sur le sol humide.',
+    },
+    garlic: {
+      stopWatering: 'Arrête d’arroser quand les feuilles commencent à jaunir, pour que les bulbes mûrissent.',
+    },
+    leek: {
+      earthUp: 'Butte les fûts en été pour obtenir de longues parties blanches.',
+    },
+    beetroot: {
+      thin: 'Éclaircis les plantules à environ 10 cm ; les jeunes feuilles se mangent en salade.',
+    },
+    spinach: {
+      bolt: 'Garde le sol humide ; la sécheresse et les jours longs font monter les épinards.',
+    },
+    chard: {
+      outerLeaves: 'Récolte les feuilles extérieures et laisse le cœur ; les blettes repoussent jusqu’en automne.',
+    },
+    kale: {
+      fertilize: 'Fertilise une fois en été ; le chou kale est plus doux après les premières gelées.',
+    },
+    cabbage: {
+      nets: 'Couvre d’un filet fin contre les piérides et la mouche du chou.',
+      fertilize: 'Fertilise toutes les trois semaines ; le chou a besoin de beaucoup d’azote.',
+    },
+    cauliflower: {
+      coverHead: 'Replie quelques feuilles sur la pomme pour qu’elle reste blanche.',
+    },
+    broccoli: {
+      sideShoots: 'Après avoir coupé la tête principale, garde la plante : les pousses latérales donnent une seconde récolte.',
+    },
+    kohlrabi: {
+      water: 'Arrose régulièrement ; au sec, le chou-rave devient ligneux ou éclate.',
+    },
+    brusselsSprouts: {
+      topping: 'Pince la tête au début de l’automne pour que les choux grossissent de façon homogène.',
+    },
+    rocket: {
+      water: 'Arrose souvent ; au sec, la roquette devient très piquante et monte en graines.',
+    },
+    bellPepper: {
+      fertilize: 'Fertilise toutes les deux semaines dès les premières fleurs.',
+    },
+    chili: {
+      warm: 'Donne aux piments l’endroit le plus chaud et le plus abrité du jardin.',
+    },
+    eggplant: {
+      fertilize: 'Fertilise toutes les deux semaines ; les aubergines aiment la chaleur et beaucoup de nutriments.',
+    },
+    sweetCorn: {
+      block: 'Plante en bloc de plusieurs rangs courts plutôt qu’en un long rang, pour que le vent pollinise.',
+    },
+    celeriac: {
+      removeLeaves: 'En fin d’été, enlève les feuilles du bas et dégage un peu le bulbe.',
+    },
+    fennel: {
+      earthUp: 'Butte légèrement les bulbes pour qu’ils restent blancs et tendres.',
+    },
+    parsnip: {
+      thin: 'Éclaircis à 10 cm ; le panais germe lentement, sois patient.',
+    },
+    lambsLettuce: {
+      germination: 'Garde le rang humide jusqu’à la levée.',
+    },
+    asparagus: {
+      stopHarvest: 'Arrête la récolte vers le 24 juin pour que les plantes reprennent des forces pour l’an prochain.',
+      fertilize: 'Apporte du compost après la récolte.',
+    },
+    rhubarb: {
+      fertilize: 'Étale du compost autour de la plante au début du printemps.',
+      stopHarvest: 'Arrête la récolte vers le 24 juin ; les tiges plus tardives contiennent plus d’acide oxalique.',
+    },
+    chives: {
+      cutFlowers: 'Coupe régulièrement ; enlève les fleurs sauf si tu les laisses aux abeilles.',
+    },
+    dill: {
+      resow: 'Ressème un peu toutes les trois semaines pour en avoir en continu.',
+    },
+    thyme: {
+      cutBack: 'Rabats d’un tiers au printemps pour qu’il reste compact.',
+    },
+    rosemary: {
+      cutBack: 'Taille légèrement au printemps, jamais dans le vieux bois.',
+      winterProtection: 'Protège-le des fortes gelées avec un voile ou rentre le pot dans une pièce fraîche et claire.',
+    },
+    sage: {
+      cutBack: 'Rabats au printemps pour que la plante reste touffue.',
+    },
+    mint: {
+      rootBarrier: 'Plante la menthe avec une barrière anti-racines ou en pot ; elle s’étend vite.',
+    },
+    oregano: {
+      cutBack: 'Coupe les vieilles tiges au printemps.',
+    },
+    coriander: {
+      resow: 'Ressème toutes les trois semaines ; la coriandre fleurit vite.',
+    },
+    blackberry: {
+      tieCanes: 'Attache les nouvelles cannes aux fils au fur et à mesure de leur croissance.',
+      cutCanes: 'Après la récolte, coupe au ras du sol les cannes qui ont fructifié.',
+    },
+    blackcurrant: {
+      pruning: 'Coupe les plus vieilles branches à la base ; le cassis fructifie le mieux sur le jeune bois.',
+      fertilize: 'Paille avec du compost au printemps.',
+    },
+    gooseberry: {
+      pruning: 'Éclaircis l’arbuste pour que l’air et la lumière atteignent le centre.',
+      mildew: 'Surveille l’oïdium et enlève les extrémités atteintes.',
+    },
+    blueberry: {
+      pruning: 'Enlève les plus vieilles branches ; le myrtillier fructifie sur le bois plus jeune.',
+      acidSoil: 'Le myrtillier a besoin d’un sol acide : paille avec de l’écorce de pin et utilise un engrais pour rhododendrons.',
+    },
+    pear: {
+      winterPruning: 'Taille par un jour hors gel : enlève les branches mortes, qui se croisent ou trop verticales.',
+      fertilize: 'Étale du compost autour de l’arbre, jusqu’au bord de la couronne.',
+    },
+    sourCherry: {
+      fertilize: 'Étale du compost autour de l’arbre au printemps.',
+      summerPruning: 'Taille juste après la récolte ; raccourcis les rameaux qui ont fructifié.',
+    },
+    plum: {
+      fertilize: 'Étale du compost autour de l’arbre au printemps.',
+      summerPruning: 'Taille les pruniers en été après la récolte ; les plaies cicatrisent mieux.',
+    },
+    peach: {
+      leafCurl: 'Protège l’arbre de la pluie avant le débourrement ou traite contre la cloque.',
+      springPruning: 'Taille à la floraison ; le pêcher fructifie sur les rameaux de l’an passé, garde-en suffisamment.',
+    },
+    lavender: {
+      springCut: 'Rabats d’un tiers au printemps, mais pas dans le vieux bois.',
+      cutAfterFlowering: 'Coupe les tiges fanées après la floraison.',
+    },
+    rose: {
+      springPruning: 'Taille à la floraison des forsythias : enlève le bois mort et raccourcis les pousses vigoureuses.',
+      fertilize: 'Apporte un engrais pour rosiers ou du compost au printemps.',
+      deadhead: 'Coupe les fleurs fanées jusqu’à la première feuille complète ; les rosiers remontants refleurissent.',
+      summerFertilize: 'Fertilise une seconde fois au début de l’été, pas plus tard, pour que les pousses s’aoûtent avant l’hiver.',
+    },
+    hydrangea: {
+      springPruning: 'Coupe seulement les anciennes inflorescences au-dessus d’une paire de bourgeons ; la plupart des hortensias fleurissent sur le bois de l’an passé.',
+      water: 'Arrose généreusement par temps sec ; les hortensias flétrissent vite.',
+    },
+    elder: {
+      pruning: 'Coupe chaque hiver quelques-unes des plus vieilles tiges à la base.',
     },
   },
   families: {

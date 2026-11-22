@@ -10,6 +10,7 @@ import { hintsFor, hintsOn, TASK_TYPES } from '../logic/hints.js';
 import { todayIso, toIsoDate, addDays, yearOf, dayOfYear, daysInYear, maxDate, minDate } from '../logic/dates.js';
 import { touchesYear } from '../logic/plantings.js';
 import AppIcon from '../components/AppIcon.js';
+import PlantIcon from '../components/PlantIcon.js';
 import EmptyState from '../components/EmptyState.js';
 import HintItem from '../components/tasks/HintItem.js';
 import { TASK_ICONS } from '../components/tasks/taskText.js';
@@ -19,7 +20,7 @@ const MAX_MARKERS = 3;
 
 export default {
   name: 'CalendarView',
-  components: { AppIcon, EmptyState, HintItem },
+  components: { PlantIcon, AppIcon, EmptyState, HintItem },
   setup() {
     const { t, locale } = useI18n();
     const garden = computed(() => gardens.active);
@@ -106,13 +107,13 @@ export default {
         for (const hint of own.filter((h) => h.type === 'sow' || h.type === 'harvest')) {
           segments.push({ phase: hint.type, ...position(hint.start, hint.end) });
         }
-        rows.push({ id: planting.id, name: plantLabel(plant, t), place: bed ? elementName(bed, t) : '', color: plant.color, segments });
+        rows.push({ id: planting.id, plantId: planting.plantId, name: plantLabel(plant, t), place: bed ? elementName(bed, t) : '', color: plant.color, segments });
       }
       for (const element of g.elements.filter((e) => (e.type === 'tree' || e.type === 'shrub') && e.plantId && catalog.value.has(e.plantId))) {
         const plant = catalog.value.get(element.plantId);
         const own = hints.value.filter((hint) => hint.sourceId === element.id);
         const segments = own.filter((h) => h.type === 'harvest' || h.type === 'prune').map((hint) => ({ phase: hint.type, ...position(hint.start, hint.end) }));
-        rows.push({ id: element.id, name: elementName(element, t), place: t(`elements.types.${element.type}`), color: plant.color, segments });
+        rows.push({ id: element.id, plantId: element.plantId, name: elementName(element, t), place: t(`elements.types.${element.type}`), color: plant.color, segments });
       }
       return rows;
     });
@@ -202,7 +203,7 @@ export default {
           <ul class="plain-list">
             <li v-for="row in yearRows" :key="row.id" class="year-row">
               <span class="year-row-label">
-                <span class="plant-swatch" :style="{ background: row.color }" aria-hidden="true"></span>
+                <PlantIcon :plant-id="row.plantId" :size="24" />
                 <span><strong>{{ row.name }}</strong><span class="small muted"> {{ row.place }}</span></span>
               </span>
               <div class="year-track">

@@ -13,13 +13,14 @@ import { formatArea } from '../logic/units.js';
 import { settings } from '../stores/settings.js';
 import { presetOf } from '../logic/climate.js';
 import AppIcon from '../components/AppIcon.js';
+import PlantIcon from '../components/PlantIcon.js';
 import EmptyState from '../components/EmptyState.js';
 import HintItem from '../components/tasks/HintItem.js';
 import { TASK_ICONS } from '../components/tasks/taskText.js';
 
 export default {
   name: 'DashboardView',
-  components: { AppIcon, EmptyState, HintItem },
+  components: { PlantIcon, AppIcon, EmptyState, HintItem },
   setup() {
     const { t, locale } = useI18n();
     const garden = computed(() => gardens.active);
@@ -119,7 +120,7 @@ export default {
             <ul class="plain-list chip-list">
               <li v-for="plant in group.plants" :key="plant.id">
                 <router-link class="plant-chip" :to="'/plants/' + plant.id">
-                  <span class="plant-swatch" :style="{ background: plant.color }" aria-hidden="true"></span>{{ plant.name }}
+                  <PlantIcon :plant-id="plant.id" :size="22" />{{ plant.name }}
                 </router-link>
               </li>
             </ul>

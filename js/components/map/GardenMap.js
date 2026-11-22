@@ -17,6 +17,7 @@ import { createProjection, PLAN_ORIGIN, distance, centroid, edgeLengths, midpoin
 import { ELEMENT_TYPES, DRAW_ORDER, normaliseGeometry, isUsablePolygon, elementsBounds, measure } from '../../logic/elements.js';
 import { visiblePlantings, normaliseShape } from '../../logic/plantings.js';
 import { plantById as getPlant, plantLabel } from '../../stores/catalog.js';
+import { isKnownPlant } from '../../data/plants.js';
 import { formatArea, formatLength } from '../../logic/units.js';
 import { elementStyle, plantingStyle, selectedStyle, measureStyle } from './styles.js';
 import { createGridLayer } from './gridLayer.js';
@@ -29,6 +30,26 @@ const GEOMAN_LANGUAGES = { en: 'en', de: 'de', fr: 'fr', es: 'es', pt: 'pt_pt' }
 const DRAW_SHAPES = { rectangle: 'Rectangle', polygon: 'Polygon', line: 'Line', measure: 'Line' };
 const MIN_LABEL_EDGE_PX = 48;
 const MIN_PLANT_RADIUS = 0.05;
+const PLANT_SPRITE = new URL('../../../assets/icons/plants/plants.svg', import.meta.url).href;
+const SVG_NS = 'http://www.w3.org/2000/svg';
+
+/** Plant icon as an SVG element (map labels are built outside Vue). */
+function plantIconElement(plantId) {
+  const plant = getPlant(plantId);
+  const svg = document.createElementNS(SVG_NS, 'svg');
+  svg.setAttribute('viewBox', '0 0 48 48');
+  svg.setAttribute('aria-hidden', 'true');
+  svg.setAttribute('class', 'map-plant-icon');
+  const use = document.createElementNS(SVG_NS, 'use');
+  if (isKnownPlant(plantId)) {
+    use.setAttribute('href', `${PLANT_SPRITE}#plant-${plantId}`);
+  } else {
+    use.setAttribute('href', `${PLANT_SPRITE}#category-${plant.category ?? 'vegetable'}`);
+    svg.style.color = plant.color;
+  }
+  svg.append(use);
+  return svg;
+}
 
 export default {
   name: 'GardenMap',
@@ -129,6 +150,8 @@ export default {
           plantId: planting.plantId,
           color: plant.color,
           name: own && planting.shape.kind === 'polygon' ? plantLabel(plant, t) : '',
+          // Single plants get an icon-only label in the bed editor
+          icon: own,
           geometry: planting.shape.kind === 'point'
             ? { kind: 'point', at: planting.shape.at, radius: Math.max(MIN_PLANT_RADIUS, plant.spacing.plant / 2) }
             : planting.shape,
@@ -142,7 +165,7 @@ export default {
     }
 
     const keyOf = (item) => JSON.stringify([
-      item.source, item.type, item.plantId, item.color, item.name, item.geometry, item.selectable, item.editable, item.dimmed, item.focused,
+      item.source, item.type, item.plantId, item.color, item.name, item.icon, item.geometry, item.selectable, item.editable, item.dimmed, item.focused,
     ]);
 
     // --- Layers --------------------------------------------------------------
@@ -193,10 +216,11 @@ export default {
         moveTooltip();
         commit(item.id);
       });
-      if (item.name) {
+      if (item.name || item.icon) {
         // A text node, never an HTML string: names may come from imported files
         const content = document.createElement('span');
-        content.textContent = item.name;
+        if (item.icon) content.append(plantIconElement(item.plantId));
+        if (item.name) content.append(document.createTextNode(item.name));
         layer.bindTooltip(content, {
           permanent: true,
           direction: 'center',

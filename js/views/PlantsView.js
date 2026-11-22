@@ -7,11 +7,12 @@ import { catalog, plantLabel } from '../stores/catalog.js';
 import { gardens } from '../stores/gardens.js';
 import { CATEGORIES } from '../logic/catalog.js';
 import AppIcon from '../components/AppIcon.js';
+import PlantIcon from '../components/PlantIcon.js';
 import PlantFormDialog from '../components/plants/PlantFormDialog.js';
 
 export default {
   name: 'PlantsView',
-  components: { AppIcon, PlantFormDialog },
+  components: { PlantIcon, AppIcon, PlantFormDialog },
   setup() {
     const { t, locale } = useI18n();
     const router = useRouter();
@@ -65,7 +66,7 @@ export default {
       <ul v-else class="card-grid plain-list plant-grid">
         <li v-for="entry in plants" :key="entry.plant.id">
           <router-link :to="'/plants/' + entry.plant.id" class="card plant-card">
-            <span class="plant-swatch is-large" :style="{ background: entry.plant.color }" aria-hidden="true"></span>
+            <PlantIcon :plant-id="entry.plant.id" :size="40" />
             <span class="plant-card-text">
               <strong>{{ entry.name }}</strong>
               <span class="small muted">{{ t('plantCategories.' + entry.plant.category) }}</span>

@@ -173,7 +173,7 @@ Planting filters by year and date (including periods crossing New Year and open-
 - Custom plants have no care rules and no companions; adjusting a built-in plant covers spacing, times and windows.
 - Plant icons are colour swatches until 4b.
 
-**4b – open.** The remaining 47 plants with windows, care, companions and texts in five languages, in batches by category; plant icon set (one SVG per plant plus category icons); the catalog and i18n completeness tests already cover new entries.
+**4b – status: done.** All 62 plants with windows, care rules (66 new care texts) and names in five languages. Neighbours are declared as pairs (`GOOD_NEIGHBOURS`, `BAD_NEIGHBOURS` in `js/data/plants.js`), so they are symmetric by construction. Plant icons: one sprite `assets/icons/plants/plants.svg` with a symbol per plant and five category icons in the plant's colour for custom plants; icons replace the colour dots in lists and appear in the bed editor's map labels. Ornamental shrubs (rose, hydrangea) have no harvest window. Tests check the 62 plants, neighbour pairs, texts and icons.
 
 **Scope (as planned)**
 

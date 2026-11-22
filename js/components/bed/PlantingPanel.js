@@ -7,12 +7,13 @@ import { estimateCount, shapeArea, plantingStatus, defaultEnd, NOTE_MAX_LENGTH }
 import { isIsoDate, todayIso } from '../../logic/dates.js';
 import { formatArea } from '../../logic/units.js';
 import AppIcon from '../AppIcon.js';
+import PlantIcon from '../PlantIcon.js';
 import PlantSelect from '../PlantSelect.js';
 import { plantName } from './plantingText.js';
 
 export default {
   name: 'PlantingPanel',
-  components: { AppIcon, PlantSelect },
+  components: { PlantIcon, AppIcon, PlantSelect },
   props: {
     planting: { type: Object, required: true },
     units: { type: String, default: 'metric' },
@@ -114,7 +115,7 @@ export default {
         <button type="button" class="btn btn-icon" :title="t('bed.backToBed')" @click="$emit('close')">
           <AppIcon name="chevron-left" :label="t('bed.backToBed')" />
         </button>
-        <span class="plant-swatch" :style="{ background: plant.color }" aria-hidden="true"></span>
+        <PlantIcon :plant-id="planting.plantId" :size="32" />
         <h2>{{ title }}</h2>
       </div>
       <p><span class="status-chip" :class="'is-' + status">{{ t('status.' + status) }}</span></p>

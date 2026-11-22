@@ -3,7 +3,7 @@ import {
   buildCatalog, diffOverride, monthsToWeeks, weeksToMonths, validateCustomPlant, validateOverrides,
   CATEGORIES, PLACEMENTS, LIFECYCLES, FEEDERS, WINDOW_KINDS, CARE_TYPES,
 } from '../js/logic/catalog.js';
-import { PLANTS } from '../js/data/plants.js';
+import { PLANTS, NEIGHBOUR_PAIRS } from '../js/data/plants.js';
 import { FAMILY_IDS } from '../js/data/families.js';
 
 const custom = {
@@ -24,10 +24,25 @@ describe('built-in catalog data', () => {
       expect([where, Object.keys(plant.windows).sort()]).toEqual([where, [...WINDOW_KINDS].sort()]);
       const windows = Object.values(plant.windows).flat();
       expect([where, windows.every(([a, b]) => a >= 1 && b <= 52 && a <= b)]).toEqual([where, true]);
-      expect([where, plant.windows.harvest.length > 0]).toEqual([where, true]);
+      // Ornamental shrubs (rose, hydrangea) have nothing to harvest
+      expect([where, plant.category === 'shrub' || plant.windows.harvest.length > 0]).toEqual([where, true]);
       expect([where, plant.harvestDays > 0]).toEqual([where, true]);
       expect([where, plant.care.every((rule) => CARE_TYPES.includes(rule.type) && rule.hint && rule.weeks[0] <= rule.weeks[1])]).toEqual([where, true]);
     }
+  });
+  test('the catalog has the 62 agreed plants with unique ids', () => {
+    expect(PLANTS.length).toBe(62);
+    expect(new Set(PLANTS.map((plant) => plant.id)).size).toBe(62);
+    const count = (category) => PLANTS.filter((plant) => plant.category === category).length;
+    expect([count('vegetable'), count('herb'), count('berry'), count('fruitTree'), count('shrub')]).toEqual([35, 10, 7, 6, 4]);
+  });
+  test('neighbour pairs: known ids, no duplicates, no contradictions', () => {
+    const ids = new Set(PLANTS.map((plant) => plant.id));
+    const key = ([a, b]) => [a, b].sort().join('+');
+    const all = [...NEIGHBOUR_PAIRS.good, ...NEIGHBOUR_PAIRS.bad];
+    expect(all.flat().filter((id) => !ids.has(id))).toEqual([]);
+    expect(all.filter(([a, b]) => a === b)).toEqual([]);
+    expect(new Set(all.map(key)).size).toBe(all.length);
   });
   test('companions exist and are symmetric', () => {
     const ids = new Set(PLANTS.map((plant) => plant.id));
@@ -83,5 +98,19 @@ describe('validation', () => {
   test('overrides', () => {
     expect(validateOverrides({ carrot: { growDays: 90 } })).toEqual([]);
     expect(validateOverrides({ carrot: { colour: 'red' }, tomato: { windows: { harvest: [[50, 2]] } } })).toEqual(['carrot', 'tomato']);
+  });
+});
+
+describe('plant icons', () => {
+  test('every catalog plant and category has a symbol in the sprite', async () => {
+    const url = new URL('../assets/icons/plants/plants.svg', import.meta.url);
+    const text = globalThis.process?.versions?.node
+      ? (await import('node:fs')).readFileSync(url, 'utf8')
+      : await (await fetch(url)).text();
+    const missing = [
+      ...PLANTS.map((plant) => `plant-${plant.id}`),
+      ...CATEGORIES.map((category) => `category-${category}`),
+    ].filter((id) => !text.includes(`id="${id}"`));
+    expect(missing).toEqual([]);
   });
 });

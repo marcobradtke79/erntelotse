@@ -250,9 +250,56 @@ export default {
     parsley: 'Parsley',
     strawberry: 'Strawberries',
     apple: 'Apple tree',
-    cherry: 'Cherry tree',
+    cherry: 'Sweet cherry',
     redcurrant: 'Redcurrant',
     raspberry: 'Raspberries',
+    runnerBean: 'Runner beans',
+    pea: 'Peas',
+    cucumber: 'Cucumbers',
+    pumpkin: 'Pumpkins',
+    garlic: 'Garlic',
+    leek: 'Leeks',
+    springOnion: 'Spring onions',
+    beetroot: 'Beetroot',
+    spinach: 'Spinach',
+    chard: 'Swiss chard',
+    kale: 'Kale',
+    cabbage: 'White cabbage',
+    cauliflower: 'Cauliflower',
+    broccoli: 'Broccoli',
+    kohlrabi: 'Kohlrabi',
+    brusselsSprouts: 'Brussels sprouts',
+    rocket: 'Rocket',
+    bellPepper: 'Bell peppers',
+    chili: 'Chillies',
+    eggplant: 'Aubergines',
+    sweetCorn: 'Sweet corn',
+    celeriac: 'Celeriac',
+    fennel: 'Bulb fennel',
+    parsnip: 'Parsnips',
+    lambsLettuce: 'Lamb’s lettuce',
+    asparagus: 'Asparagus',
+    rhubarb: 'Rhubarb',
+    chives: 'Chives',
+    dill: 'Dill',
+    thyme: 'Thyme',
+    rosemary: 'Rosemary',
+    sage: 'Sage',
+    mint: 'Mint',
+    oregano: 'Oregano',
+    coriander: 'Coriander',
+    blackberry: 'Blackberries',
+    blackcurrant: 'Blackcurrant',
+    gooseberry: 'Gooseberry',
+    blueberry: 'Blueberry',
+    pear: 'Pear tree',
+    sourCherry: 'Sour cherry',
+    plum: 'Plum tree',
+    peach: 'Peach tree',
+    lavender: 'Lavender',
+    rose: 'Rose',
+    hydrangea: 'Hydrangea',
+    elder: 'Elder',
   },
   plantCategories: {
     vegetable: 'Vegetables',
@@ -406,6 +453,164 @@ export default {
     raspberry: {
       mulch: 'Mulch with compost or leaves; raspberries have shallow roots and like moist soil.',
       cutCanes: 'Cut the canes that bore fruit this year down to the ground.',
+    },
+    runnerBean: {
+      poles: 'Set up poles or a frame before sowing and guide the young shoots onto them.',
+      water: 'Water generously during flowering, otherwise the flowers drop.',
+    },
+    pea: {
+      support: 'Give the peas twigs or a net to climb on.',
+    },
+    cucumber: {
+      water: 'Water with lukewarm water, evenly and at the base; cold water and dry spells make the fruit bitter.',
+      fertilize: 'Feed every two weeks with organic liquid fertilizer once the fruits form.',
+    },
+    pumpkin: {
+      fertilize: 'Give compost or organic fertilizer every three weeks; pumpkins are very hungry.',
+      raiseFruit: 'Put a board or straw under the fruits so they do not rot on wet soil.',
+    },
+    garlic: {
+      stopWatering: 'Stop watering when the leaves start to yellow, so the bulbs ripen.',
+    },
+    leek: {
+      earthUp: 'Earth up the stems in summer to get long white shafts.',
+    },
+    beetroot: {
+      thin: 'Thin the seedlings to about 10 cm apart; the young leaves are good in salads.',
+    },
+    spinach: {
+      bolt: 'Keep the soil moist; dryness and long days make spinach bolt.',
+    },
+    chard: {
+      outerLeaves: 'Harvest the outer leaves and leave the heart; it keeps growing until autumn.',
+    },
+    kale: {
+      fertilize: 'Feed once in summer; kale tastes sweeter after the first frosts.',
+    },
+    cabbage: {
+      nets: 'Cover with a fine net against cabbage white butterflies and cabbage flies.',
+      fertilize: 'Feed every three weeks; cabbage needs a lot of nitrogen.',
+    },
+    cauliflower: {
+      coverHead: 'Bend a few leaves over the head so it stays white.',
+    },
+    broccoli: {
+      sideShoots: 'After cutting the main head, leave the plant: side shoots give a second harvest.',
+    },
+    kohlrabi: {
+      water: 'Water evenly; dry spells make kohlrabi woody or split.',
+    },
+    brusselsSprouts: {
+      topping: 'Pinch out the top in early autumn so the sprouts grow evenly.',
+    },
+    rocket: {
+      water: 'Water often; in dry soil rocket becomes very hot and bolts.',
+    },
+    bellPepper: {
+      fertilize: 'Feed every two weeks from the first flowers on.',
+    },
+    chili: {
+      warm: 'Give chillies the warmest, most sheltered spot in the garden.',
+    },
+    eggplant: {
+      fertilize: 'Feed every two weeks; aubergines need warmth and plenty of nutrients.',
+    },
+    sweetCorn: {
+      block: 'Plant in a block of several short rows, not one long row, so the wind can pollinate it.',
+    },
+    celeriac: {
+      removeLeaves: 'In late summer, remove the lower leaves and pull back soil from the tuber.',
+    },
+    fennel: {
+      earthUp: 'Earth up the bulbs a little so they stay white and tender.',
+    },
+    parsnip: {
+      thin: 'Thin the seedlings to 10 cm; parsnips germinate slowly, so be patient.',
+    },
+    lambsLettuce: {
+      germination: 'Keep the seed row moist until the seedlings come up.',
+    },
+    asparagus: {
+      stopHarvest: 'Stop harvesting around 24 June so the plants can build up strength for next year.',
+      fertilize: 'Feed with compost after the harvest.',
+    },
+    rhubarb: {
+      fertilize: 'Spread compost around the plant in early spring.',
+      stopHarvest: 'Stop harvesting around 24 June; later stalks contain more oxalic acid.',
+    },
+    chives: {
+      cutFlowers: 'Cut regularly; remove flowers unless you want them for the bees.',
+    },
+    dill: {
+      resow: 'Sow a little every three weeks for a steady supply.',
+    },
+    thyme: {
+      cutBack: 'Cut back by a third in spring so it stays compact.',
+    },
+    rosemary: {
+      cutBack: 'Trim lightly in spring, never into the old wood.',
+      winterProtection: 'Protect from hard frost with fleece, or bring the pot into a cool, bright room.',
+    },
+    sage: {
+      cutBack: 'Cut back in spring to keep the plant bushy.',
+    },
+    mint: {
+      rootBarrier: 'Plant mint with a root barrier or in a pot; it spreads quickly.',
+    },
+    oregano: {
+      cutBack: 'Cut back old stems in spring.',
+    },
+    coriander: {
+      resow: 'Sow again every three weeks; coriander flowers quickly.',
+    },
+    blackberry: {
+      tieCanes: 'Tie the new canes to the wires as they grow.',
+      cutCanes: 'Cut the canes that bore fruit down to the ground after the harvest.',
+    },
+    blackcurrant: {
+      pruning: 'Cut out the oldest shoots at the base; blackcurrants fruit best on young wood.',
+      fertilize: 'Mulch with compost in spring.',
+    },
+    gooseberry: {
+      pruning: 'Thin out the bush so air and light can reach the middle.',
+      mildew: 'Check for powdery mildew and remove affected shoot tips.',
+    },
+    blueberry: {
+      pruning: 'Remove the oldest shoots; blueberries fruit on younger wood.',
+      acidSoil: 'Blueberries need acidic soil: mulch with pine bark and use rhododendron fertilizer.',
+    },
+    pear: {
+      winterPruning: 'Prune on a frost-free day: remove dead, crossing and steep upright shoots.',
+      fertilize: 'Spread compost around the tree, out to the edge of the crown.',
+    },
+    sourCherry: {
+      fertilize: 'Spread compost around the tree in spring.',
+      summerPruning: 'Prune right after the harvest; cut back the shoots that bore fruit.',
+    },
+    plum: {
+      fertilize: 'Spread compost around the tree in spring.',
+      summerPruning: 'Prune plums in summer after the harvest; wounds heal best then.',
+    },
+    peach: {
+      leafCurl: 'Protect the tree from rain before the buds open, or treat it against peach leaf curl.',
+      springPruning: 'Prune at blossom time; peaches fruit on last year’s shoots, so keep plenty of them.',
+    },
+    lavender: {
+      springCut: 'Cut back by a third in spring, but not into the old wood.',
+      cutAfterFlowering: 'Cut off the faded flower stems after flowering.',
+    },
+    rose: {
+      springPruning: 'Prune when the forsythia flowers: remove dead wood and shorten strong shoots.',
+      fertilize: 'Feed with rose fertilizer or compost in spring.',
+      deadhead: 'Cut off faded flowers down to the next full leaf; repeat-flowering roses bloom again.',
+      summerFertilize: 'Feed a second time in early summer, not later, so the shoots ripen before winter.',
+    },
+    hydrangea: {
+      springPruning: 'Only cut off the old flower heads above a pair of buds; most hydrangeas flower on last year’s wood.',
+      water: 'Water generously in dry weather; hydrangeas wilt quickly.',
+    },
+    elder: {
+      pruning: 'Cut out a few of the oldest stems at the base every winter.',
     },
   },
   families: {

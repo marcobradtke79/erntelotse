@@ -512,3 +512,25 @@
   padding: 4px;
   height: var(--touch-target);
 }
+
+/* Plant icons */
+.plant-icon {
+  flex: none;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.plant-card .plant-icon,
+.planting-row .plant-icon,
+.hint-item-plant .plant-icon,
+.plant-chip .plant-icon {
+  margin: -2px 0;
+}
+
+.map-name-label .map-plant-icon {
+  width: 22px;
+  height: 22px;
+  vertical-align: middle;
+  margin-right: 2px;
+  filter: drop-shadow(0 0 2px var(--color-surface));
+}

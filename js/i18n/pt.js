@@ -253,6 +253,53 @@ export default {
     cherry: 'Cerejeira',
     redcurrant: 'Groselheira-vermelha',
     raspberry: 'Framboeseiros',
+    runnerBean: 'Feijão-de-trepar',
+    pea: 'Ervilhas',
+    cucumber: 'Pepinos',
+    pumpkin: 'Abóboras',
+    garlic: 'Alho',
+    leek: 'Alho-francês',
+    springOnion: 'Cebolinhas',
+    beetroot: 'Beterrabas',
+    spinach: 'Espinafres',
+    chard: 'Acelgas',
+    kale: 'Couve-galega',
+    cabbage: 'Couve-repolho',
+    cauliflower: 'Couve-flor',
+    broccoli: 'Brócolos',
+    kohlrabi: 'Couve-rábano',
+    brusselsSprouts: 'Couves-de-bruxelas',
+    rocket: 'Rúcula',
+    bellPepper: 'Pimentos',
+    chili: 'Malaguetas',
+    eggplant: 'Beringelas',
+    sweetCorn: 'Milho doce',
+    celeriac: 'Aipo-rábano',
+    fennel: 'Funcho',
+    parsnip: 'Pastinacas',
+    lambsLettuce: 'Alface-de-cordeiro',
+    asparagus: 'Espargos',
+    rhubarb: 'Ruibarbo',
+    chives: 'Cebolinho',
+    dill: 'Endro',
+    thyme: 'Tomilho',
+    rosemary: 'Alecrim',
+    sage: 'Salva',
+    mint: 'Hortelã',
+    oregano: 'Orégão',
+    coriander: 'Coentros',
+    blackberry: 'Amoreiras-silvestres',
+    blackcurrant: 'Groselheira-negra',
+    gooseberry: 'Groselheira-espinhosa',
+    blueberry: 'Mirtilo',
+    pear: 'Pereira',
+    sourCherry: 'Ginjeira',
+    plum: 'Ameixeira',
+    peach: 'Pessegueiro',
+    lavender: 'Alfazema',
+    rose: 'Roseira',
+    hydrangea: 'Hortênsia',
+    elder: 'Sabugueiro',
   },
   plantCategories: {
     vegetable: 'Hortícolas',
@@ -406,6 +453,164 @@ export default {
     raspberry: {
       mulch: 'Cubra o solo com composto ou folhas; os framboeseiros têm raízes superficiais e gostam de terra húmida.',
       cutCanes: 'Corte rente ao solo as varas que deram fruto este ano.',
+    },
+    runnerBean: {
+      poles: 'Monte canas ou uma estrutura antes de semear e guie os rebentos jovens por elas.',
+      water: 'Regue abundantemente durante a floração; caso contrário, as flores caem.',
+    },
+    pea: {
+      support: 'Dê às ervilhas ramos ou uma rede para trepar.',
+    },
+    cucumber: {
+      water: 'Regue com água morna, de forma regular e junto ao pé; água fria e secura tornam os frutos amargos.',
+      fertilize: 'Adube de duas em duas semanas com adubo orgânico líquido quando os frutos se formarem.',
+    },
+    pumpkin: {
+      fertilize: 'Dê composto ou adubo orgânico de três em três semanas; as abóboras são muito exigentes.',
+      raiseFruit: 'Coloque uma tábua ou palha debaixo dos frutos para não apodrecerem na terra húmida.',
+    },
+    garlic: {
+      stopWatering: 'Deixe de regar quando as folhas começarem a amarelecer, para as cabeças amadurecerem.',
+    },
+    leek: {
+      earthUp: 'Amontoe terra à volta dos caules no verão para obter partes brancas compridas.',
+    },
+    beetroot: {
+      thin: 'Desbaste as plântulas para cerca de 10 cm; as folhas jovens são boas em salada.',
+    },
+    spinach: {
+      bolt: 'Mantenha a terra húmida; a secura e os dias longos fazem o espinafre espigar.',
+    },
+    chard: {
+      outerLeaves: 'Colha as folhas exteriores e deixe o coração; assim continua a crescer até ao outono.',
+    },
+    kale: {
+      fertilize: 'Adube uma vez no verão; a couve fica mais doce depois das primeiras geadas.',
+    },
+    cabbage: {
+      nets: 'Cubra com uma rede fina contra a borboleta-da-couve e a mosca-da-couve.',
+      fertilize: 'Adube de três em três semanas; a couve precisa de muito azoto.',
+    },
+    cauliflower: {
+      coverHead: 'Dobre algumas folhas sobre a cabeça para ela se manter branca.',
+    },
+    broccoli: {
+      sideShoots: 'Depois de cortar a cabeça principal, deixe a planta: os rebentos laterais dão uma segunda colheita.',
+    },
+    kohlrabi: {
+      water: 'Regue de forma regular; com secura, a couve-rábano fica lenhosa ou racha.',
+    },
+    brusselsSprouts: {
+      topping: 'Corte a ponta no início do outono para as couves crescerem por igual.',
+    },
+    rocket: {
+      water: 'Regue com frequência; em terra seca, a rúcula fica muito picante e espiga.',
+    },
+    bellPepper: {
+      fertilize: 'Adube de duas em duas semanas a partir das primeiras flores.',
+    },
+    chili: {
+      warm: 'Dê às malaguetas o lugar mais quente e abrigado do jardim.',
+    },
+    eggplant: {
+      fertilize: 'Adube de duas em duas semanas; as beringelas precisam de calor e de muitos nutrientes.',
+    },
+    sweetCorn: {
+      block: 'Plante em bloco de várias linhas curtas em vez de uma comprida, para o vento polinizar.',
+    },
+    celeriac: {
+      removeLeaves: 'No fim do verão, retire as folhas de baixo e descubra um pouco o tubérculo.',
+    },
+    fennel: {
+      earthUp: 'Amontoe um pouco de terra nos bolbos para ficarem brancos e tenros.',
+    },
+    parsnip: {
+      thin: 'Desbaste para 10 cm; a pastinaca germina devagar, tenha paciência.',
+    },
+    lambsLettuce: {
+      germination: 'Mantenha a linha de sementeira húmida até as plântulas nascerem.',
+    },
+    asparagus: {
+      stopHarvest: 'Pare a colheita por volta de 24 de junho para as plantas ganharem força para o ano seguinte.',
+      fertilize: 'Adube com composto depois da colheita.',
+    },
+    rhubarb: {
+      fertilize: 'Espalhe composto à volta da planta no início da primavera.',
+      stopHarvest: 'Pare a colheita por volta de 24 de junho; os pés mais tardios têm mais ácido oxálico.',
+    },
+    chives: {
+      cutFlowers: 'Corte com regularidade; retire as flores, a não ser que as queira deixar para as abelhas.',
+    },
+    dill: {
+      resow: 'Semeie um pouco de três em três semanas para ter sempre.',
+    },
+    thyme: {
+      cutBack: 'Corte um terço na primavera para se manter compacto.',
+    },
+    rosemary: {
+      cutBack: 'Apare ligeiramente na primavera, nunca na madeira velha.',
+      winterProtection: 'Proteja-o das geadas fortes com manta térmica ou leve o vaso para um sítio fresco e luminoso.',
+    },
+    sage: {
+      cutBack: 'Corte na primavera para a planta se manter compacta.',
+    },
+    mint: {
+      rootBarrier: 'Plante a hortelã com barreira de raízes ou num vaso; espalha-se depressa.',
+    },
+    oregano: {
+      cutBack: 'Corte os caules velhos na primavera.',
+    },
+    coriander: {
+      resow: 'Volte a semear de três em três semanas; os coentros florescem depressa.',
+    },
+    blackberry: {
+      tieCanes: 'Prenda as varas novas aos arames à medida que crescem.',
+      cutCanes: 'Depois da colheita, corte rente ao solo as varas que deram fruto.',
+    },
+    blackcurrant: {
+      pruning: 'Corte rente ao solo os ramos mais velhos; a groselheira-negra dá mais fruto na madeira nova.',
+      fertilize: 'Cubra o solo com composto na primavera.',
+    },
+    gooseberry: {
+      pruning: 'Desbaste o arbusto para que o ar e a luz cheguem ao centro.',
+      mildew: 'Esteja atento ao oídio e retire as pontas afetadas.',
+    },
+    blueberry: {
+      pruning: 'Retire os ramos mais velhos; o mirtilo dá fruto na madeira mais nova.',
+      acidSoil: 'O mirtilo precisa de terra ácida: cubra com casca de pinheiro e use adubo para rododendros.',
+    },
+    pear: {
+      winterPruning: 'Pode num dia sem geada: retire os ramos secos, cruzados e muito verticais.',
+      fertilize: 'Espalhe composto à volta da árvore, até ao limite da copa.',
+    },
+    sourCherry: {
+      fertilize: 'Espalhe composto à volta da árvore na primavera.',
+      summerPruning: 'Pode logo após a colheita; encurte os ramos que deram fruto.',
+    },
+    plum: {
+      fertilize: 'Espalhe composto à volta da árvore na primavera.',
+      summerPruning: 'Pode as ameixeiras no verão depois da colheita; as feridas cicatrizam melhor.',
+    },
+    peach: {
+      leafCurl: 'Proteja a árvore da chuva antes do abrolhamento ou trate contra a lepra do pessegueiro.',
+      springPruning: 'Pode na floração; o pessegueiro dá fruto nos ramos do ano anterior, deixe bastantes.',
+    },
+    lavender: {
+      springCut: 'Corte um terço na primavera, mas não na madeira velha.',
+      cutAfterFlowering: 'Corte os caules murchos depois da floração.',
+    },
+    rose: {
+      springPruning: 'Pode quando a forsítia florir: retire a madeira seca e encurte os rebentos fortes.',
+      fertilize: 'Adube com adubo para roseiras ou composto na primavera.',
+      deadhead: 'Corte as flores murchas até à próxima folha completa; as roseiras remontantes voltam a florir.',
+      summerFertilize: 'Adube uma segunda vez no início do verão, não mais tarde, para os rebentos amadurecerem antes do inverno.',
+    },
+    hydrangea: {
+      springPruning: 'Corte só as flores velhas acima de um par de gomos; a maioria das hortênsias floresce na madeira do ano anterior.',
+      water: 'Regue abundantemente com tempo seco; as hortênsias murcham depressa.',
+    },
+    elder: {
+      pruning: 'Corte todos os invernos alguns dos ramos mais velhos rente ao solo.',
     },
   },
   families: {

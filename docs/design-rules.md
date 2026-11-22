@@ -88,14 +88,15 @@ Light and dark theme. The default follows the system setting; the user can force
 
 ### 4.1 Plant icons
 
-One SVG icon per catalog plant, in `assets/icons/plants/<plant-id>.svg`.
+One icon per catalog plant, as a `<symbol id="plant-<id>">` in the sprite `assets/icons/plants/plants.svg` (one request for all icons; edit symbols directly). Components use `js/components/PlantIcon.js`.
 
 - Canvas 48 × 48, drawn on a 2 px grid, with 4 px clear space to the edge.
 - Flat shapes with a 2 px rounded outline in a darker tone of the fill; at most four colours per icon; no gradients, no text.
 - Slightly rounded, friendly proportions; the harvested part is shown (the carrot, not the leaves alone).
 - Recognisable at 24 px; details that disappear at that size are left out.
 - Each plant icon defines the plant's colour (section 2.3).
-- Generic icons per category (leaf vegetable, root vegetable, fruit vegetable, herb, berry, tree, shrub, flower) are used for custom plants, tinted with a colour the user chooses.
+- Category icons (`category-vegetable`, `-herb`, `-berry`, `-fruitTree`, `-shrub`) are drawn in `currentColor` and used for custom plants, tinted with the plant's colour.
+- Plant icons are decorative; the plant name is always shown next to them.
 
 ### 4.2 UI icons
 

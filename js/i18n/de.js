@@ -250,9 +250,56 @@ export default {
     parsley: 'Petersilie',
     strawberry: 'Erdbeeren',
     apple: 'Apfelbaum',
-    cherry: 'Kirschbaum',
+    cherry: 'Süßkirsche',
     redcurrant: 'Rote Johannisbeere',
     raspberry: 'Himbeeren',
+    runnerBean: 'Stangenbohnen',
+    pea: 'Erbsen',
+    cucumber: 'Gurken',
+    pumpkin: 'Kürbisse',
+    garlic: 'Knoblauch',
+    leek: 'Lauch',
+    springOnion: 'Frühlingszwiebeln',
+    beetroot: 'Rote Bete',
+    spinach: 'Spinat',
+    chard: 'Mangold',
+    kale: 'Grünkohl',
+    cabbage: 'Weißkohl',
+    cauliflower: 'Blumenkohl',
+    broccoli: 'Brokkoli',
+    kohlrabi: 'Kohlrabi',
+    brusselsSprouts: 'Rosenkohl',
+    rocket: 'Rucola',
+    bellPepper: 'Paprika',
+    chili: 'Chilis',
+    eggplant: 'Auberginen',
+    sweetCorn: 'Zuckermais',
+    celeriac: 'Knollensellerie',
+    fennel: 'Knollenfenchel',
+    parsnip: 'Pastinaken',
+    lambsLettuce: 'Feldsalat',
+    asparagus: 'Spargel',
+    rhubarb: 'Rhabarber',
+    chives: 'Schnittlauch',
+    dill: 'Dill',
+    thyme: 'Thymian',
+    rosemary: 'Rosmarin',
+    sage: 'Salbei',
+    mint: 'Minze',
+    oregano: 'Oregano',
+    coriander: 'Koriander',
+    blackberry: 'Brombeeren',
+    blackcurrant: 'Schwarze Johannisbeere',
+    gooseberry: 'Stachelbeere',
+    blueberry: 'Heidelbeere',
+    pear: 'Birnbaum',
+    sourCherry: 'Sauerkirsche',
+    plum: 'Pflaumenbaum',
+    peach: 'Pfirsichbaum',
+    lavender: 'Lavendel',
+    rose: 'Rose',
+    hydrangea: 'Hortensie',
+    elder: 'Holunder',
   },
   plantCategories: {
     vegetable: 'Gemüse',
@@ -406,6 +453,164 @@ export default {
     raspberry: {
       mulch: 'Mulche mit Kompost oder Laub; Himbeeren wurzeln flach und mögen feuchten Boden.',
       cutCanes: 'Schneide die Ruten, die dieses Jahr getragen haben, bodennah ab.',
+    },
+    runnerBean: {
+      poles: 'Stelle vor der Aussaat Stangen oder ein Gerüst auf und leite die jungen Triebe daran.',
+      water: 'Gieße während der Blüte reichlich, sonst fallen die Blüten ab.',
+    },
+    pea: {
+      support: 'Gib den Erbsen Reisig oder ein Netz als Rankhilfe.',
+    },
+    cucumber: {
+      water: 'Gieße gleichmäßig mit lauwarmem Wasser von unten; kaltes Wasser und Trockenheit machen die Früchte bitter.',
+      fertilize: 'Dünge alle zwei Wochen mit organischem Flüssigdünger, sobald sich Früchte bilden.',
+    },
+    pumpkin: {
+      fertilize: 'Gib alle drei Wochen Kompost oder organischen Dünger; Kürbisse sind Starkzehrer.',
+      raiseFruit: 'Lege ein Brett oder Stroh unter die Früchte, damit sie auf nassem Boden nicht faulen.',
+    },
+    garlic: {
+      stopWatering: 'Gieße nicht mehr, wenn das Laub zu vergilben beginnt, damit die Knollen ausreifen.',
+    },
+    leek: {
+      earthUp: 'Häufle die Stangen im Sommer an, damit sie lang und weiß werden.',
+    },
+    beetroot: {
+      thin: 'Vereinzle die Sämlinge auf etwa 10 cm Abstand; die jungen Blätter schmecken im Salat.',
+    },
+    spinach: {
+      bolt: 'Halte den Boden feucht; Trockenheit und lange Tage lassen Spinat schießen.',
+    },
+    chard: {
+      outerLeaves: 'Ernte die äußeren Blätter und lass das Herz stehen; so wächst der Mangold bis in den Herbst.',
+    },
+    kale: {
+      fertilize: 'Dünge im Sommer einmal nach; nach den ersten Frösten schmeckt Grünkohl süßer.',
+    },
+    cabbage: {
+      nets: 'Decke den Kohl mit einem feinen Netz gegen Kohlweißlinge und Kohlfliegen ab.',
+      fertilize: 'Dünge alle drei Wochen nach; Kohl braucht viel Stickstoff.',
+    },
+    cauliflower: {
+      coverHead: 'Knicke einige Blätter über die Blume, damit sie weiß bleibt.',
+    },
+    broccoli: {
+      sideShoots: 'Lass die Pflanze nach dem Schnitt des Haupttriebs stehen: Seitentriebe geben eine zweite Ernte.',
+    },
+    kohlrabi: {
+      water: 'Gieße gleichmäßig; bei Trockenheit werden Kohlrabi holzig oder platzen.',
+    },
+    brusselsSprouts: {
+      topping: 'Kappe im Frühherbst die Spitze, damit die Röschen gleichmäßig wachsen.',
+    },
+    rocket: {
+      water: 'Gieße oft; in trockenem Boden wird Rucola sehr scharf und schießt.',
+    },
+    bellPepper: {
+      fertilize: 'Dünge ab der ersten Blüte alle zwei Wochen.',
+    },
+    chili: {
+      warm: 'Gib Chilis den wärmsten, geschütztesten Platz im Garten.',
+    },
+    eggplant: {
+      fertilize: 'Dünge alle zwei Wochen; Auberginen brauchen Wärme und viele Nährstoffe.',
+    },
+    sweetCorn: {
+      block: 'Pflanze in einem Block aus mehreren kurzen Reihen statt einer langen, damit der Wind bestäuben kann.',
+    },
+    celeriac: {
+      removeLeaves: 'Entferne im Spätsommer die unteren Blätter und lege die Knolle etwas frei.',
+    },
+    fennel: {
+      earthUp: 'Häufle die Knollen etwas an, damit sie weiß und zart bleiben.',
+    },
+    parsnip: {
+      thin: 'Vereinzle die Sämlinge auf 10 cm; Pastinaken keimen langsam, hab Geduld.',
+    },
+    lambsLettuce: {
+      germination: 'Halte die Saatreihe feucht, bis die Sämlinge aufgehen.',
+    },
+    asparagus: {
+      stopHarvest: 'Beende die Ernte um den 24. Juni, damit die Pflanzen Kraft fürs nächste Jahr sammeln.',
+      fertilize: 'Dünge nach der Ernte mit Kompost.',
+    },
+    rhubarb: {
+      fertilize: 'Verteile im zeitigen Frühjahr Kompost um die Pflanze.',
+      stopHarvest: 'Beende die Ernte um den 24. Juni; spätere Stiele enthalten mehr Oxalsäure.',
+    },
+    chives: {
+      cutFlowers: 'Schneide regelmäßig; entferne die Blüten, wenn du sie nicht den Bienen lassen willst.',
+    },
+    dill: {
+      resow: 'Säe alle drei Wochen etwas nach, damit du laufend ernten kannst.',
+    },
+    thyme: {
+      cutBack: 'Schneide im Frühjahr um ein Drittel zurück, damit er kompakt bleibt.',
+    },
+    rosemary: {
+      cutBack: 'Schneide im Frühjahr leicht zurück, nie ins alte Holz.',
+      winterProtection: 'Schütze ihn mit Vlies vor starkem Frost oder stelle den Topf hell und kühl ins Haus.',
+    },
+    sage: {
+      cutBack: 'Schneide im Frühjahr zurück, damit die Pflanze buschig bleibt.',
+    },
+    mint: {
+      rootBarrier: 'Pflanze Minze mit Wurzelsperre oder im Topf; sie breitet sich schnell aus.',
+    },
+    oregano: {
+      cutBack: 'Schneide im Frühjahr die alten Stängel zurück.',
+    },
+    coriander: {
+      resow: 'Säe alle drei Wochen nach; Koriander blüht schnell.',
+    },
+    blackberry: {
+      tieCanes: 'Binde die neuen Ruten beim Wachsen an die Drähte.',
+      cutCanes: 'Schneide nach der Ernte die abgetragenen Ruten bodennah ab.',
+    },
+    blackcurrant: {
+      pruning: 'Schneide die ältesten Triebe bodennah heraus; Schwarze Johannisbeeren tragen am jungen Holz am besten.',
+      fertilize: 'Mulche im Frühjahr mit Kompost.',
+    },
+    gooseberry: {
+      pruning: 'Lichte den Strauch aus, damit Luft und Licht in die Mitte kommen.',
+      mildew: 'Achte auf Mehltau und entferne befallene Triebspitzen.',
+    },
+    blueberry: {
+      pruning: 'Entferne die ältesten Triebe; Heidelbeeren tragen am jüngeren Holz.',
+      acidSoil: 'Heidelbeeren brauchen sauren Boden: Mulche mit Rindenmulch und dünge mit Rhododendrondünger.',
+    },
+    pear: {
+      winterPruning: 'Schneide an einem frostfreien Tag: Entferne tote, sich kreuzende und steil aufrechte Triebe.',
+      fertilize: 'Verteile Kompost um den Baum bis zum Rand der Krone.',
+    },
+    sourCherry: {
+      fertilize: 'Verteile im Frühjahr Kompost um den Baum.',
+      summerPruning: 'Schneide direkt nach der Ernte; kürze die abgetragenen Triebe ein.',
+    },
+    plum: {
+      fertilize: 'Verteile im Frühjahr Kompost um den Baum.',
+      summerPruning: 'Schneide Pflaumen im Sommer nach der Ernte; dann heilen die Wunden am besten.',
+    },
+    peach: {
+      leafCurl: 'Schütze den Baum vor dem Austrieb vor Regen oder spritze ein Mittel gegen Kräuselkrankheit.',
+      springPruning: 'Schneide zur Blütezeit; Pfirsiche tragen an den Vorjahrestrieben, lass also genug davon stehen.',
+    },
+    lavender: {
+      springCut: 'Schneide im Frühjahr um ein Drittel zurück, aber nicht ins alte Holz.',
+      cutAfterFlowering: 'Schneide nach der Blüte die verblühten Stiele ab.',
+    },
+    rose: {
+      springPruning: 'Schneide zur Forsythienblüte: Entferne totes Holz und kürze kräftige Triebe ein.',
+      fertilize: 'Dünge im Frühjahr mit Rosendünger oder Kompost.',
+      deadhead: 'Schneide Verblühtes bis zum nächsten vollen Blatt ab; öfterblühende Rosen blühen dann nach.',
+      summerFertilize: 'Dünge im Frühsommer ein zweites Mal, nicht später, damit die Triebe vor dem Winter ausreifen.',
+    },
+    hydrangea: {
+      springPruning: 'Schneide nur die alten Blütenstände über einem Knospenpaar ab; die meisten Hortensien blühen am Vorjahresholz.',
+      water: 'Gieße bei Trockenheit reichlich; Hortensien welken schnell.',
+    },
+    elder: {
+      pruning: 'Schneide jeden Winter einige der ältesten Triebe bodennah heraus.',
     },
   },
   families: {

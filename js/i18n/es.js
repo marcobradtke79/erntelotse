@@ -253,6 +253,53 @@ export default {
     cherry: 'Cerezo',
     redcurrant: 'Grosellero rojo',
     raspberry: 'Frambuesos',
+    runnerBean: 'Judías de enrame',
+    pea: 'Guisantes',
+    cucumber: 'Pepinos',
+    pumpkin: 'Calabazas',
+    garlic: 'Ajos',
+    leek: 'Puerros',
+    springOnion: 'Cebolletas',
+    beetroot: 'Remolachas',
+    spinach: 'Espinacas',
+    chard: 'Acelgas',
+    kale: 'Col rizada',
+    cabbage: 'Repollo',
+    cauliflower: 'Coliflor',
+    broccoli: 'Brócoli',
+    kohlrabi: 'Colinabo',
+    brusselsSprouts: 'Coles de Bruselas',
+    rocket: 'Rúcula',
+    bellPepper: 'Pimientos',
+    chili: 'Guindillas',
+    eggplant: 'Berenjenas',
+    sweetCorn: 'Maíz dulce',
+    celeriac: 'Apionabo',
+    fennel: 'Hinojo',
+    parsnip: 'Chirivías',
+    lambsLettuce: 'Canónigos',
+    asparagus: 'Espárragos',
+    rhubarb: 'Ruibarbo',
+    chives: 'Cebollino',
+    dill: 'Eneldo',
+    thyme: 'Tomillo',
+    rosemary: 'Romero',
+    sage: 'Salvia',
+    mint: 'Menta',
+    oregano: 'Orégano',
+    coriander: 'Cilantro',
+    blackberry: 'Zarzamoras',
+    blackcurrant: 'Grosellero negro',
+    gooseberry: 'Grosellero espinoso',
+    blueberry: 'Arándano',
+    pear: 'Peral',
+    sourCherry: 'Guindo',
+    plum: 'Ciruelo',
+    peach: 'Melocotonero',
+    lavender: 'Lavanda',
+    rose: 'Rosal',
+    hydrangea: 'Hortensia',
+    elder: 'Saúco',
   },
   plantCategories: {
     vegetable: 'Hortalizas',
@@ -406,6 +453,164 @@ export default {
     raspberry: {
       mulch: 'Acolcha con compost u hojas; los frambuesos tienen raíces superficiales y les gusta la tierra húmeda.',
       cutCanes: 'Corta a ras de suelo las cañas que han dado fruto este año.',
+    },
+    runnerBean: {
+      poles: 'Coloca cañas o un soporte antes de sembrar y guía los brotes jóvenes por ellos.',
+      water: 'Riega abundantemente durante la floración; si no, las flores se caen.',
+    },
+    pea: {
+      support: 'Pon ramas o una red para que los guisantes trepen.',
+    },
+    cucumber: {
+      water: 'Riega con agua templada, de forma regular y al pie; el agua fría y la sequía amargan los frutos.',
+      fertilize: 'Abona cada dos semanas con abono orgánico líquido cuando se formen los frutos.',
+    },
+    pumpkin: {
+      fertilize: 'Aporta compost o abono orgánico cada tres semanas; las calabazas son muy exigentes.',
+      raiseFruit: 'Pon una tabla o paja bajo los frutos para que no se pudran sobre la tierra húmeda.',
+    },
+    garlic: {
+      stopWatering: 'Deja de regar cuando las hojas empiecen a amarillear, para que las cabezas maduren.',
+    },
+    leek: {
+      earthUp: 'Aporca los tallos en verano para obtener partes blancas largas.',
+    },
+    beetroot: {
+      thin: 'Aclara las plántulas a unos 10 cm; las hojas jóvenes van bien en ensalada.',
+    },
+    spinach: {
+      bolt: 'Mantén la tierra húmeda; la sequía y los días largos hacen que se espigue.',
+    },
+    chard: {
+      outerLeaves: 'Cosecha las hojas exteriores y deja el corazón; así sigue creciendo hasta el otoño.',
+    },
+    kale: {
+      fertilize: 'Abona una vez en verano; la col rizada sabe más dulce tras las primeras heladas.',
+    },
+    cabbage: {
+      nets: 'Cubre con una malla fina contra la mariposa de la col y la mosca de la col.',
+      fertilize: 'Abona cada tres semanas; la col necesita mucho nitrógeno.',
+    },
+    cauliflower: {
+      coverHead: 'Dobla algunas hojas sobre la pella para que se mantenga blanca.',
+    },
+    broccoli: {
+      sideShoots: 'Después de cortar la cabeza principal, deja la planta: los brotes laterales dan una segunda cosecha.',
+    },
+    kohlrabi: {
+      water: 'Riega de forma regular; con sequía, el colinabo se vuelve leñoso o se agrieta.',
+    },
+    brusselsSprouts: {
+      topping: 'Despunta la parte superior a principios de otoño para que las coles crezcan por igual.',
+    },
+    rocket: {
+      water: 'Riega a menudo; en tierra seca, la rúcula pica mucho y se espiga.',
+    },
+    bellPepper: {
+      fertilize: 'Abona cada dos semanas desde las primeras flores.',
+    },
+    chili: {
+      warm: 'Pon las guindillas en el lugar más cálido y resguardado del jardín.',
+    },
+    eggplant: {
+      fertilize: 'Abona cada dos semanas; las berenjenas necesitan calor y muchos nutrientes.',
+    },
+    sweetCorn: {
+      block: 'Planta en bloque de varias filas cortas en vez de una larga, para que el viento polinice.',
+    },
+    celeriac: {
+      removeLeaves: 'A finales de verano, quita las hojas inferiores y descubre un poco el bulbo.',
+    },
+    fennel: {
+      earthUp: 'Aporca un poco los bulbos para que se mantengan blancos y tiernos.',
+    },
+    parsnip: {
+      thin: 'Aclara a 10 cm; la chirivía germina despacio, ten paciencia.',
+    },
+    lambsLettuce: {
+      germination: 'Mantén húmeda la línea de siembra hasta que nazcan las plántulas.',
+    },
+    asparagus: {
+      stopHarvest: 'Deja de cosechar hacia el 24 de junio para que las plantas cojan fuerza para el año siguiente.',
+      fertilize: 'Abona con compost después de la cosecha.',
+    },
+    rhubarb: {
+      fertilize: 'Reparte compost alrededor de la planta a comienzos de primavera.',
+      stopHarvest: 'Deja de cosechar hacia el 24 de junio; los tallos tardíos tienen más ácido oxálico.',
+    },
+    chives: {
+      cutFlowers: 'Corta con regularidad; quita las flores, salvo que quieras dejarlas para las abejas.',
+    },
+    dill: {
+      resow: 'Siembra un poco cada tres semanas para tener siempre.',
+    },
+    thyme: {
+      cutBack: 'Recorta un tercio en primavera para que se mantenga compacto.',
+    },
+    rosemary: {
+      cutBack: 'Recorta ligeramente en primavera, nunca en la madera vieja.',
+      winterProtection: 'Protégelo de las heladas fuertes con un velo o lleva la maceta a un sitio fresco y luminoso.',
+    },
+    sage: {
+      cutBack: 'Recorta en primavera para que la planta siga frondosa.',
+    },
+    mint: {
+      rootBarrier: 'Planta la menta con barrera antirraíces o en maceta; se extiende rápido.',
+    },
+    oregano: {
+      cutBack: 'Corta los tallos viejos en primavera.',
+    },
+    coriander: {
+      resow: 'Vuelve a sembrar cada tres semanas; el cilantro florece pronto.',
+    },
+    blackberry: {
+      tieCanes: 'Ata las cañas nuevas a los alambres a medida que crecen.',
+      cutCanes: 'Después de la cosecha, corta a ras de suelo las cañas que dieron fruto.',
+    },
+    blackcurrant: {
+      pruning: 'Corta a ras de suelo las ramas más viejas; el grosellero negro da más fruto en madera joven.',
+      fertilize: 'Acolcha con compost en primavera.',
+    },
+    gooseberry: {
+      pruning: 'Aclara el arbusto para que el aire y la luz lleguen al centro.',
+      mildew: 'Vigila el oídio y quita las puntas de los brotes afectados.',
+    },
+    blueberry: {
+      pruning: 'Quita las ramas más viejas; el arándano da fruto en madera más joven.',
+      acidSoil: 'El arándano necesita tierra ácida: acolcha con corteza de pino y usa abono para rododendros.',
+    },
+    pear: {
+      winterPruning: 'Poda un día sin heladas: quita las ramas secas, las que se cruzan y las muy verticales.',
+      fertilize: 'Reparte compost alrededor del árbol hasta el borde de la copa.',
+    },
+    sourCherry: {
+      fertilize: 'Reparte compost alrededor del árbol en primavera.',
+      summerPruning: 'Poda justo después de la cosecha; acorta las ramas que dieron fruto.',
+    },
+    plum: {
+      fertilize: 'Reparte compost alrededor del árbol en primavera.',
+      summerPruning: 'Poda los ciruelos en verano tras la cosecha; las heridas cicatrizan mejor.',
+    },
+    peach: {
+      leafCurl: 'Protege el árbol de la lluvia antes de la brotación o trátalo contra la lepra del melocotonero.',
+      springPruning: 'Poda en la floración; el melocotonero da fruto en las ramas del año anterior, deja suficientes.',
+    },
+    lavender: {
+      springCut: 'Recorta un tercio en primavera, pero no en la madera vieja.',
+      cutAfterFlowering: 'Corta los tallos marchitos después de la floración.',
+    },
+    rose: {
+      springPruning: 'Poda cuando florezca la forsitia: quita la madera seca y acorta los brotes fuertes.',
+      fertilize: 'Abona con abono para rosales o compost en primavera.',
+      deadhead: 'Corta las flores marchitas hasta la siguiente hoja completa; los rosales reflorecientes vuelven a florecer.',
+      summerFertilize: 'Abona por segunda vez a principios de verano, no más tarde, para que los brotes maduren antes del invierno.',
+    },
+    hydrangea: {
+      springPruning: 'Corta solo las flores viejas por encima de un par de yemas; la mayoría de las hortensias florecen en la madera del año anterior.',
+      water: 'Riega abundantemente cuando haga seco; las hortensias se marchitan rápido.',
+    },
+    elder: {
+      pruning: 'Corta cada invierno algunos de los tallos más viejos a ras de suelo.',
     },
   },
   families: {

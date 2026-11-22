@@ -4,11 +4,12 @@ import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { plantById } from '../../stores/catalog.js';
 import AppIcon from '../AppIcon.js';
+import PlantIcon from '../PlantIcon.js';
 import { TASK_ICONS, hintTitle, hintAdvice, hintPlantName, hintPlace, hintPeriod } from './taskText.js';
 
 export default {
   name: 'HintItem',
-  components: { AppIcon },
+  components: { PlantIcon, AppIcon },
   props: {
     hint: { type: Object, required: true },
     garden: { type: Object, required: true },
@@ -34,7 +35,7 @@ export default {
       <div class="hint-item-body">
         <p class="hint-item-title">
           <strong>{{ text.title }}</strong>
-          <span class="hint-item-plant"><span class="plant-swatch" :style="{ background: text.color }" aria-hidden="true"></span>{{ text.plant }}</span>
+          <span class="hint-item-plant"><PlantIcon :plant-id="hint.plantId" :size="20" />{{ text.plant }}</span>
         </p>
         <p v-if="text.advice" class="small">{{ text.advice }}</p>
         <p class="small muted">

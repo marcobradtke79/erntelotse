@@ -12,6 +12,7 @@ import { showToast } from '../stores/toast.js';
 import { FAMILIES } from '../data/families.js';
 import { formatLength } from '../logic/units.js';
 import AppIcon from '../components/AppIcon.js';
+import PlantIcon from '../components/PlantIcon.js';
 import AppDialog from '../components/AppDialog.js';
 import EmptyState from '../components/EmptyState.js';
 import PlantCalendarStrip from '../components/plants/PlantCalendarStrip.js';
@@ -20,7 +21,7 @@ import { TASK_ICONS } from '../components/tasks/taskText.js';
 
 export default {
   name: 'PlantDetailView',
-  components: { AppIcon, AppDialog, EmptyState, PlantCalendarStrip, PlantFormDialog },
+  components: { AppIcon, PlantIcon, AppDialog, EmptyState, PlantCalendarStrip, PlantFormDialog },
   setup() {
     const { t, te, locale } = useI18n();
     const route = useRoute();
@@ -94,7 +95,7 @@ export default {
 
       <template v-else>
         <div class="plant-hero">
-          <span class="plant-swatch is-hero" :style="{ background: plant.color }" aria-hidden="true"></span>
+          <PlantIcon :plant-id="plant.id" :size="72" />
           <div>
             <h1>{{ name }}</h1>
             <p class="muted">
@@ -164,7 +165,7 @@ export default {
               <h3 class="small companion-title is-good"><AppIcon name="check" />{{ t('plantsView.goodNeighbours') }}</h3>
               <ul class="plain-list chip-list">
                 <li v-for="other in companions.good" :key="other.id">
-                  <router-link class="plant-chip" :to="'/plants/' + other.id"><span class="plant-swatch" :style="{ background: other.color }" aria-hidden="true"></span>{{ other.name }}</router-link>
+                  <router-link class="plant-chip" :to="'/plants/' + other.id"><PlantIcon :plant-id="other.id" :size="22" />{{ other.name }}</router-link>
                 </li>
               </ul>
             </div>
@@ -172,7 +173,7 @@ export default {
               <h3 class="small companion-title is-bad"><AppIcon name="close" />{{ t('plantsView.badNeighbours') }}</h3>
               <ul class="plain-list chip-list">
                 <li v-for="other in companions.bad" :key="other.id">
-                  <router-link class="plant-chip" :to="'/plants/' + other.id"><span class="plant-swatch" :style="{ background: other.color }" aria-hidden="true"></span>{{ other.name }}</router-link>
+                  <router-link class="plant-chip" :to="'/plants/' + other.id"><PlantIcon :plant-id="other.id" :size="22" />{{ other.name }}</router-link>
                 </li>
               </ul>
             </div>

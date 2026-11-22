@@ -7,12 +7,13 @@ import { plantById as getPlant } from '../../stores/catalog.js';
 import { visiblePlantings, plantingsOfBed, historyByYear, plantingStatus, plantCount, canCopyForward, touchesYear } from '../../logic/plantings.js';
 import { todayIso, yearOf } from '../../logic/dates.js';
 import AppIcon from '../AppIcon.js';
+import PlantIcon from '../PlantIcon.js';
 import BedThumbnail from './BedThumbnail.js';
 import { plantName, periodText } from './plantingText.js';
 
 export default {
   name: 'BedOverview',
-  components: { AppIcon, BedThumbnail },
+  components: { AppIcon, PlantIcon, BedThumbnail },
   props: {
     bed: { type: Object, required: true },
     plantings: { type: Array, required: true },
@@ -57,7 +58,7 @@ export default {
       <ul v-else class="plain-list">
         <li v-for="planting in shown" :key="planting.id">
           <button type="button" class="menu-item planting-row" @click="$emit('select', planting.id)">
-            <span class="plant-swatch" :style="{ background: color(planting) }" aria-hidden="true"></span>
+            <PlantIcon :plant-id="planting.plantId" :size="28" />
             <span class="planting-row-text">
               <span class="planting-row-name">{{ name(planting) }}</span>
               <span class="muted small">{{ when(planting) }} · {{ t('planting.plants', { count: count(planting) }, count(planting)) }}</span>
@@ -75,7 +76,7 @@ export default {
         <p class="small muted">{{ t('bed.copyHint') }}</p>
         <label v-for="planting in copyable" :key="planting.id" class="checkbox-row">
           <input type="checkbox" :value="planting.id" v-model="chosen" />
-          <span class="plant-swatch" :style="{ background: color(planting) }" aria-hidden="true"></span>
+          <PlantIcon :plant-id="planting.plantId" :size="28" />
           <span>{{ name(planting) }} <span class="muted small">{{ when(planting) }}</span></span>
         </label>
         <p v-if="perennials" class="small muted">{{ t('bed.perennialsStay', { count: perennials }, perennials) }}</p>
