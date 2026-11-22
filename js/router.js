@@ -2,7 +2,6 @@
 
 import { createRouter, createWebHashHistory } from 'vue-router';
 import { gardens } from './stores/gardens.js';
-import PlaceholderView from './views/PlaceholderView.js';
 import GardensView from './views/GardensView.js';
 import SettingsView from './views/SettingsView.js';
 import MoreView from './views/MoreView.js';
@@ -12,13 +11,7 @@ import DashboardView from './views/DashboardView.js';
 import CalendarView from './views/CalendarView.js';
 import PlantsView from './views/PlantsView.js';
 import PlantDetailView from './views/PlantDetailView.js';
-
-const placeholder = (section) => ({
-  path: `/${section}`,
-  component: PlaceholderView,
-  props: { section },
-  meta: { titleKey: `nav.${section}` },
-});
+import JournalView from './views/JournalView.js';
 
 const routes = [
   { path: '/', redirect: () => (gardens.index.length > 0 ? '/dashboard' : '/gardens') },
@@ -29,7 +22,7 @@ const routes = [
   { path: '/calendar', component: CalendarView, meta: { titleKey: 'nav.calendar', period: true } },
   { path: '/plants', component: PlantsView, meta: { titleKey: 'nav.plants' } },
   { path: '/plants/:id', component: PlantDetailView, meta: { titleKey: 'nav.plants' } },
-  placeholder('journal'),
+  { path: '/journal', component: JournalView, meta: { titleKey: 'nav.journal', period: true } },
   { path: '/gardens', component: GardensView, meta: { titleKey: 'nav.gardens' } },
   { path: '/settings', component: SettingsView, meta: { titleKey: 'nav.settings' } },
   { path: '/more', component: MoreView, meta: { titleKey: 'more.title' } },

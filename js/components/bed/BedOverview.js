@@ -19,6 +19,8 @@ export default {
     plantings: { type: Array, required: true },
     period: { type: Object, required: true },
     readOnly: { type: Boolean, default: false },
+    /** plantingId → ['good' | 'bad' | 'rotation'] */
+    badges: { type: Object, default: () => ({}) },
   },
   emits: ['select', 'year', 'copy'],
   setup(props, { emit }) {
@@ -49,7 +51,9 @@ export default {
       if (chosen.value.length) emit('copy', [...chosen.value]);
     }
 
-    return { t, shown, heading, copyable, chosen, perennials, history, name, color, when, status, count, plantNames, copy };
+    const badgeIcons = { good: 'check', bad: 'close', rotation: 'alert' };
+
+    return { t, badgeIcons, shown, heading, copyable, chosen, perennials, history, name, color, when, status, count, plantNames, copy };
   },
   template: `
     <section class="bed-overview">
@@ -62,6 +66,9 @@ export default {
             <span class="planting-row-text">
               <span class="planting-row-name">{{ name(planting) }}</span>
               <span class="muted small">{{ when(planting) }} · {{ t('planting.plants', { count: count(planting) }, count(planting)) }}</span>
+            </span>
+            <span v-for="badge in badges[planting.id] ?? []" :key="badge" class="badge-dot" :class="'is-' + badge" :title="t('rotation.badges.' + badge)">
+              <AppIcon :name="badgeIcons[badge]" :label="t('rotation.badges.' + badge)" />
             </span>
             <span class="status-chip" :class="'is-' + status(planting)">{{ t('status.' + status(planting)) }}</span>
           </button>

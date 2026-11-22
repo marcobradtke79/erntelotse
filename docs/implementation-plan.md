@@ -209,7 +209,16 @@ Climate shift (hemisphere, positive and negative shift, year boundaries); hint e
 
 ## Milestone 5 – Planning aids
 
-**Scope**
+**Status: done.** Notes on the implementation:
+
+- Rotation (`js/logic/rotation.js`) compares with earlier plantings on the same soil (shapes closer than 5 cm; the whole bed when no shape is known yet, as in the plant picker). Plantings still in the ground do not count as earlier crops.
+- Neighbours: same bed, overlapping in time, at most 1 m apart. Badges (icon + colour) on bed editor map labels and in the planting list; a "Neighbours and rotation" section in the planting panel explains each finding in a sentence.
+- The plant picker in the bed editor lists good neighbours first in their own group and marks bad neighbours and rotation conflicts in words (native select, so no icons).
+- Tasks: done / skipped / undo on every hint (dashboard and calendar). Done writes a journal entry linked by the task key; undoing the task or deleting the entry removes the link both ways. Overdue: open hints that ended within the last 30 days, shown first on the dashboard.
+- Journal page (year from the header): filters by type, plant and place; free entries with optional harvest weight; harvest totals per plant.
+- Backup reminder on the dashboard when a garden with content has not been exported for 30 days; exports record `exportedAt` (an optional garden field, no migration needed).
+
+**Scope (as planned)**
 
 - Rotation module: same-family check within the rotation gap on overlapping areas, feeder sequence notes, fallback to bed level.
 - Companion module: good and bad neighbours for plantings close in space and overlapping in time.

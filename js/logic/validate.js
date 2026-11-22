@@ -9,6 +9,7 @@ import { LANGUAGE_CODES } from '../i18n/languages.js';
 import { validateElement } from './elements.js';
 import { validatePlanting } from './plantings.js';
 import { validateCustomPlant, validateOverrides } from './catalog.js';
+import { validateJournalEntry, validateTaskStates } from './tasks.js';
 
 export const THEMES = ['system', 'light', 'dark'];
 
@@ -94,6 +95,16 @@ export function validateGarden(doc) {
       for (const code of validateCustomPlant(plant)) problems.push({ path: `customPlants[${index}]`, code: `customPlant.${code}` });
     });
   }
+  if (Array.isArray(doc.journal)) {
+    doc.journal.forEach((entry, index) => {
+      if (!isObject(entry)) return;
+      for (const code of validateJournalEntry(entry)) problems.push({ path: `journal[${index}]`, code: `journal.${code}` });
+    });
+  }
+  if (isObject(doc.taskStates)) {
+    for (const key of validateTaskStates(doc.taskStates)) problems.push({ path: `taskStates.${key}`, code: 'taskState' });
+  }
+  if (doc.exportedAt !== undefined && doc.exportedAt !== null) checkDateTime(problems, 'exportedAt', doc.exportedAt);
   if (isObject(doc.plantOverrides)) {
     for (const id of validateOverrides(doc.plantOverrides)) problems.push({ path: `plantOverrides.${id}`, code: 'override' });
   }

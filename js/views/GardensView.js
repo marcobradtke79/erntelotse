@@ -3,12 +3,12 @@ import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import {
   gardens, createGarden, renameGarden, duplicateGardenById, deleteGarden,
-  putGarden, selectGarden, getGardenDocument,
+  putGarden, selectGarden,
 } from '../stores/gardens.js';
 import { settings } from '../stores/settings.js';
 import { showToast, showError } from '../stores/toast.js';
 import { checkGardenName, GARDEN_NAME_MAX_LENGTH } from '../logic/gardenModel.js';
-import { buildGardenExport, downloadJson, gardenFileName } from '../services/exportImport.js';
+import { exportGardenFile } from '../services/backup.js';
 import AppDialog from '../components/AppDialog.js';
 import AppIcon from '../components/AppIcon.js';
 import EmptyState from '../components/EmptyState.js';
@@ -98,8 +98,7 @@ export default {
 
     function exportGarden(entry) {
       try {
-        const garden = getGardenDocument(entry.id);
-        downloadJson(gardenFileName(garden.name), buildGardenExport(garden));
+        exportGardenFile(entry.id);
         showToast('gardens.exported');
       } catch {
         showError('gardens.loadError', { name: entry.name });

@@ -2,7 +2,8 @@
 
 import { ref, computed, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { plantById as getPlant } from '../../stores/catalog.js';
+import { plantById as getPlant, catalog, plantNameById } from '../../stores/catalog.js';
+import { rotationCheck, neighbourRelations } from '../../logic/rotation.js';
 import { estimateCount, shapeArea, plantingStatus, defaultEnd, NOTE_MAX_LENGTH } from '../../logic/plantings.js';
 import { isIsoDate, todayIso } from '../../logic/dates.js';
 import { formatArea } from '../../logic/units.js';
@@ -19,6 +20,9 @@ export default {
     units: { type: String, default: 'metric' },
     editMode: { type: String, default: 'shape' },
     readOnly: { type: Boolean, default: false },
+    /** All plantings of the garden (for rotation and neighbours) */
+    plantings: { type: Array, default: () => [] },
+    advice: { type: Object, default: () => ({}) },
   },
   emits: ['close', 'update', 'mode', 'delete'],
   setup(props, { emit }) {
@@ -101,12 +105,31 @@ export default {
       if (value !== props.planting.note) emit('update', { note: value });
     }
 
+    /** Rotation and neighbour findings as sentences with an icon each */
+    const findings = computed(() => {
+      const list = [];
+      const name = (id) => plantNameById(id, t);
+      for (const issue of rotationCheck(props.planting, props.plantings, catalog.value).issues) {
+        const params = { plant: name(issue.plantId), year: issue.year, until: issue.until, family: issue.family ? t(`families.${issue.family}`) : '' };
+        list.push({
+          kind: issue.kind === 'sameFamily' ? 'warning' : issue.kind === 'heavyAfterHeavy' ? 'note' : 'good',
+          text: t(`rotation.issues.${issue.kind}`, params),
+        });
+      }
+      const relations = neighbourRelations(props.planting, props.plantings, catalog.value);
+      const names = (kind) => [...new Set(relations.filter((r) => r.relation === kind).map((r) => name(r.plantId)))].join(', ');
+      if (names('good')) list.push({ kind: 'good', text: t('rotation.goodNeighbours', { plants: names('good') }) });
+      if (names('bad')) list.push({ kind: 'bad', text: t('rotation.badNeighbours', { plants: names('bad') }) });
+      return list;
+    });
+    const findingIcons = { warning: 'alert', note: 'info', good: 'check', bad: 'close' };
+
     const modes = computed(() => (isArea.value ? ['shape', 'move', 'rotate'] : ['move']));
     const modeIcons = { shape: 'edit', move: 'move', rotate: 'rotate' };
 
     return {
       t, plant, title, status, estimate, isArea, area, dateError, note, NOTE_MAX_LENGTH,
-      setPlant, setStart, setEnd, setOpenEnd, setCount, saveNote, modes, modeIcons,
+      setPlant, setStart, setEnd, setOpenEnd, setCount, saveNote, modes, modeIcons, findings, findingIcons,
     };
   },
   template: `
@@ -120,7 +143,18 @@ export default {
       </div>
       <p><span class="status-chip" :class="'is-' + status">{{ t('status.' + status) }}</span></p>
 
-      <PlantSelect :model-value="planting.plantId" placement="bed" :label="t('planting.plant')" :disabled="readOnly" @update:model-value="setPlant" />
+      <PlantSelect :model-value="planting.plantId" placement="bed" :label="t('planting.plant')" :disabled="readOnly" :advice="advice" @update:model-value="setPlant" />
+
+      <section class="findings" :aria-label="t('rotation.title')">
+        <h3 class="small">{{ t('rotation.title') }}</h3>
+        <p v-if="!findings.length" class="small muted">{{ t('rotation.none') }}</p>
+        <ul v-else class="plain-list">
+          <li v-for="(finding, index) in findings" :key="index" class="finding" :class="'is-' + finding.kind">
+            <AppIcon :name="findingIcons[finding.kind]" />
+            <span class="small">{{ finding.text }}</span>
+          </li>
+        </ul>
+      </section>
 
       <div class="size-grid">
         <div class="field">

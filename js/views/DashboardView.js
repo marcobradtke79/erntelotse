@@ -12,6 +12,9 @@ import { measure } from '../logic/elements.js';
 import { formatArea } from '../logic/units.js';
 import { settings } from '../stores/settings.js';
 import { presetOf } from '../logic/climate.js';
+import { overdueHints } from '../logic/tasks.js';
+import { needsBackup, exportGardenFile } from '../services/backup.js';
+import { showToast, showError } from '../stores/toast.js';
 import AppIcon from '../components/AppIcon.js';
 import PlantIcon from '../components/PlantIcon.js';
 import EmptyState from '../components/EmptyState.js';
@@ -35,8 +38,25 @@ export default {
     });
 
     const hints = computed(() => (garden.value ? hintsFor(garden.value, catalog.value, month.value) : []));
+    const overdue = computed(() => {
+      if (!garden.value) return [];
+      const recent = hintsFor(garden.value, catalog.value, { from: addDays(today, -30), to: addDays(today, -1) });
+      return overdueHints(recent, garden.value.taskStates, today);
+    });
+    const overdueKeys = computed(() => new Set(overdue.value.map((hint) => hint.key)));
+    const backupDue = computed(() => (garden.value ? needsBackup(garden.value) : false));
+
+    function backup() {
+      try {
+        exportGardenFile(garden.value.id);
+        showToast('gardens.exported');
+      } catch {
+        showError('gardens.loadError', { name: garden.value.name });
+      }
+    }
+    // Overdue tasks are listed separately, not again under their type
     const groups = computed(() => TASK_TYPES
-      .map((type) => ({ type, hints: hints.value.filter((hint) => hint.type === type) }))
+      .map((type) => ({ type, hints: hints.value.filter((hint) => hint.type === type && !overdueKeys.value.has(hint.key)) }))
       .filter((group) => group.hints.length));
 
     const suggested = computed(() => {
@@ -67,7 +87,7 @@ export default {
       };
     });
 
-    return { t, garden, month, hints, groups, suggested, summary, TASK_ICONS };
+    return { t, garden, month, hints, groups, overdue, backupDue, backup, suggested, summary, TASK_ICONS };
   },
   template: `
     <div class="page">
@@ -88,6 +108,16 @@ export default {
             <AppIcon name="calendar" />
             <h2 id="dashboard-due">{{ t('dashboard.due', { month: month.name }) }}</h2>
           </div>
+          <div v-if="overdue.length" class="task-group">
+            <h3 class="task-group-title overdue-title">
+              <AppIcon name="alert" />
+              {{ t('tasks.overdueTitle') }}
+              <span class="muted small">({{ overdue.length }})</span>
+            </h3>
+            <ul class="plain-list hint-list">
+              <li v-for="hint in overdue" :key="hint.key"><HintItem :hint="hint" :garden="garden" overdue /></li>
+            </ul>
+          </div>
           <template v-if="groups.length">
             <div v-for="group in groups" :key="group.type" class="task-group">
               <h3 class="task-group-title" :class="'task-' + group.type">
@@ -106,6 +136,20 @@ export default {
               <AppIcon name="map" />
               <span>{{ t('dashboard.toMap') }}</span>
             </router-link>
+          </div>
+        </section>
+
+        <section v-if="backupDue" class="card backup-card" aria-labelledby="dashboard-backup">
+          <div class="card-header">
+            <AppIcon name="download" />
+            <h2 id="dashboard-backup">{{ t('dashboard.backupTitle') }}</h2>
+          </div>
+          <p class="small">{{ t('dashboard.backupText') }}</p>
+          <div class="btn-row">
+            <button type="button" class="btn btn-primary" @click="backup">
+              <AppIcon name="download" />
+              <span>{{ t('dashboard.backupNow') }}</span>
+            </button>
           </div>
         </section>
 

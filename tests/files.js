@@ -16,4 +16,6 @@ export const TEST_FILES = [
   'climate.test.js',
   'catalog.test.js',
   'hints.test.js',
+  'rotation.test.js',
+  'tasks.test.js',
 ];

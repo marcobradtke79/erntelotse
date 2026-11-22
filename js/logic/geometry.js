@@ -330,6 +330,21 @@ export function applyRigid(points, { from, to, rotation }) {
   return translate(rotate(points, rotation, from), to[0] - from[0], to[1] - from[1]);
 }
 
+/** Shortest distance between two polygons; 0 when they overlap or touch. */
+export function polygonDistance(a, b) {
+  if (polygonsOverlap(a, b)) return 0;
+  let best = Infinity;
+  for (const point of a) for (let j = 0; j < b.length; j++) best = Math.min(best, distanceToSegment(point, b[j], b[(j + 1) % b.length]));
+  for (const point of b) for (let i = 0; i < a.length; i++) best = Math.min(best, distanceToSegment(point, a[i], a[(i + 1) % a.length]));
+  return best;
+}
+
+/** Distance from a point to a polygon; 0 inside. */
+export function pointPolygonDistance(point, polygon) {
+  if (pointInPolygon(point, polygon)) return 0;
+  return Math.min(...polygon.map((a, i) => distanceToSegment(point, a, polygon[(i + 1) % polygon.length])));
+}
+
 /** Rounds coordinates to millimetres to keep stored data small and stable. */
 export function roundPoints(points) {
   return points.map(([x, y]) => [Math.round(x * 1000) / 1000, Math.round(y * 1000) / 1000]);

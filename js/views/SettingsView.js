@@ -3,11 +3,11 @@ import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import { LANGUAGES } from '../i18n/languages.js';
 import { settings, setLanguage, setUnits, setTheme } from '../stores/settings.js';
-import { gardens, getAllGardenDocuments, clearAllData } from '../stores/gardens.js';
+import { gardens, clearAllData } from '../stores/gardens.js';
 import { showToast, showError } from '../stores/toast.js';
 import { formatArea, formatBytes, formatLength, formatTemperature, formatWeight, UNIT_SYSTEMS } from '../logic/units.js';
 import { THEMES } from '../logic/validate.js';
-import { buildBackup, backupFileName, downloadJson } from '../services/exportImport.js';
+import { exportBackupFile } from '../services/backup.js';
 import { ESTIMATED_CAPACITY_BYTES } from '../services/storage.js';
 import { storage } from '../services/appStorage.js';
 import AppDialog from '../components/AppDialog.js';
@@ -40,7 +40,7 @@ export default {
 
     function exportBackup() {
       try {
-        downloadJson(backupFileName(), buildBackup(getAllGardenDocuments(), { ...settings }));
+        exportBackupFile();
         showToast('settings.data.backupExported');
       } catch (error) {
         console.error(error);

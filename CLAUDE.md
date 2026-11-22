@@ -16,7 +16,7 @@ Erntelotse is a progressive web app for garden planning.
 
 ## Status
 
-Milestones 1 (foundation), 2 (map and drawing), 3 (beds and plantings) and 4 (catalog of 62 plants with icons, climate, hint engine, dashboard, calendar, plant pages, custom plants) are done. Next is milestone 5 (crop rotation, companions on the map, task states, journal). The journal is still a placeholder view. There is no satellite background (decided; see `docs/concept.md` §8). The specification is in `docs/`; read the relevant document before implementing anything:
+Milestones 1–5 are done: foundation, map and drawing, beds and plantings, catalog of 62 plants with icons and hints (dashboard, calendar, plant pages, custom plants, climate), planning aids (crop rotation, neighbours, task states, journal, backup reminder). Next is milestone 6: weather, PWA/offline, GitHub Pages, final accessibility and translation pass. There is no satellite background (decided; see `docs/concept.md` §8). The specification is in `docs/`; read the relevant document before implementing anything:
 
 - `docs/concept.md` – features, data model, plant catalog format, hint and planning rules, architecture
 - `docs/design-rules.md` – colours, typography, icons, layout, map interaction, text and accessibility rules
@@ -54,6 +54,7 @@ The app must be served over http(s); ES modules and the service worker do not wo
 - Drawing changes go through the gardens store (`addElement`, `updateElementGeometry`, `deleteElement`/`restoreElement`, `addPlantings`, `updatePlanting`, `deletePlanting`); each records an undo snapshot of elements and plantings together.
 - Plants: built-in data in `js/data/plants.js` (+ `families.js`); names `plants.<id>`, care texts `careHints.<id>.<hint>`. `js/logic/catalog.js` merges built-ins, per-garden `plantOverrides` and `customPlants`; components must read plants via `js/stores/catalog.js` (`plantById`, `plantLabel`), not `getPlant`, or custom plants break. Adding a plant: data entry, neighbour pairs, name and care texts in five languages, and a `plant-<id>` symbol in `assets/icons/plants/plants.svg`; `tests/catalog.test.js` and `tests/i18n.test.js` check all of these. Plant icons: `js/components/PlantIcon.js` (custom plants get their category icon in their colour).
 - Hints: `js/logic/hints.js` (`hintsFor`, `suggestions`, `proposedStart`) on top of `js/logic/climate.js` (ISO weeks, climate shift). Hints are derived on the fly; views: `DashboardView`, `CalendarView`; display helpers in `js/components/tasks/`.
+- Planning aids: `js/logic/rotation.js` (rotation check, neighbours, badges, picker advice) and `js/logic/tasks.js` (task states, overdue, journal helpers). Task states and journal change through `setTaskState`, `addJournalEntry`, `updateJournalEntry`, `deleteJournalEntry` in the gardens store; marking a task done writes its journal entry. Exports go through `js/services/backup.js` (records `exportedAt` for the reminder).
 - `js/stores/period.js` – the shown year and day (or whole year), shared by map, bed editor and calendar; past years are read-only until unlocked per session.
 
 ## Vue reactivity pitfalls (hit four times)

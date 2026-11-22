@@ -123,8 +123,9 @@ Each garden document carries a `schemaVersion`. On load and on import, documents
 - **Tree / shrub** – besides the crown circle they have `plantId` (a catalog plant with placement `tree` or `shrub`, or `null`) and `plantedYear`.
 - **Custom plant** – same structure as a catalog entry (section 5), with the name entered by the user instead of translation keys.
 - **Plant override** – partial catalog entry keyed by plant id, merged over the built-in entry (for example other sowing weeks that fit the user's experience).
-- **Task state** – the user's decision on a generated hint, keyed by a deterministic task key (`<source id>|<task type>|<period start>`). Hints are always regenerated from the data; only the decision is stored.
-- **Journal entry** – what was actually done: type (`sow`, `plant`, `fertilize`, `prune`, `water`, `harvest`, `note`), date, optional link to a planting or element, optional amount, free note.
+- **Task state** – the user's decision on a generated hint (`{ state: 'done' | 'skipped', on }`), keyed by a deterministic task key (`<source id>|<task type>|<hint>|<start>`). Hints are always regenerated from the data; only the decision is stored.
+- **Journal entry** – what was actually done: `{ id, date, type, plantId, sourceId, sourceKind, taskKey, amountKg, note }`, type one of `sow`, `plant`, `care`, `fertilize`, `prune`, `water`, `harvest`, `note`. Entries written when a task is ticked off carry its `taskKey`.
+- **exportedAt** (optional, on the garden) – time of the last export, for the backup reminder.
 
 ### 4.4 Coordinates
 
@@ -214,7 +215,7 @@ When a planting is placed or moved, the bed's earlier plantings that overlap its
 - **Warning** if a plant of the same family grew there within the plant's `rotationGapYears`.
 - **Note** if a heavy feeder follows a heavy feeder; **positive note** for good sequences (heavy → medium → light, or after a nitrogen fixer).
 
-Where areas cannot be compared, the check falls back to the whole bed.
+Where no area is known yet (the plant picker), the check uses the whole bed. Implemented in `js/logic/rotation.js`; shown as badges and explained in the planting panel.
 
 ### 6.4 Companion planting
 

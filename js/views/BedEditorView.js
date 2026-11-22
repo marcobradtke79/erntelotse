@@ -12,6 +12,8 @@ import { plantById as getPlant } from '../stores/catalog.js';
 import { createPlanting, defaultEnd, fitShapeToBed, copyForward, shapeArea } from '../logic/plantings.js';
 import { todayIso, toIsoDate } from '../logic/dates.js';
 import { proposedStart } from '../logic/hints.js';
+import { plantingBadges, pickerAdvice } from '../logic/rotation.js';
+import { catalog } from '../stores/catalog.js';
 import { formatArea, formatLength } from '../logic/units.js';
 import { measure } from '../logic/elements.js';
 import { useMapKeys } from '../composables/useMapKeys.js';
@@ -64,6 +66,18 @@ export default {
     const drawHint = computed(() => (tool.value ? t(`bed.draw.${tool.value.type === 'area' ? tool.value.draw : tool.value.type}`) : ''));
     const measuredText = computed(() => (measured.value === null ? '' : t('map.draw.measured', { length: formatLength(measured.value, settings.units, locale.value) })));
     const canFinish = computed(() => tool.value?.draw === 'polygon' || tool.value?.type === 'measure');
+
+    // Rotation and neighbours of this bed's plantings, and advice for the plant picker
+    const badges = computed(() => {
+      if (!bed.value) return {};
+      const all = garden.value.plantings;
+      return Object.fromEntries(all.filter((p) => p.bedId === bed.value.id).map((p) => [p.id, plantingBadges(p, all, catalog.value)]));
+    });
+    const advice = computed(() => {
+      if (!bed.value) return {};
+      const window = period.day ? { start: period.day, end: period.day } : { start: `${period.year}-01-01`, end: `${period.year}-12-31` };
+      return pickerAdvice(bed.value.id, window, garden.value.plantings, catalog.value);
+    });
 
     watch(selected, (planting) => {
       if (!planting) selectedId.value = null;
@@ -180,7 +194,7 @@ export default {
     });
 
     return {
-      t, mapRef, garden, bed, settings, editor, period, tool, areaShape, plantId, selectedId, selected, editMode, snapping,
+      t, mapRef, garden, bed, badges, advice, settings, editor, period, tool, areaShape, plantId, selectedId, selected, editMode, snapping,
       measuredText, drawHint, canFinish, panelCollapsed, readOnly, background, bedSize, BED_TOOLS,
       pick, setAreaShape, onCreate, onChange, onDrawEnd, onSelect, remove, copyToNextYear, undo, redo, setYear, unlockYear,
       activeTool: computed(() => tool.value?.type ?? null),
@@ -208,6 +222,7 @@ export default {
           :period="period"
           :focus-bed-id="bed.id"
           :read-only="readOnly"
+          :badges="badges"
           @create="onCreate"
           @change="onChange"
           @select="onSelect"
@@ -237,7 +252,7 @@ export default {
         <div v-if="tool" class="draw-bar" role="status">
           <p>{{ measuredText || drawHint }}</p>
           <div class="btn-row draw-bar-controls">
-            <PlantSelect v-if="tool.type !== 'measure'" v-model="plantId" placement="bed" :label="t('planting.plant')" hide-label />
+            <PlantSelect v-if="tool.type !== 'measure'" v-model="plantId" placement="bed" :label="t('planting.plant')" :advice="advice" hide-label />
             <div v-if="tool.type === 'area'" class="segmented" role="group" :aria-label="t('map.draw.shape')">
               <button type="button" :aria-pressed="tool.draw === 'rectangle' ? 'true' : 'false'" :title="t('map.draw.shapeRectangle')" @click="setAreaShape('rectangle')">
                 <AppIcon name="rectangle" :label="t('map.draw.shapeRectangle')" />
@@ -282,6 +297,8 @@ export default {
             :units="settings.units"
             :edit-mode="editMode"
             :read-only="readOnly"
+            :plantings="garden.plantings"
+            :advice="advice"
             @close="selectedId = null"
             @update="onUpdate"
             @mode="editMode = $event"
@@ -293,6 +310,7 @@ export default {
             :plantings="garden.plantings"
             :period="period"
             :read-only="readOnly"
+            :badges="badges"
             @select="onSelect"
             @year="setYear"
             @copy="copyToNextYear"

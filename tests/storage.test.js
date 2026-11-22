@@ -5,6 +5,8 @@ import {
 import { createGarden } from '../js/logic/gardenModel.js';
 import { CURRENT_SCHEMA_VERSION } from '../js/logic/migrate.js';
 
+// Valid but large: twenty journal entries with long notes
+const filler = (count) => Array.from({ length: count }, (_, i) => ({ id: `j_${i}`, date: '2026-01-01', type: 'note', note: 'x'.repeat(400) }));
 const garden = (name, id) => createGarden({ name, id, now: new Date('2026-11-21T10:00:00Z') });
 
 describe('settings', () => {
@@ -99,7 +101,7 @@ describe('quota', () => {
     const storage = createStorage(backend);
     const a = garden('A', 'g_a');
     storage.writeGarden(a);
-    const big = { ...a, journal: [{ id: 'j_1', note: 'x'.repeat(5000) }] };
+    const big = { ...a, journal: filler(20) };
     expect(() => storage.writeGarden(big)).toThrow(StorageQuotaError);
     expect(storage.readGarden('g_a')).toEqual(a);
     expect(storage.readIndex()).toHaveLength(1);
@@ -169,7 +171,7 @@ describe('usage, clearAll and replaceAll', () => {
     const storage = createStorage(backend);
     const old = garden('Old', 'g_old');
     storage.writeGarden(old);
-    const huge = { ...garden('Huge', 'g_huge'), journal: [{ id: 'j_1', note: 'x'.repeat(4000) }] };
+    const huge = { ...garden('Huge', 'g_huge'), journal: filler(20) };
     expect(() => storage.replaceAll([huge], null)).toThrow(StorageQuotaError);
     expect(storage.readGarden('g_old')).toEqual(old);
     expect(storage.readIndex().map((entry) => entry.id)).toEqual(['g_old']);

@@ -3,7 +3,7 @@
 
 import { ref, computed, watch, nextTick } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { parseNumber, toInputLength, fromInputLength, lengthInputUnit, formatNumber, M_PER_IN } from '../logic/units.js';
+import { parseNumber, toInputLength, fromInputLength, lengthInputUnit, formatNumber, M_PER_IN, toInputWeight, fromInputWeight, weightInputUnit } from '../logic/units.js';
 import { checkSize } from '../logic/elements.js';
 
 let counter = 0;
@@ -14,9 +14,11 @@ export default {
     modelValue: { type: Number, default: null },
     label: { type: String, required: true },
     units: { type: String, default: 'metric' },
-    /** 'length': m or ft; 'short': cm or in (spacings); 'degrees' and 'plain' are not converted */
+    /** 'length': m or ft; 'short': cm or in (spacings); 'weight': kg or lb; 'degrees' and 'plain' are not converted */
     quantity: { type: String, default: 'length' },
     min: { type: Number, default: null },
+    /** An empty field means null */
+    optional: { type: Boolean, default: false },
   },
   emits: ['update:modelValue'],
   setup(props, { emit }) {
@@ -29,6 +31,7 @@ export default {
       if (props.quantity === 'degrees') return '°';
       if (props.quantity === 'plain') return '';
       if (props.quantity === 'short') return props.units === 'imperial' ? 'in' : 'cm';
+      if (props.quantity === 'weight') return weightInputUnit(props.units);
       return lengthInputUnit(props.units);
     });
 
@@ -42,12 +45,14 @@ export default {
     function toShown(metres) {
       if (props.quantity === 'length') return toInputLength(metres, props.units);
       if (props.quantity === 'short') return props.units === 'imperial' ? metres / M_PER_IN : metres * 100;
+      if (props.quantity === 'weight') return toInputWeight(metres, props.units);
       return metres;
     }
 
     function fromShown(value) {
       if (props.quantity === 'length') return fromInputLength(value, props.units);
       if (props.quantity === 'short') return props.units === 'imperial' ? value * M_PER_IN : value / 100;
+      if (props.quantity === 'weight') return fromInputWeight(value, props.units);
       return value;
     }
 
@@ -66,6 +71,11 @@ export default {
     }
 
     function commit() {
+      if (props.optional && text.value.trim() === '') {
+        error.value = '';
+        emitValue(null);
+        return;
+      }
       const value = parseNumber(text.value);
       if (value === null) {
         error.value = t('map.errors.number');
@@ -87,7 +97,7 @@ export default {
         return;
       }
       error.value = '';
-      emitValue(value);
+      emitValue(fromShown(value));
     }
 
     return { id, text, error, unit, commit };

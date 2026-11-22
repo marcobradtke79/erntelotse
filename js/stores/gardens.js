@@ -6,6 +6,7 @@ import { createGarden as buildGarden, duplicateGarden } from '../logic/gardenMod
 import { createHistory } from '../logic/history.js';
 import { normaliseGeometry } from '../logic/elements.js';
 import { normaliseShape, moveShape } from '../logic/plantings.js';
+import { journalEntryForHint } from '../logic/tasks.js';
 import { rigidTransform } from '../logic/geometry.js';
 import { StorageQuotaError, StorageReadError } from '../services/storage.js';
 import { settings, setActiveGardenId, replaceSettings, resetSettings } from './settings.js';
@@ -253,6 +254,76 @@ export function redo() {
   if (next === null) return;
   restoreSnapshot(next);
   syncHistory();
+}
+
+// --- Task states and journal (no undo; done tasks write the journal) ------
+
+/** 'done' writes a journal entry for the task; 'skipped' or 'open' removes it. */
+export function setTaskState(hint, state, today) {
+  mutateActive((garden) => {
+    const states = { ...toRaw(garden.taskStates) };
+    if (state === 'open') delete states[hint.key];
+    else states[hint.key] = { state, on: today };
+    garden.taskStates = states;
+    const journal = toRaw(garden.journal).filter((entry) => entry.taskKey !== hint.key);
+    if (state === 'done') journal.push(journalEntryForHint(hint, today));
+    garden.journal = journal;
+  });
+}
+
+export function addJournalEntry(entry) {
+  mutateActive((garden) => {
+    garden.journal = [...toRaw(garden.journal), JSON.parse(JSON.stringify(entry))];
+  });
+}
+
+export function updateJournalEntry(id, fields) {
+  mutateActive((garden) => {
+    const entry = garden.journal.find((item) => item.id === id);
+    if (entry) Object.assign(entry, JSON.parse(JSON.stringify(fields)));
+  });
+}
+
+/** Deletes a journal entry (and the done state of its task). Returns its copy for undo. */
+export function deleteJournalEntry(id) {
+  const entry = gardens.active?.journal.find((item) => item.id === id);
+  if (!entry) return null;
+  const copy = JSON.parse(JSON.stringify(entry));
+  mutateActive((garden) => {
+    garden.journal = toRaw(garden.journal).filter((item) => item.id !== id);
+    if (copy.taskKey) {
+      const states = { ...toRaw(garden.taskStates) };
+      delete states[copy.taskKey];
+      garden.taskStates = states;
+    }
+  });
+  return copy;
+}
+
+export function restoreJournalEntry(entry, today) {
+  mutateActive((garden) => {
+    garden.journal = [...toRaw(garden.journal), entry];
+    if (entry.taskKey) garden.taskStates = { ...toRaw(garden.taskStates), [entry.taskKey]: { state: 'done', on: today } };
+  });
+}
+
+/** Remembers an export (for the backup reminder) without counting as a change. */
+export function markExported(ids) {
+  const now = new Date().toISOString();
+  for (const id of ids) {
+    if (gardens.active?.id === id) {
+      gardens.active.exportedAt = now;
+      scheduleSave();
+      continue;
+    }
+    try {
+      const garden = storage.readGarden(id);
+      garden.exportedAt = now;
+      storage.writeGarden(garden);
+    } catch (error) {
+      console.error(error);
+    }
+  }
 }
 
 // --- Climate, custom plants and catalog overrides (no undo) ---------------

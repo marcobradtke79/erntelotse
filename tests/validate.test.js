@@ -86,6 +86,10 @@ describe('validateGarden', () => {
   test('items need unique ids', () => {
     const garden = valid();
     garden.journal = [{ id: 'j_1' }, { id: 'j_1' }, { name: 'x' }, 'text'];
+    garden.journal = [
+      { id: 'j_1', date: '2026-05-01', type: 'note' }, { id: 'j_1', date: '2026-05-02', type: 'note' },
+      { name: 'x', date: '2026-05-03', type: 'note' }, 'text',
+    ];
     expect(codes(validateGarden(garden))).toEqual(['journal[1].id:duplicate', 'journal[2].id:format', 'journal[3]:type']);
   });
 });

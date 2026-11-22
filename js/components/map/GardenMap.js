@@ -33,6 +33,23 @@ const MIN_PLANT_RADIUS = 0.05;
 const PLANT_SPRITE = new URL('../../../assets/icons/plants/plants.svg', import.meta.url).href;
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
+const UI_SPRITE = new URL('../../../assets/icons/ui/sprite.svg', import.meta.url).href;
+const BADGE_ICONS = { good: 'check', bad: 'close', rotation: 'alert' };
+
+/** Small round badge with an icon (colour is never the only signal). */
+function badgeElement(kind) {
+  const badge = document.createElement('span');
+  badge.className = `map-badge is-${kind}`;
+  const svg = document.createElementNS(SVG_NS, 'svg');
+  svg.setAttribute('class', 'icon');
+  svg.setAttribute('aria-hidden', 'true');
+  const use = document.createElementNS(SVG_NS, 'use');
+  use.setAttribute('href', `${UI_SPRITE}#${BADGE_ICONS[kind]}`);
+  svg.append(use);
+  badge.append(svg);
+  return badge;
+}
+
 /** Plant icon as an SVG element (map labels are built outside Vue). */
 function plantIconElement(plantId) {
   const plant = getPlant(plantId);
@@ -71,6 +88,8 @@ export default {
     focusBedId: { type: String, default: null },
     /** Bed mode: plantings can be selected but not changed */
     readOnly: { type: Boolean, default: false },
+    /** Bed mode: plantingId → ['good' | 'bad' | 'rotation'] shown on the labels */
+    badges: { type: Object, default: () => ({}) },
   },
   emits: ['create', 'change', 'select', 'draw-end', 'measure', 'invalid', 'ready'],
   setup(props, { emit }) {
@@ -152,6 +171,7 @@ export default {
           name: own && planting.shape.kind === 'polygon' ? plantLabel(plant, t) : '',
           // Single plants get an icon-only label in the bed editor
           icon: own,
+          badges: own ? props.badges[planting.id] ?? [] : [],
           geometry: planting.shape.kind === 'point'
             ? { kind: 'point', at: planting.shape.at, radius: Math.max(MIN_PLANT_RADIUS, plant.spacing.plant / 2) }
             : planting.shape,
@@ -165,7 +185,7 @@ export default {
     }
 
     const keyOf = (item) => JSON.stringify([
-      item.source, item.type, item.plantId, item.color, item.name, item.icon, item.geometry, item.selectable, item.editable, item.dimmed, item.focused,
+      item.source, item.type, item.plantId, item.color, item.name, item.icon, item.badges, item.geometry, item.selectable, item.editable, item.dimmed, item.focused,
     ]);
 
     // --- Layers --------------------------------------------------------------
@@ -221,6 +241,7 @@ export default {
         const content = document.createElement('span');
         if (item.icon) content.append(plantIconElement(item.plantId));
         if (item.name) content.append(document.createTextNode(item.name));
+        for (const badge of item.badges ?? []) content.append(badgeElement(badge));
         layer.bindTooltip(content, {
           permanent: true,
           direction: 'center',
@@ -632,6 +653,7 @@ export default {
 
     watch(() => [props.garden.elements, props.garden.plantings, props.garden.customPlants, props.garden.plantOverrides], () => sync(), { deep: true });
     watch(() => [props.period.year, props.period.day, props.focusBedId, props.readOnly], () => sync());
+    watch(() => props.badges, () => sync(), { deep: true });
     watch(() => props.garden.location, () => {
       if (reproject() && props.garden.location) fitGarden();
     }, { deep: true });
