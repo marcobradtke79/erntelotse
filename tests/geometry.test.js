@@ -2,7 +2,8 @@ import { describe, test, expect } from './harness.js';
 import {
   createProjection, metresPerDegree, polygonArea, edgeLengths, perimeter, polylineLength, centroid,
   rotate, rectangle, asRectangle, resizeRectangle, pointInPolygon, polygonsOverlap, selfIntersects,
-  segmentsIntersect, signedArea, roundPoints,
+  segmentsIntersect, signedArea, roundPoints, translate, polygonInsidePolygon, isConvex, clipPolygonConvex,
+  distanceToSegment, pointInOrOnPolygon, rigidTransform, applyRigid,
 } from '../js/logic/geometry.js';
 
 const square = [[0, 0], [2, 0], [2, 2], [0, 2]];
@@ -116,6 +117,50 @@ describe('intersection', () => {
     expect(selfIntersects(square)).toBeFalsy();
     expect(selfIntersects(lShape)).toBeFalsy();
     expect(selfIntersects([[0, 0], [2, 2], [2, 0], [0, 2]])).toBeTruthy();
+  });
+});
+
+describe('containment and clipping', () => {
+  test('polygon inside polygon, touching allowed', () => {
+    expect(polygonInsidePolygon(rectangle([1, 1], 2, 2), square)).toBeTruthy();
+    expect(polygonInsidePolygon(rectangle([1, 1], 1, 1), square)).toBeTruthy();
+    expect(polygonInsidePolygon(rectangle([2, 1], 2, 1), square)).toBeFalsy();
+    // Inside the L's bounding box but across the notch
+    expect(polygonInsidePolygon(rectangle([1.5, 1.5], 1.5, 1.5), lShape)).toBeFalsy();
+  });
+  test('convexity', () => {
+    expect(isConvex(square)).toBeTruthy();
+    expect(isConvex(lShape)).toBeFalsy();
+    expect(isConvex([[0, 0], [1, 0], [2, 0], [2, 1], [0, 1]])).toBeTruthy();
+  });
+  test('clipping to a convex polygon, either orientation', () => {
+    const clipped = clipPolygonConvex(rectangle([2, 1], 2, 2), square);
+    expect(polygonArea(clipped)).toBeCloseTo(2);
+    expect(polygonArea(clipPolygonConvex(rectangle([2, 1], 2, 2), [...square].reverse()))).toBeCloseTo(2);
+    expect(clipPolygonConvex(rectangle([10, 10], 1, 1), square)).toEqual([]);
+  });
+  test('distance to segment', () => {
+    expect(distanceToSegment([1, 1], [0, 0], [2, 0])).toBe(1);
+    expect(distanceToSegment([3, 0], [0, 0], [2, 0])).toBe(1);
+    expect(pointInOrOnPolygon([2, 1], square)).toBeTruthy();
+    expect(pointInOrOnPolygon([2.01, 1], square)).toBeFalsy();
+  });
+});
+
+describe('rigid transforms', () => {
+  test('moving and rotating is recognised and can be applied', () => {
+    const before = rectangle([0, 0], 4, 1.2);
+    const after = translate(rotate(before, 30, [1, 1]), 5, -2);
+    const transform = rigidTransform(before, after);
+    expect(transform).toBeTruthy();
+    const point = applyRigid([[0.5, 0.2]], transform)[0];
+    const expected = translate(rotate([[0.5, 0.2]], 30, [1, 1]), 5, -2)[0];
+    expect(point[0]).toBeCloseTo(expected[0]);
+    expect(point[1]).toBeCloseTo(expected[1]);
+  });
+  test('resizing is not rigid', () => {
+    expect(rigidTransform(rectangle([0, 0], 4, 1.2), rectangle([0, 0], 5, 1.2))).toBeNull();
+    expect(rigidTransform(square, lShape)).toBeNull();
   });
 });
 

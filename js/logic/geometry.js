@@ -233,6 +233,103 @@ export function selfIntersects(points) {
   return false;
 }
 
+export function distanceToSegment([px, py], [ax, ay], [bx, by]) {
+  const dx = bx - ax;
+  const dy = by - ay;
+  const lengthSquared = dx * dx + dy * dy;
+  const t = lengthSquared === 0 ? 0 : Math.max(0, Math.min(1, ((px - ax) * dx + (py - ay) * dy) / lengthSquared));
+  return Math.hypot(px - (ax + t * dx), py - (ay + t * dy));
+}
+
+function onBoundary(point, polygon, tolerance) {
+  return polygon.some((a, i) => distanceToSegment(point, a, polygon[(i + 1) % polygon.length]) <= tolerance);
+}
+
+/** Inside or within `tolerance` metres of the boundary (shapes snapped to edges count as inside). */
+export function pointInOrOnPolygon(point, polygon, tolerance = 0.002) {
+  return onBoundary(point, polygon, tolerance) || pointInPolygon(point, polygon);
+}
+
+/**
+ * True if `inner` lies completely within `outer` (touching the boundary is allowed).
+ * Works for concave outer polygons.
+ */
+export function polygonInsidePolygon(inner, outer, tolerance = 0.002) {
+  for (let i = 0; i < inner.length; i++) {
+    if (!pointInOrOnPolygon(inner[i], outer, tolerance)) return false;
+    if (!pointInOrOnPolygon(midpoint(inner[i], inner[(i + 1) % inner.length]), outer, tolerance)) return false;
+  }
+  // A notch of a concave outer polygon reaching into the inner one
+  return !outer.some((point) => pointInPolygon(point, inner) && !onBoundary(point, inner, tolerance));
+}
+
+export function isConvex(points) {
+  if (points.length < 3) return false;
+  let sign = 0;
+  for (let i = 0; i < points.length; i++) {
+    const [ax, ay] = points[i];
+    const [bx, by] = points[(i + 1) % points.length];
+    const [cx, cy] = points[(i + 2) % points.length];
+    const cross = (bx - ax) * (cy - by) - (by - ay) * (cx - bx);
+    if (Math.abs(cross) < 1e-12) continue;
+    const current = Math.sign(cross);
+    if (sign !== 0 && current !== sign) return false;
+    sign = current;
+  }
+  return sign !== 0;
+}
+
+/**
+ * Sutherland–Hodgman: the part of `subject` inside the convex polygon `clip`.
+ * Returns [] when nothing is left.
+ */
+export function clipPolygonConvex(subject, clip) {
+  const ccwClip = signedArea(clip) < 0 ? [...clip].reverse() : clip;
+  let output = subject;
+  for (let i = 0; i < ccwClip.length && output.length > 0; i++) {
+    const a = ccwClip[i];
+    const b = ccwClip[(i + 1) % ccwClip.length];
+    const inside = ([x, y]) => (b[0] - a[0]) * (y - a[1]) - (b[1] - a[1]) * (x - a[0]) >= -1e-9;
+    const intersection = (p, q) => {
+      const [x1, y1] = p;
+      const [x2, y2] = q;
+      const denominator = (x1 - x2) * (a[1] - b[1]) - (y1 - y2) * (a[0] - b[0]);
+      const t = ((x1 - a[0]) * (a[1] - b[1]) - (y1 - a[1]) * (a[0] - b[0])) / denominator;
+      return [x1 + t * (x2 - x1), y1 + t * (y2 - y1)];
+    };
+    const input = output;
+    output = [];
+    for (let j = 0; j < input.length; j++) {
+      const current = input[j];
+      const previous = input[(j + input.length - 1) % input.length];
+      if (inside(current)) {
+        if (!inside(previous)) output.push(intersection(previous, current));
+        output.push(current);
+      } else if (inside(previous)) {
+        output.push(intersection(previous, current));
+      }
+    }
+  }
+  // Drop points that collapsed onto their neighbour
+  return output.filter((point, i) => distance(point, output[(i + 1) % output.length]) > 1e-6);
+}
+
+/**
+ * If `after` is `before` moved and/or rotated (same shape, same point order),
+ * returns that transform, otherwise null.
+ */
+export function rigidTransform(before, after, tolerance = 0.005) {
+  if (before.length !== after.length || before.length < 2) return null;
+  const angleOf = (points) => Math.atan2(points[1][1] - points[0][1], points[1][0] - points[0][0]);
+  const transform = { from: before[0], to: after[0], rotation: (angleOf(after) - angleOf(before)) / DEG };
+  const moved = applyRigid(before, transform);
+  return moved.every((point, i) => distance(point, after[i]) <= tolerance) ? transform : null;
+}
+
+export function applyRigid(points, { from, to, rotation }) {
+  return translate(rotate(points, rotation, from), to[0] - from[0], to[1] - from[1]);
+}
+
 /** Rounds coordinates to millimetres to keep stored data small and stable. */
 export function roundPoints(points) {
   return points.map(([x, y]) => [Math.round(x * 1000) / 1000, Math.round(y * 1000) / 1000]);

@@ -38,6 +38,13 @@ export function elementStyle(type) {
   }
 }
 
+/** Planting areas and single plants in the plant's colour. */
+export function plantingStyle(color, kind) {
+  return kind === 'point'
+    ? { color, weight: 1.5, fillColor: color, fillOpacity: 0.8, opacity: 1 }
+    : { color, weight: 1.5, fillColor: color, fillOpacity: 0.5, opacity: 0.9 };
+}
+
 export function selectedStyle() {
   return { color: token('--map-selected'), weight: 3, dashArray: null, stroke: true };
 }

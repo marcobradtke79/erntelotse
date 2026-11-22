@@ -119,7 +119,8 @@ Each garden document carries a `schemaVersion`. On load and on import, documents
 ### 4.3 Entities
 
 - **Element** – anything drawn on the garden. `type` is one of `parcel`, `bed`, `tree`, `shrub`, `building`, `path`, `lawn`, `pond`, `compost`, `greenhouse`, `fence`, `hedge`. Geometry kinds: `polygon`, `circle` (trees, shrubs), `line` with a width (paths, fences, hedges). Trees and shrubs reference a plant and have a planting year; the circle is the current canopy.
-- **Planting** – a plant type in a bed for a period. Its shape is an area (`polygon`) or a single plant (`point`). `end` may be `null` for perennials still in place. A planting is *planned* if it starts in the future, *active* if today lies within its period and *past* otherwise – this is derived, not stored.
+- **Planting** – a plant type in a bed for a period. Its shape is an area (`polygon`) or a single plant (`point`), always inside its bed. `end` may be `null` for perennials still in place. `count` is `null` until the user enters a number; until then the app estimates it from area and spacing. A planting is *planned* if it starts in the future, *active* if today lies within its period and *past* otherwise – this is derived, not stored. Moving or rotating a bed moves its plantings along; deleting a bed deletes them.
+- **Tree / shrub** – besides the crown circle they have `plantId` (a catalog plant with placement `tree` or `shrub`, or `null`) and `plantedYear`.
 - **Custom plant** – same structure as a catalog entry (section 5), with the name entered by the user instead of translation keys.
 - **Plant override** – partial catalog entry keyed by plant id, merged over the built-in entry (for example other sowing weeks that fit the user's experience).
 - **Task state** – the user's decision on a generated hint, keyed by a deterministic task key (`<source id>|<task type>|<period start>`). Hints are always regenerated from the data; only the decision is stored.
@@ -149,7 +150,7 @@ There is no stored "year plan". Each view filters plantings by date:
 
 ## 5. Plant catalog
 
-About 60 built-in plants: common vegetables, herbs, berries, fruit trees and a few ornamental shrubs. The catalog is a static JavaScript data module; names and hint texts live in the translation files, keyed by plant id.
+About 60 built-in plants: common vegetables, herbs, berries, fruit trees and a few ornamental shrubs. The catalog is a static JavaScript data module (`js/data/plants.js`); names and hint texts live in the translation files, keyed by plant id (`plants.<id>`). Milestone 3 started it with 15 plants and the fields beds need – `placement` (`bed`, `tree`, `shrub`), `color`, `spacing`, `lifecycle`, `growDays` (proposed time in the bed; `null` for perennials). Milestone 4 adds the remaining fields and plants.
 
 ```js
 {

@@ -1,17 +1,21 @@
-import { ref, computed, watch, onMounted, onBeforeUnmount, toRaw } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { useRouter } from 'vue-router';
 import {
-  gardens, editor, addElement, updateElementGeometry, updateElement, deleteElement, undo, redo, setLocation,
+  gardens, editor, addElement, updateElementGeometry, updateElement, deleteElement, restoreElement, undo, redo, setLocation,
 } from '../stores/gardens.js';
 import { settings } from '../stores/settings.js';
+import { period } from '../stores/period.js';
 import { showToast, showError } from '../stores/toast.js';
 import { ELEMENT_TYPES, createElement, createElementAt, elementsBounds } from '../logic/elements.js';
 import { metresPerDegree } from '../logic/geometry.js';
 import { formatLength } from '../logic/units.js';
+import { useMapKeys } from '../composables/useMapKeys.js';
 import AppIcon from '../components/AppIcon.js';
 import EmptyState from '../components/EmptyState.js';
+import PeriodBar from '../components/PeriodBar.js';
 import GardenMap from '../components/map/GardenMap.js';
-import ToolPalette from '../components/map/ToolPalette.js';
+import ToolPalette, { ELEMENT_TOOLS, MORE_ELEMENT_TOOLS } from '../components/map/ToolPalette.js';
 import ElementPanel from '../components/map/ElementPanel.js';
 import ElementList from '../components/map/ElementList.js';
 import AddElementDialog from '../components/map/AddElementDialog.js';
@@ -29,15 +33,12 @@ const START_VIEWS = {
 
 const NUMBERED_TYPES = ['bed', 'greenhouse'];
 
-function isTyping(target) {
-  return target instanceof HTMLElement && (target.isContentEditable || ['INPUT', 'SELECT', 'TEXTAREA'].includes(target.tagName));
-}
-
 export default {
   name: 'MapView',
-  components: { AppIcon, EmptyState, GardenMap, ToolPalette, ElementPanel, ElementList, AddElementDialog, LocationBar },
+  components: { AppIcon, EmptyState, PeriodBar, GardenMap, ToolPalette, ElementPanel, ElementList, AddElementDialog, LocationBar },
   setup() {
     const { t, locale } = useI18n();
+    const router = useRouter();
     const mapRef = ref(null);
     const garden = computed(() => gardens.active);
 
@@ -139,14 +140,15 @@ export default {
 
     function remove() {
       const element = selected.value;
-      if (!element) return;
-      const copy = structuredClone(toRaw(element));
-      deleteElement(element.id);
+      if (!element) return false;
+      const removed = deleteElement(element.id);
       selectedId.value = null;
-      showToast('map.deleted', {
-        params: { name: elementName(element, t) },
-        action: { key: 'common.undo', handler: () => addElement(copy) },
+      const count = removed?.plantings.length ?? 0;
+      showToast(count ? 'map.deletedWithPlantings' : 'map.deleted', {
+        params: { name: elementName(element, t), count },
+        action: removed ? { key: 'common.undo', handler: () => restoreElement(removed) } : null,
       });
+      return true;
     }
 
     // --- Location -------------------------------------------------------------
@@ -191,41 +193,24 @@ export default {
 
     // --- Keyboard -------------------------------------------------------------
 
-    function onKeydown(event) {
-      if (document.querySelector('dialog[open]')) return;
-      const mod = event.ctrlKey || event.metaKey;
-      if (mod && event.key.toLowerCase() === 'z' && !isTyping(event.target)) {
-        event.preventDefault();
-        if (event.shiftKey) redo();
-        else undo();
-        return;
-      }
-      if (mod && event.key.toLowerCase() === 'y' && !isTyping(event.target)) {
-        event.preventDefault();
-        redo();
-        return;
-      }
-      if (isTyping(event.target)) return;
-      if (event.key === 'Escape') {
+    useMapKeys({
+      onEscape: () => {
         if (tool.value) tool.value = null;
         else if (locating.value) cancelLocating();
         else selectedId.value = null;
-      } else if (event.key === 'Enter' && canFinish.value) {
-        mapRef.value?.finishDraw();
-      } else if ((event.key === 'Delete' || event.key === 'Backspace') && selected.value && !tool.value) {
-        event.preventDefault();
-        remove();
-      }
-    }
-
-    onMounted(() => window.addEventListener('keydown', onKeydown));
-    onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
+      },
+      onEnter: () => {
+        if (canFinish.value) mapRef.value?.finishDraw();
+      },
+      onDelete: () => (tool.value ? false : remove()),
+    });
 
     return {
-      t, mapRef, garden, settings, editor, tool, selectedId, selected, editMode, snapping, background, chosenBackground,
+      t, mapRef, garden, settings, editor, period, tool, selectedId, selected, editMode, snapping, background, chosenBackground,
       locating, hasLocation, hasParcel, activeToolName, drawHint, canFinish, measured, measuredText, addOpen, panelCollapsed,
       pick, setShape, onCreate, onDrawEnd, onSelect, addBySize, remove, startLocating, confirmLocation, cancelLocating,
-      removeLocation, undo, redo,
+      removeLocation, undo, redo, ELEMENT_TOOLS, MORE_ELEMENT_TOOLS,
+      openBed: (id) => router.push(`/map/bed/${id}`),
       changeGeometry: (geometry) => updateElementGeometry(selectedId.value, geometry),
       onChange: ({ id, geometry }) => updateElementGeometry(id, geometry),
       onUpdate: (fields) => updateElement(selectedId.value, fields),
@@ -249,6 +234,7 @@ export default {
           :snapping="snapping"
           :units="settings.units"
           :locating="locating"
+          :period="period"
           @create="onCreate"
           @change="onChange"
           @select="onSelect"
@@ -257,7 +243,7 @@ export default {
           @measure="onMeasure"
         />
 
-        <ToolPalette v-if="!locating" :active="activeToolName" :snapping="snapping" @pick="pick" @toggle-snapping="snapping = !snapping" />
+        <ToolPalette v-if="!locating" :items="ELEMENT_TOOLS" :more="MORE_ELEMENT_TOOLS" :active="activeToolName" :snapping="snapping" @pick="pick" @toggle-snapping="snapping = !snapping" />
 
         <div class="map-topbar" v-if="!locating">
           <div class="segmented" role="group" :aria-label="t('map.background.label')" v-if="hasLocation">
@@ -315,6 +301,7 @@ export default {
             @remove="removeLocation"
           />
           <template v-else>
+          <PeriodBar />
           <div v-if="!hasLocation && !selected" class="hint-card">
             <AppIcon name="pin" />
             <div>
@@ -334,6 +321,7 @@ export default {
             @geometry="changeGeometry"
             @mode="editMode = $event"
             @delete="remove"
+            @open-bed="openBed(selected.id)"
           />
           <ElementList v-else :elements="garden.elements" :units="settings.units" @select="onSelect" @add="addOpen = true" />
           </template>

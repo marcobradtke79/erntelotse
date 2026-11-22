@@ -1,4 +1,5 @@
 // Tool palette of the map (docs/design-rules.md §6): exactly one tool is active.
+// The tools come from the view: elements on the garden map, plantings in the bed editor.
 
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -19,14 +20,20 @@ export const TYPE_ICONS = {
   hedge: 'shrub',
 };
 
-const MAIN = ['parcel', 'bed', 'tree', 'shrub'];
-const OTHER = ['building', 'greenhouse', 'compost', 'pond', 'lawn', 'path', 'fence', 'hedge'];
+const toolItem = (id) => ({ id, icon: TYPE_ICONS[id], labelKey: `elements.types.${id}` });
+
+/** Tools of the garden map */
+export const ELEMENT_TOOLS = ['parcel', 'bed', 'tree', 'shrub'].map(toolItem);
+export const MORE_ELEMENT_TOOLS = ['building', 'greenhouse', 'compost', 'pond', 'lawn', 'path', 'fence', 'hedge'].map(toolItem);
 
 export default {
   name: 'ToolPalette',
   components: { AppIcon },
   props: {
-    /** active tool type, 'measure' or null for select */
+    /** [{ id, icon, labelKey }] */
+    items: { type: Array, required: true },
+    more: { type: Array, default: () => [] },
+    /** active tool id, 'measure' or null for select */
     active: { type: String, default: null },
     snapping: { type: Boolean, default: true },
     disabled: { type: Boolean, default: false },
@@ -36,11 +43,11 @@ export default {
     const { t } = useI18n();
     const moreOpen = ref(false);
     const root = ref(null);
-    const otherActive = computed(() => OTHER.includes(props.active));
+    const activeMore = computed(() => props.more.find((item) => item.id === props.active) ?? null);
 
-    function pick(type) {
+    function pick(id) {
       moreOpen.value = false;
-      emit('pick', type);
+      emit('pick', id);
     }
 
     function onDocumentClick(event) {
@@ -50,34 +57,34 @@ export default {
     onMounted(() => document.addEventListener('click', onDocumentClick));
     onBeforeUnmount(() => document.removeEventListener('click', onDocumentClick));
 
-    return { t, MAIN, OTHER, TYPE_ICONS, moreOpen, root, otherActive, pick };
+    return { t, moreOpen, root, activeMore, pick };
   },
   template: `
     <div class="tool-palette" ref="root" role="toolbar" :aria-label="t('map.tools.label')" @keydown.esc="moreOpen = false">
-      <button type="button" class="tool-button" :aria-pressed="active === null ? 'true' : 'false'" :disabled="disabled" :title="t('map.tools.select')" @click="pick(null)">
+      <button type="button" class="tool-button" :aria-pressed="active === null ? 'true' : 'false'" :title="t('map.tools.select')" @click="pick(null)">
         <AppIcon name="pointer" :label="t('map.tools.select')" />
       </button>
-      <button v-for="type in MAIN" :key="type" type="button" class="tool-button" :aria-pressed="active === type ? 'true' : 'false'" :disabled="disabled" :title="t('elements.types.' + type)" @click="pick(type)">
-        <AppIcon :name="TYPE_ICONS[type]" :label="t('elements.types.' + type)" />
+      <button v-for="item in items" :key="item.id" type="button" class="tool-button" :aria-pressed="active === item.id ? 'true' : 'false'" :disabled="disabled" :title="t(item.labelKey)" @click="pick(item.id)">
+        <AppIcon :name="item.icon" :label="t(item.labelKey)" />
       </button>
-      <div class="tool-more">
-        <button type="button" class="tool-button" :aria-pressed="otherActive ? 'true' : 'false'" :aria-expanded="moreOpen ? 'true' : 'false'" :disabled="disabled" :title="t('map.tools.more')" @click="moreOpen = !moreOpen">
-          <AppIcon :name="otherActive ? TYPE_ICONS[active] : 'shapes'" :label="t('map.tools.more')" />
+      <div v-if="more.length" class="tool-more">
+        <button type="button" class="tool-button" :aria-pressed="activeMore ? 'true' : 'false'" :aria-expanded="moreOpen ? 'true' : 'false'" :disabled="disabled" :title="t('map.tools.more')" @click="moreOpen = !moreOpen">
+          <AppIcon :name="activeMore ? activeMore.icon : 'shapes'" :label="t('map.tools.more')" />
         </button>
         <ul v-show="moreOpen" class="menu-list tool-more-list">
-          <li v-for="type in OTHER" :key="type">
-            <button type="button" class="menu-item" :aria-current="active === type ? 'true' : null" @click="pick(type)">
-              <AppIcon :name="TYPE_ICONS[type]" />
-              <span>{{ t('elements.types.' + type) }}</span>
+          <li v-for="item in more" :key="item.id">
+            <button type="button" class="menu-item" :aria-current="active === item.id ? 'true' : null" @click="pick(item.id)">
+              <AppIcon :name="item.icon" />
+              <span>{{ t(item.labelKey) }}</span>
             </button>
           </li>
         </ul>
       </div>
       <span class="tool-separator" aria-hidden="true"></span>
-      <button type="button" class="tool-button" :aria-pressed="active === 'measure' ? 'true' : 'false'" :disabled="disabled" :title="t('map.tools.measure')" @click="pick('measure')">
+      <button type="button" class="tool-button" :aria-pressed="active === 'measure' ? 'true' : 'false'" :title="t('map.tools.measure')" @click="pick('measure')">
         <AppIcon name="ruler" :label="t('map.tools.measure')" />
       </button>
-      <button type="button" class="tool-button" :aria-pressed="snapping ? 'true' : 'false'" :disabled="disabled" :title="t('map.tools.snapping')" @click="$emit('toggle-snapping')">
+      <button type="button" class="tool-button" :aria-pressed="snapping ? 'true' : 'false'" :title="t('map.tools.snapping')" @click="$emit('toggle-snapping')">
         <AppIcon name="magnet" :label="t('map.tools.snapping')" />
       </button>
     </div>

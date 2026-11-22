@@ -3,14 +3,22 @@
 // This is the only code that knows about Leaflet coordinates: it converts stored
 // metre geometry to layers and edited layers back to metre geometry. All changes
 // leave the component as events; the parent writes them to the store.
+//
+// Two modes:
+// - garden mode (focusBedId null): elements are selectable and editable; the
+//   plantings of the shown period are drawn on the beds, not interactive.
+// - bed mode (focusBedId set): the plantings of that bed are selectable and, unless
+//   readOnly, editable; everything else is dimmed and not interactive.
 
 import { ref, watch, onMounted, onBeforeUnmount } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { loadLeaflet } from '../../services/leaflet.js';
-import { createProjection, PLAN_ORIGIN, distance, centroid, edgeLengths, midpoint, polylineLength } from '../../logic/geometry.js';
+import { createProjection, PLAN_ORIGIN, distance, centroid, edgeLengths, midpoint, polylineLength, bounds } from '../../logic/geometry.js';
 import { ELEMENT_TYPES, DRAW_ORDER, normaliseGeometry, isUsablePolygon, elementsBounds, measure } from '../../logic/elements.js';
+import { visiblePlantings, normaliseShape } from '../../logic/plantings.js';
+import { getPlant } from '../../data/plants.js';
 import { formatArea, formatLength } from '../../logic/units.js';
-import { elementStyle, selectedStyle, measureStyle } from './styles.js';
+import { elementStyle, plantingStyle, selectedStyle, measureStyle } from './styles.js';
 import { createGridLayer } from './gridLayer.js';
 
 const OSM_URL = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
@@ -20,6 +28,7 @@ const EARTH_CIRCUMFERENCE = 40075016.686;
 const GEOMAN_LANGUAGES = { en: 'en', de: 'de', fr: 'fr', es: 'es', pt: 'pt_pt' };
 const DRAW_SHAPES = { rectangle: 'Rectangle', polygon: 'Polygon', line: 'Line', measure: 'Line' };
 const MIN_LABEL_EDGE_PX = 48;
+const MIN_PLANT_RADIUS = 0.05;
 
 export default {
   name: 'GardenMap',
@@ -27,7 +36,7 @@ export default {
     garden: { type: Object, required: true },
     /** 'street' | 'plan' */
     background: { type: String, default: 'plan' },
-    /** null or { type, draw: 'rectangle' | 'polygon' | 'line' | 'point' | 'measure' } */
+    /** null or { type, draw: 'rectangle' | 'polygon' | 'line' | 'point' | 'measure', plantId? } */
     tool: { type: Object, default: null },
     selectedId: { type: String, default: null },
     /** 'shape' | 'move' | 'rotate' */
@@ -35,6 +44,12 @@ export default {
     snapping: { type: Boolean, default: true },
     units: { type: String, default: 'metric' },
     locating: { type: Boolean, default: false },
+    /** { year, day } – which plantings are drawn */
+    period: { type: Object, required: true },
+    /** Bed mode: the bed whose plantings are edited */
+    focusBedId: { type: String, default: null },
+    /** Bed mode: plantings can be selected but not changed */
+    readOnly: { type: Boolean, default: false },
   },
   emits: ['create', 'change', 'select', 'draw-end', 'measure', 'invalid', 'ready'],
   setup(props, { emit }) {
@@ -48,13 +63,13 @@ export default {
     let gridLayer = null;
     let scaleControl = null;
     let zoomControl = null;
-    let elementGroup = null;
+    let itemGroup = null;
     let labelGroup = null;
     let measureGroup = null;
     let drawLabel = null;
     let projection = createProjection(props.garden.location ?? PLAN_ORIGIN);
     let projectionKey = JSON.stringify(props.garden.location);
-    /** id → { layer, key, element } */
+    /** id → { layer, key, item } */
     const entries = new Map();
     let editedId = null;
     let stoppingDraw = false;
@@ -73,15 +88,62 @@ export default {
       return (EARTH_CIRCUMFERENCE * Math.cos((center.lat * Math.PI) / 180)) / (256 * 2 ** map.getZoom());
     }
 
-    function geometryFromLayer(layer, kind, width) {
-      if (kind === 'circle') return { kind, center: toPoint(layer.getLatLng()), radius: layer.getRadius() };
-      if (kind === 'line') return { kind, points: layer.getLatLngs().map(toPoint), width };
+    function geometryFromLayer(layer, geometry) {
+      if (geometry.kind === 'point') return { kind: 'point', at: toPoint(layer.getLatLng()) };
+      if (geometry.kind === 'circle') return { kind: 'circle', center: toPoint(layer.getLatLng()), radius: layer.getRadius() };
+      if (geometry.kind === 'line') return { kind: 'line', points: layer.getLatLngs().map(toPoint), width: geometry.width };
       const rings = layer.getLatLngs();
       const ring = Array.isArray(rings[0]) ? rings[0] : rings;
       return { kind: 'polygon', points: ring.map(toPoint) };
     }
 
-    const keyOf = (element) => JSON.stringify([element.type, element.name, element.geometry]);
+    // --- Items: everything drawn, with what may be done with it ---------------
+
+    function buildItems() {
+      const focus = props.focusBedId;
+      const items = [];
+      const elements = [...props.garden.elements].sort((a, b) => DRAW_ORDER.indexOf(a.type) - DRAW_ORDER.indexOf(b.type));
+      for (const element of elements) {
+        items.push({
+          id: element.id,
+          source: 'element',
+          type: element.type,
+          // The focused bed's name is in the panel; on the map it would cover its plantings
+          name: element.name && element.type !== 'parcel' && element.geometry.kind !== 'line' && element.id !== focus ? element.name : '',
+          geometry: element.geometry,
+          selectable: !focus,
+          editable: !focus,
+          dimmed: Boolean(focus) && element.id !== focus,
+          focused: element.id === focus,
+        });
+      }
+      const plantings = visiblePlantings(props.garden.plantings, props.period)
+        .sort((a, b) => (a.shape.kind === b.shape.kind ? a.start.localeCompare(b.start) : a.shape.kind === 'point' ? 1 : -1));
+      for (const planting of plantings) {
+        const plant = getPlant(planting.plantId);
+        const own = Boolean(focus) && planting.bedId === focus;
+        items.push({
+          id: planting.id,
+          source: 'planting',
+          type: 'planting',
+          plantId: planting.plantId,
+          color: plant.color,
+          name: own && planting.shape.kind === 'polygon' ? t(`plants.${plant.id}`) : '',
+          geometry: planting.shape.kind === 'point'
+            ? { kind: 'point', at: planting.shape.at, radius: Math.max(MIN_PLANT_RADIUS, plant.spacing.plant / 2) }
+            : planting.shape,
+          selectable: own,
+          editable: own && !props.readOnly,
+          dimmed: Boolean(focus) && !own,
+          focused: false,
+        });
+      }
+      return items;
+    }
+
+    const keyOf = (item) => JSON.stringify([
+      item.source, item.type, item.plantId, item.color, item.name, item.geometry, item.selectable, item.editable, item.dimmed, item.focused,
+    ]);
 
     // --- Layers --------------------------------------------------------------
 
@@ -89,70 +151,83 @@ export default {
       return Math.max(2, width / metresPerPixel());
     }
 
-    function styleFor(element) {
-      const style = elementStyle(element.type);
-      if (element.geometry.kind === 'line') style.weight = lineWeight(element.geometry.width);
-      return element.id === props.selectedId ? { ...style, ...selectedStyle(), weight: Math.max(style.weight ?? 2, 3) } : style;
+    function styleFor(item) {
+      let style = item.source === 'planting' ? plantingStyle(item.color, item.geometry.kind) : elementStyle(item.type);
+      if (item.geometry.kind === 'line') style.weight = lineWeight(item.geometry.width);
+      if (item.focused) style = { ...style, weight: 3 };
+      if (item.dimmed) style = { ...style, opacity: (style.opacity ?? 1) * 0.35, fillOpacity: (style.fillOpacity ?? 1) * 0.35 };
+      if (item.id === props.selectedId && item.selectable) {
+        style = { ...style, ...selectedStyle(), weight: Math.max(style.weight ?? 2, 3) };
+      }
+      return { ...style, interactive: item.selectable };
     }
 
-    function createLayer(element) {
-      const { geometry } = element;
+    function createLayer(item) {
+      const { geometry } = item;
       // Clicks bubble to the map so that drawing on top of existing shapes works;
       // the click handler below stops them only when selecting.
-      const options = { ...styleFor(element) };
+      const options = styleFor(item);
       let layer;
       if (geometry.kind === 'circle') layer = L.circle(toLatLng(geometry.center), { ...options, radius: geometry.radius });
+      else if (geometry.kind === 'point') layer = L.circle(toLatLng(geometry.at), { ...options, radius: geometry.radius });
       else if (geometry.kind === 'line') layer = L.polyline(toLatLngs(geometry.points), options);
       else layer = L.polygon(toLatLngs(geometry.points), options);
+      // Shapes that cannot be edited must not be snap targets for Geoman either way they are drawn
+      if (!item.selectable && item.source === 'planting') layer.options.snapIgnore = true;
 
       layer.on('click', (event) => {
-        if (props.tool || props.locating) return;
+        if (props.tool || props.locating || !item.selectable) return;
         L.DomEvent.stopPropagation(event);
-        emit('select', element.id);
+        emit('select', item.id);
       });
       // The name label is placed once; keep it on the shape while it changes
       const moveTooltip = () => {
         const tooltip = layer.getTooltip();
         if (tooltip && layer._map) tooltip.setLatLng(layer.getCenter ? layer.getCenter() : layer.getLatLng());
       };
-      const live = () => {
+      layer.on('pm:change pm:markerdrag pm:drag pm:rotate', () => {
         moveTooltip();
-        updateMeasureLabels(layer, element);
-      };
-      layer.on('pm:change pm:markerdrag pm:drag pm:rotate', live);
+        updateMeasureLabels(item.id);
+      });
       layer.on('pm:edit pm:dragend pm:rotateend', () => {
         moveTooltip();
-        commit(element.id);
+        commit(item.id);
       });
-      if (element.name && element.type !== 'parcel' && geometry.kind !== 'line') {
+      if (item.name) {
         // A text node, never an HTML string: names may come from imported files
         const content = document.createElement('span');
-        content.textContent = element.name;
-        layer.bindTooltip(content, { permanent: true, direction: 'center', className: 'map-name-label', interactive: false });
+        content.textContent = item.name;
+        layer.bindTooltip(content, {
+          permanent: true,
+          direction: 'center',
+          className: item.source === 'planting' ? 'map-name-label is-planting' : 'map-name-label',
+          interactive: false,
+          opacity: item.dimmed ? 0.4 : 0.95,
+        });
       }
       return layer;
     }
 
-    function syncElements() {
+    function sync() {
       if (!map) return;
-      const elements = [...props.garden.elements].sort((a, b) => DRAW_ORDER.indexOf(a.type) - DRAW_ORDER.indexOf(b.type));
+      const items = buildItems();
       const seen = new Set();
-      for (const element of elements) {
-        seen.add(element.id);
-        const key = keyOf(element);
-        const entry = entries.get(element.id);
+      for (const item of items) {
+        seen.add(item.id);
+        const key = keyOf(item);
+        const entry = entries.get(item.id);
         if (entry && entry.key === key) {
-          entry.element = element;
+          entry.item = item;
           continue;
         }
-        if (entry) removeEntry(element.id);
-        const layer = createLayer(element);
-        elementGroup.addLayer(layer);
-        entries.set(element.id, { layer, key, element });
+        if (entry) removeEntry(item.id);
+        const layer = createLayer(item);
+        itemGroup.addLayer(layer);
+        entries.set(item.id, { layer, key, item });
       }
       for (const id of [...entries.keys()]) if (!seen.has(id)) removeEntry(id);
-      // z-order follows the draw order
-      for (const element of elements) entries.get(element.id)?.layer.bringToFront();
+      // z-order: elements by draw order, then plantings on top, the focused bed below its plantings
+      for (const item of items) entries.get(item.id)?.layer.bringToFront();
       applySelection(true);
     }
 
@@ -160,17 +235,17 @@ export default {
       const entry = entries.get(id);
       if (!entry) return;
       if (editedId === id) stopEditing();
-      elementGroup.removeLayer(entry.layer);
+      itemGroup.removeLayer(entry.layer);
       entries.delete(id);
     }
 
     function rebuildAll() {
       for (const id of [...entries.keys()]) removeEntry(id);
-      syncElements();
+      sync();
     }
 
     function restyleAll() {
-      for (const entry of entries.values()) entry.layer.setStyle(styleFor(entry.element));
+      for (const entry of entries.values()) entry.layer.setStyle(styleFor(entry.item));
     }
 
     // --- Selection and editing ----------------------------------------------
@@ -186,48 +261,58 @@ export default {
       editedId = null;
     }
 
-    function applySelection(force = false) {
+    function applySelection() {
       if (!map) return;
-      const id = props.tool || props.locating ? null : props.selectedId;
-      if (!force && id === editedId) return;
       stopEditing();
       restyleAll();
       labelGroup.clearLayers();
+      const id = props.tool || props.locating ? null : props.selectedId;
       const entry = entries.get(id);
-      if (!entry) return;
-      const { layer, element } = entry;
+      if (!entry || !entry.item.selectable) return;
+      const { layer, item } = entry;
       layer.bringToFront();
-      const kind = element.geometry.kind;
-      if (props.editMode === 'move') {
-        // Shape mode stores draggable: false on the layer; enableLayerDrag checks it
-        layer.pm.setOptions({ draggable: true, snappable: props.snapping });
-        layer.pm.enableLayerDrag();
-      } else if (props.editMode === 'rotate' && kind !== 'circle') {
-        layer.pm.enableRotate();
-      } else {
-        layer.pm.enable({ allowSelfIntersection: false, snappable: props.snapping, draggable: false });
-      }
       editedId = id;
-      updateMeasureLabels(layer, element);
+      if (item.editable) {
+        const kind = item.geometry.kind;
+        if (props.editMode === 'move' || kind === 'point') {
+          // Shape mode stores draggable: false on the layer; enableLayerDrag checks it
+          layer.pm.setOptions({ draggable: true, snappable: props.snapping });
+          layer.pm.enableLayerDrag();
+        } else if (props.editMode === 'rotate' && kind !== 'circle') {
+          layer.pm.enableRotate();
+        } else {
+          layer.pm.enable({ allowSelfIntersection: false, snappable: props.snapping, draggable: false });
+        }
+      }
+      updateMeasureLabels(id);
     }
 
     function commit(id) {
       const entry = entries.get(id);
       if (!entry) return;
-      const { layer, element } = entry;
-      const geometry = normaliseGeometry(geometryFromLayer(layer, element.geometry.kind, element.geometry.width));
-      if (geometry.kind === 'polygon' && !isUsablePolygon(geometry.points)) {
+      const { layer, item } = entry;
+      const raw = geometryFromLayer(layer, item.geometry);
+      if (raw.kind === 'polygon' && !isUsablePolygon(raw.points)) {
         emit('invalid', 'polygon');
-        entry.key = null; // forces a rebuild from the stored geometry
-        syncElements();
+        refresh(id);
         return;
       }
-      const updated = { ...element, geometry };
-      const key = keyOf(updated);
-      if (key === entry.key) return;
-      entry.key = key;
-      entry.element = updated;
-      emit('change', { id, geometry });
+      if (item.source === 'planting') {
+        const shape = normaliseShape(raw);
+        if (JSON.stringify(shape) === JSON.stringify(item.geometry.kind === 'point' ? { kind: 'point', at: item.geometry.at } : item.geometry)) return;
+        emit('change', { id, source: 'planting', shape });
+        return;
+      }
+      const geometry = normaliseGeometry(raw);
+      if (JSON.stringify(geometry) === JSON.stringify(item.geometry)) return;
+      emit('change', { id, source: 'element', geometry });
+    }
+
+    /** Rebuilds a layer from the stored data, e.g. after the parent rejected a change. */
+    function refresh(id) {
+      const entry = entries.get(id);
+      if (entry) entry.key = null;
+      sync();
     }
 
     // --- Measurement labels --------------------------------------------------
@@ -248,14 +333,15 @@ export default {
       });
     }
 
-    function updateMeasureLabels(layer, element) {
-      if (!map || element.id !== editedId) return;
+    function updateMeasureLabels(id) {
+      if (!map || id !== editedId) return;
+      const entry = entries.get(id);
+      if (!entry) return;
       labelGroup.clearLayers();
-      const kind = element.geometry.kind;
-      const geometry = geometryFromLayer(layer, kind, element.geometry.width);
+      const geometry = geometryFromLayer(entry.layer, entry.item.geometry);
       const fmtLength = (value) => formatLength(value, props.units, locale.value);
       const pxPerMetre = 1 / metresPerPixel();
-      if (kind === 'polygon') {
+      if (geometry.kind === 'polygon') {
         const points = geometry.points;
         edgeLengths(points).forEach((length, i) => {
           if (length * pxPerMetre < MIN_LABEL_EDGE_PX) return;
@@ -263,9 +349,9 @@ export default {
         });
         const area = measure({ geometry }).area;
         labelGroup.addLayer(label(toLatLng(centroid(points)), formatArea(area, props.units, locale.value), 'map-measure-label is-area'));
-      } else if (kind === 'circle') {
+      } else if (geometry.kind === 'circle') {
         labelGroup.addLayer(label(toLatLng(geometry.center), `Ø ${fmtLength(geometry.radius * 2)}`, 'map-measure-label is-area'));
-      } else {
+      } else if (geometry.kind === 'line') {
         const points = geometry.points;
         const middle = points[Math.floor((points.length - 1) / 2)];
         const next = points[Math.floor((points.length - 1) / 2) + 1];
@@ -275,8 +361,14 @@ export default {
 
     // --- Drawing ------------------------------------------------------------
 
+    function toolStyle(tool) {
+      if (tool.draw === 'measure') return measureStyle();
+      if (ELEMENT_TYPES[tool.type]) return elementStyle(tool.type);
+      return plantingStyle(getPlant(tool.plantId).color, 'polygon');
+    }
+
     function drawOptions(tool) {
-      const style = tool.draw === 'measure' ? measureStyle() : elementStyle(tool.type);
+      const style = toolStyle(tool);
       if (tool.draw === 'line' || tool.draw === 'measure') style.weight = Math.max(3, style.weight ?? 3);
       return {
         snappable: props.snapping,
@@ -305,7 +397,7 @@ export default {
 
     function startTool(tool) {
       stopDrawing();
-      applySelection(true);
+      applySelection();
       if (!tool || !map) return;
       if (tool.draw === 'point') {
         container.value.classList.add('is-placing');
@@ -317,12 +409,9 @@ export default {
     function onCreate(event) {
       const tool = props.tool;
       const layer = event.layer;
-      if (!tool) {
-        map.removeLayer(layer);
-        return;
-      }
+      map.removeLayer(layer);
+      if (!tool) return;
       if (tool.draw === 'measure') {
-        map.removeLayer(layer);
         measureGroup.clearLayers();
         const points = layer.getLatLngs().map(toPoint);
         const length = polylineLength(points);
@@ -332,22 +421,26 @@ export default {
         emit('measure', length);
         return;
       }
-      const kind = ELEMENT_TYPES[tool.type].kind;
-      const geometry = normaliseGeometry(geometryFromLayer(layer, kind, ELEMENT_TYPES[tool.type].width));
-      map.removeLayer(layer);
-      if (kind === 'polygon' && !isUsablePolygon(geometry.points)) {
+      const config = ELEMENT_TYPES[tool.type];
+      const kind = config?.kind ?? 'polygon';
+      const raw = geometryFromLayer(layer, { kind, width: config?.width });
+      if (kind === 'polygon' && !isUsablePolygon(raw.points)) {
         emit('invalid', 'polygon');
         return;
       }
-      emit('create', { type: tool.type, geometry });
+      emit('create', { type: tool.type, geometry: config ? normaliseGeometry(raw) : normaliseShape(raw) });
     }
 
     function onMapClick(event) {
       if (props.locating) return;
       const tool = props.tool;
       if (tool?.draw === 'point') {
-        const radius = ELEMENT_TYPES[tool.type].diameter / 2;
-        emit('create', { type: tool.type, geometry: normaliseGeometry({ kind: 'circle', center: toPoint(event.latlng), radius }) });
+        const config = ELEMENT_TYPES[tool.type];
+        const at = toPoint(event.latlng);
+        const geometry = config
+          ? normaliseGeometry({ kind: 'circle', center: at, radius: config.diameter / 2 })
+          : normaliseShape({ kind: 'point', at });
+        emit('create', { type: tool.type, geometry });
         return;
       }
       if (!tool) emit('select', null);
@@ -366,7 +459,7 @@ export default {
       if (!shape) return removeDrawLabel();
       const draw = map.pm.Draw[shape];
       let text = null;
-      let at = cursor ?? draw._hintMarker?.getLatLng();
+      const at = cursor ?? draw._hintMarker?.getLatLng();
       try {
         if (shape === 'Rectangle' && draw._startMarker && draw._map?.hasLayer(draw._startMarker) && at) {
           const a = toPoint(draw._startMarker.getLatLng());
@@ -418,15 +511,17 @@ export default {
       map.pm.setLang(GEOMAN_LANGUAGES[locale.value] ?? 'en');
     }
 
+    /** Shows the whole garden, or in bed mode the bed. */
     function fitGarden() {
       if (!map) return;
-      const box = elementsBounds(props.garden.elements);
+      const focus = props.garden.elements.find((element) => element.id === props.focusBedId);
+      const box = focus ? bounds(focus.geometry.points) : elementsBounds(props.garden.elements);
       if (!box) {
         map.setView(toLatLng([0, 0]), props.garden.location ? 19 : 21, { animate: false });
         return;
       }
-      const bounds = L.latLngBounds([toLatLng([box.minX, box.minY]), toLatLng([box.maxX, box.maxY])]);
-      map.fitBounds(bounds, { padding: [48, 48], maxZoom: 23, animate: false });
+      const latLngBounds = L.latLngBounds([toLatLng([box.minX, box.minY]), toLatLng([box.maxX, box.maxY])]);
+      map.fitBounds(latLngBounds, { padding: [48, 48], maxZoom: focus ? MAX_ZOOM : 23, animate: false });
     }
 
     function reproject() {
@@ -461,7 +556,7 @@ export default {
       map.attributionControl.setPrefix('<a href="https://leafletjs.com">Leaflet</a>');
       tileLayer = L.tileLayer(OSM_URL, { maxNativeZoom: 19, maxZoom: MAX_ZOOM, attribution: OSM_ATTRIBUTION });
       gridLayer = createGridLayer(L, () => projection, () => props.units);
-      elementGroup = L.featureGroup().addTo(map);
+      itemGroup = L.featureGroup().addTo(map);
       measureGroup = L.layerGroup().addTo(map);
       labelGroup = L.layerGroup().addTo(map);
       map.pm.setGlobalOptions({ snappable: props.snapping, snapDistance: 16 });
@@ -480,15 +575,14 @@ export default {
       map.on('click', onMapClick);
       map.on('zoomend', () => {
         restyleAll();
-        const entry = entries.get(editedId);
-        if (entry) updateMeasureLabels(entry.layer, entry.element);
+        updateMeasureLabels(editedId);
       });
 
       applyControls();
       applyBackground();
       // The view must exist before layers are built: line widths depend on the scale
       fitGarden();
-      syncElements();
+      sync();
       startTool(props.tool);
 
       resizeObserver = new ResizeObserver(() => map?.invalidateSize());
@@ -512,7 +606,8 @@ export default {
       }
     });
 
-    watch(() => props.garden.elements, () => syncElements(), { deep: true });
+    watch(() => [props.garden.elements, props.garden.plantings], () => sync(), { deep: true });
+    watch(() => [props.period.year, props.period.day, props.focusBedId, props.readOnly], () => sync());
     watch(() => props.garden.location, () => {
       if (reproject() && props.garden.location) fitGarden();
     }, { deep: true });
@@ -521,21 +616,25 @@ export default {
       rebuildAll();
       fitGarden();
     });
+    watch(() => props.focusBedId, () => fitGarden());
     watch(() => props.background, applyBackground);
-    watch(() => props.tool, (tool) => startTool(tool));
-    watch(() => [props.selectedId, props.editMode, props.locating], () => applySelection(true));
+    watch(() => props.tool, (tool) => startTool(tool), { deep: true });
+    watch(() => [props.selectedId, props.editMode, props.locating], () => applySelection());
     watch(() => props.snapping, (snapping) => {
       if (!map) return;
       map.pm.setGlobalOptions({ snappable: snapping, snapDistance: 16 });
       if (props.tool) startTool(props.tool);
-      applySelection(true);
+      applySelection();
     });
     watch(() => props.units, () => {
       applyControls();
       gridLayer?.redraw();
-      applySelection(true);
+      applySelection();
     });
-    watch(locale, applyControls);
+    watch(locale, () => {
+      applyControls();
+      sync();
+    });
 
     // --- API for the parent -------------------------------------------------
 
@@ -545,6 +644,7 @@ export default {
       failed,
       finishDraw: () => map?.pm.finishDraw(),
       fitGarden,
+      refresh,
       /** Centre of the view in garden metres */
       centerPoint: () => (map ? toPoint(map.getCenter()) : [0, 0]),
       /** Centre of the view as latitude/longitude */

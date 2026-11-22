@@ -16,7 +16,7 @@ Erntelotse is a progressive web app for garden planning.
 
 ## Status
 
-Milestones 1 (foundation) and 2 (map and drawing) are done. Dashboard, calendar, plants and journal are still placeholder views. There is no satellite background (decided; see `docs/concept.md` §8). The specification is in `docs/`; read the relevant document before implementing anything:
+Milestones 1 (foundation), 2 (map and drawing) and 3 (beds and plantings) are done. Dashboard, calendar, plants and journal are still placeholder views. There is no satellite background (decided; see `docs/concept.md` §8). The specification is in `docs/`; read the relevant document before implementing anything:
 
 - `docs/concept.md` – features, data model, plant catalog format, hint and planning rules, architecture
 - `docs/design-rules.md` – colours, typography, icons, layout, map interaction, text and accessibility rules
@@ -46,11 +46,18 @@ The app must be served over http(s); ES modules and the service worker do not wo
 
 - `index.html` – import map and CSS; `js/main.js` initialises settings, theme, language and gardens, then mounts `js/App.js` (shell) with `js/router.js`.
 - `js/services/storage.js` – `createStorage(backend)`; `js/services/appStorage.js` creates the app instance (memory fallback when localStorage is blocked). Tests use `createMemoryBackend()`.
-- `js/stores/gardens.js` – garden index plus the active garden document. Change the active garden only through `mutateActive(fn)` (sets `updatedAt`, debounced save). Documents handed to storage or `structuredClone` must be plain objects: use `toRaw`/the store's helpers, and keep imported documents out of deep `reactive` state.
+- `js/stores/gardens.js` – garden index plus the active garden document. Change the active garden only through `mutateActive(fn)` or the drawing functions below (sets `updatedAt`, debounced save). Keep imported documents out of deep `reactive` state (see the reactivity pitfalls).
 - `js/stores/toast.js` – stores and services report problems as message keys; `ToastHost` translates them. Logic modules return error codes, never text.
 - `js/i18n/` – one message module per language; `tests/i18n.test.js` fails if keys, placeholders or plural forms differ between languages. Avoid `@` and `|` (vue-i18n syntax) except `|` for plurals.
 - `js/navigation.js` – nav entries (primary entries are the phone bottom bar, secondary ones move to `/more`).
-- Map: `js/views/MapView.js` holds UI state (tool, selection, edit mode, placing the garden) and writes to the store; `js/components/map/GardenMap.js` is the only Leaflet code and reports `create`/`change`/`select` events with metre geometry. Element types and their geometry kinds are in `js/logic/elements.js`; projection and shape maths in `js/logic/geometry.js`. Element changes go through `addElement`/`updateElementGeometry`/`updateElement`/`deleteElement` in the gardens store, which record undo snapshots.
+- Map: `js/views/MapView.js` (garden) and `js/views/BedEditorView.js` (`/map/bed/:id`) hold UI state (tool, selection, edit mode) and write to the store; `js/components/map/GardenMap.js` is the only Leaflet code. It draws "items" (elements and the plantings of the shown period); in bed mode (`focusBedId`) only that bed's plantings are selectable/editable. It reports `create`/`change`/`select` events with metre geometry; `refresh(id)` redraws a shape whose change the parent rejected. Element types: `js/logic/elements.js`; plantings, periods, count estimate, keeping shapes in the bed, copy forward: `js/logic/plantings.js`; ISO date helpers: `js/logic/dates.js`; projection and shape maths: `js/logic/geometry.js`; plants: `js/data/plants.js`.
+- Drawing changes go through the gardens store (`addElement`, `updateElementGeometry`, `deleteElement`/`restoreElement`, `addPlantings`, `updatePlanting`, `deletePlanting`); each records an undo snapshot of elements and plantings together.
+- `js/stores/period.js` – the shown year and day (or whole year), shared by map, bed editor and calendar; past years are read-only until unlocked per session.
+
+## Vue reactivity pitfalls (hit four times)
+
+- `structuredClone` throws on Vue proxies. Copy data with `JSON.parse(JSON.stringify(...))` (all stored data is JSON) – the store's save copy and the pure logic modules already do.
+- `reactive.list = reactive.list.filter(...)` stores proxies inside the raw document, which then breaks saving. Filter the raw array: `toRaw(reactive.list).filter(...)`.
 
 ## Map pitfalls (each one cost a debugging round)
 

@@ -2,9 +2,13 @@
 
 import { measure } from '../../logic/elements.js';
 import { formatArea, formatLength } from '../../logic/units.js';
+import { isKnownPlant } from '../../data/plants.js';
 
+/** The element's own name; for unnamed trees and shrubs the plant; else the type. */
 export function elementName(element, t) {
-  return element.name || t(`elements.types.${element.type}`);
+  if (element.name) return element.name;
+  if (element.plantId && isKnownPlant(element.plantId)) return t(`plants.${element.plantId}`);
+  return t(`elements.types.${element.type}`);
 }
 
 /** "4.8 m²", "Ø 4 m" or "12.5 m" */

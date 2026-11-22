@@ -5,6 +5,8 @@ import { reactive, toRaw } from 'vue';
 import { createGarden as buildGarden, duplicateGarden } from '../logic/gardenModel.js';
 import { createHistory } from '../logic/history.js';
 import { normaliseGeometry } from '../logic/elements.js';
+import { normaliseShape, moveShape } from '../logic/plantings.js';
+import { rigidTransform } from '../logic/geometry.js';
 import { StorageQuotaError, StorageReadError } from '../services/storage.js';
 import { settings, setActiveGardenId, replaceSettings, resetSettings } from './settings.js';
 import { showError } from './toast.js';
@@ -48,7 +50,10 @@ function refreshIndex() {
 }
 
 function plain(garden) {
-  return structuredClone(toRaw(garden));
+  // JSON, not structuredClone: a reactive document can contain proxies even in its
+  // raw form (e.g. after assigning a filtered reactive array), and structuredClone
+  // rejects them. Stored data is JSON anyway.
+  return JSON.parse(JSON.stringify(toRaw(garden)));
 }
 
 function write(garden) {
@@ -131,53 +136,114 @@ export function mutateActive(change) {
   scheduleSave();
 }
 
-// --- Elements of the active garden (with undo) -------------------------------
+// --- Elements and plantings of the active garden (with undo) ----------------
 
+/** Undo covers the drawing: elements and plantings together. */
 function snapshot() {
-  return JSON.stringify(toRaw(gardens.active.elements));
+  const { elements, plantings } = toRaw(gardens.active);
+  return JSON.stringify({ elements, plantings });
 }
 
-/** Records the current elements for undo, then applies the change. */
-function changeElements(change) {
+function restoreSnapshot(json) {
+  const { elements, plantings } = JSON.parse(json);
+  mutateActive((garden) => {
+    garden.elements = elements;
+    garden.plantings = plantings;
+  });
+}
+
+/** Records the current state for undo, then applies the change. */
+function changeDrawing(change) {
   if (!gardens.active) return;
   history.record(snapshot());
-  mutateActive((garden) => change(garden.elements));
+  mutateActive(change);
   syncHistory();
 }
 
 export function addElement(element) {
-  changeElements((elements) => elements.push(element));
+  changeDrawing((garden) => garden.elements.push(element));
 }
 
+/**
+ * New geometry for an element. When a bed is only moved or rotated, its
+ * plantings move along; when it is resized they stay where they are.
+ */
 export function updateElementGeometry(id, geometry) {
-  changeElements((elements) => {
-    const element = elements.find((item) => item.id === id);
-    if (element) element.geometry = normaliseGeometry(geometry);
+  changeDrawing((garden) => {
+    const element = garden.elements.find((item) => item.id === id);
+    if (!element) return;
+    const before = element.geometry;
+    element.geometry = normaliseGeometry(geometry);
+    if (element.type !== 'bed') return;
+    const transform = rigidTransform(before.points, element.geometry.points);
+    if (!transform) return;
+    for (const planting of garden.plantings) {
+      if (planting.bedId === id) planting.shape = moveShape(planting.shape, transform);
+    }
   });
 }
 
-/** Changes plain fields such as name or plantedYear. */
+/** Changes plain fields such as name, plantId or plantedYear. */
 export function updateElement(id, fields) {
-  changeElements((elements) => {
-    const element = elements.find((item) => item.id === id);
+  changeDrawing((garden) => {
+    const element = garden.elements.find((item) => item.id === id);
     if (element) Object.assign(element, fields);
   });
 }
 
+/** Deletes an element (a bed together with its plantings). Returns what was removed, for restoring. */
 export function deleteElement(id) {
-  changeElements((elements) => {
-    const index = elements.findIndex((item) => item.id === id);
-    if (index !== -1) elements.splice(index, 1);
+  const garden = gardens.active;
+  if (!garden) return null;
+  const element = garden.elements.find((item) => item.id === id);
+  if (!element) return null;
+  // JSON, not structuredClone: element and plantings are Vue proxies here
+  const removed = JSON.parse(JSON.stringify({ element, plantings: garden.plantings.filter((planting) => planting.bedId === id) }));
+  // Filter the raw arrays: filtering the reactive ones would put proxies into the document
+  changeDrawing((target) => {
+    target.elements = toRaw(target.elements).filter((item) => item.id !== id);
+    target.plantings = toRaw(target.plantings).filter((planting) => planting.bedId !== id);
   });
+  return removed;
+}
+
+export function restoreElement({ element, plantings }) {
+  changeDrawing((garden) => {
+    garden.elements.push(element);
+    garden.plantings.push(...plantings);
+  });
+}
+
+export function addPlantings(plantings) {
+  changeDrawing((garden) => garden.plantings.push(...plantings));
+}
+
+/** Changes fields of a planting; a new shape is normalised. */
+export function updatePlanting(id, fields) {
+  changeDrawing((garden) => {
+    const planting = garden.plantings.find((item) => item.id === id);
+    if (!planting) return;
+    Object.assign(planting, fields);
+    if (fields.shape) planting.shape = normaliseShape(fields.shape);
+  });
+}
+
+/** Deletes a planting. Returns its copy, for restoring. */
+export function deletePlanting(id) {
+  const planting = gardens.active?.plantings.find((item) => item.id === id);
+  if (!planting) return null;
+  const copy = JSON.parse(JSON.stringify(planting));
+  changeDrawing((garden) => {
+    garden.plantings = toRaw(garden.plantings).filter((item) => item.id !== id);
+  });
+  return copy;
 }
 
 export function undo() {
   if (!gardens.active) return;
   const previous = history.undo(snapshot());
   if (previous === null) return;
-  mutateActive((garden) => {
-    garden.elements = JSON.parse(previous);
-  });
+  restoreSnapshot(previous);
   syncHistory();
 }
 
@@ -185,9 +251,7 @@ export function redo() {
   if (!gardens.active) return;
   const next = history.redo(snapshot());
   if (next === null) return;
-  mutateActive((garden) => {
-    garden.elements = JSON.parse(next);
-  });
+  restoreSnapshot(next);
   syncHistory();
 }
 

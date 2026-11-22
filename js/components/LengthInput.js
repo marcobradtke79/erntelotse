@@ -1,7 +1,7 @@
 // Number input for a length (or a plain number) in the user's units.
 // v-model is always metres; the field shows metres or feet.
 
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, nextTick } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { parseNumber, toInputLength, fromInputLength, lengthInputUnit, formatNumber } from '../logic/units.js';
 import { checkSize } from '../logic/elements.js';
@@ -42,6 +42,15 @@ export default {
       error.value = '';
     }, { immediate: true });
 
+    // The stored value may differ from the typed one (rounding, normalised rotation),
+    // and may not change at all; show what is stored after each entry.
+    function emitValue(value) {
+      emit('update:modelValue', value);
+      nextTick(() => {
+        if (!error.value) text.value = display(props.modelValue);
+      });
+    }
+
     function commit() {
       const value = parseNumber(text.value);
       if (value === null) {
@@ -56,7 +65,7 @@ export default {
           return;
         }
         error.value = '';
-        emit('update:modelValue', metres);
+        emitValue(metres);
         return;
       }
       if (props.min !== null && value < props.min) {
@@ -64,7 +73,7 @@ export default {
         return;
       }
       error.value = '';
-      emit('update:modelValue', value);
+      emitValue(value);
     }
 
     return { id, text, error, unit, commit };

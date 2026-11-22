@@ -7,6 +7,7 @@ import GardensView from './views/GardensView.js';
 import SettingsView from './views/SettingsView.js';
 import MoreView from './views/MoreView.js';
 import MapView from './views/MapView.js';
+import BedEditorView from './views/BedEditorView.js';
 
 const placeholder = (section) => ({
   path: `/${section}`,
@@ -18,8 +19,10 @@ const placeholder = (section) => ({
 const routes = [
   { path: '/', redirect: () => (gardens.index.length > 0 ? '/dashboard' : '/gardens') },
   placeholder('dashboard'),
-  { path: '/map', component: MapView, meta: { titleKey: 'nav.map', fullBleed: true } },
-  placeholder('calendar'),
+  { path: '/map', component: MapView, meta: { titleKey: 'nav.map', fullBleed: true, period: true } },
+  // Under /map so that the Map navigation entry stays active
+  { path: '/map/bed/:id', component: BedEditorView, meta: { titleKey: 'elements.types.bed', fullBleed: true, period: true } },
+  { ...placeholder('calendar'), meta: { titleKey: 'nav.calendar', period: true } },
   placeholder('plants'),
   placeholder('journal'),
   { path: '/gardens', component: GardensView, meta: { titleKey: 'nav.gardens' } },

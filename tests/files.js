@@ -11,4 +11,6 @@ export const TEST_FILES = [
   'geometry.test.js',
   'elements.test.js',
   'history.test.js',
+  'dates.test.js',
+  'plantings.test.js',
 ];

@@ -36,7 +36,8 @@ export function createGarden({ name, now = new Date(), id = newId('g') }) {
 
 /** Deep copy with a new id and name. Ids inside the garden stay, they are scoped to the garden. */
 export function duplicateGarden(garden, { name, now = new Date(), id = newId('g') }) {
-  const copy = structuredClone(garden);
+  // JSON, not structuredClone: callers may pass Vue proxies, which structuredClone rejects
+  const copy = JSON.parse(JSON.stringify(garden));
   const timestamp = now.toISOString();
   copy.id = id;
   copy.name = name.trim().slice(0, GARDEN_NAME_MAX_LENGTH);

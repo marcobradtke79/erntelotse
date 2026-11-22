@@ -2,6 +2,7 @@ import { describe, test, expect } from './harness.js';
 import { validateGarden, validateSettings, validateIndex } from '../js/logic/validate.js';
 import { createGarden } from '../js/logic/gardenModel.js';
 import { createElementAt } from '../js/logic/elements.js';
+import { createPlanting } from '../js/logic/plantings.js';
 
 const valid = () => createGarden({ name: 'Garden', now: new Date('2026-11-21T10:00:00Z'), id: 'g_valid' });
 const codes = (problems) => problems.map((p) => `${p.path}:${p.code}`);
@@ -71,10 +72,21 @@ describe('validateGarden', () => {
     garden.elements = [createElementAt('parcel', [0, 0]), createElementAt('parcel', [5, 5])];
     expect(codes(validateGarden(garden))).toEqual(['elements:element.parcelCount']);
   });
+  test('plantings are checked and must belong to a bed', () => {
+    const garden = valid();
+    const bed = createElementAt('bed', [2, 0.6], { width: 4, depth: 1.2 });
+    const tree = createElementAt('tree', [10, 10]);
+    garden.elements = [bed, tree];
+    garden.plantings = [
+      createPlanting({ bedId: bed.id, plantId: 'carrot', shape: { kind: 'point', at: [1, 1] }, start: '2026-04-01', end: null }),
+      createPlanting({ bedId: tree.id, plantId: 'carrot', shape: { kind: 'point', at: [1, 1] }, start: '2026-04-01', end: '2026-03-01' }),
+    ];
+    expect(codes(validateGarden(garden))).toEqual(['plantings[1]:planting.end', 'plantings[1]:planting.unknownBed']);
+  });
   test('items need unique ids', () => {
     const garden = valid();
-    garden.plantings = [{ id: 'p_1' }, { id: 'p_1' }, { name: 'x' }, 'text'];
-    expect(codes(validateGarden(garden))).toEqual(['plantings[1].id:duplicate', 'plantings[2].id:format', 'plantings[3]:type']);
+    garden.journal = [{ id: 'j_1' }, { id: 'j_1' }, { name: 'x' }, 'text'];
+    expect(codes(validateGarden(garden))).toEqual(['journal[1].id:duplicate', 'journal[2].id:format', 'journal[3]:type']);
   });
 });
 

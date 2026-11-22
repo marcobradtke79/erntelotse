@@ -639,3 +639,224 @@
 .garden-map .leaflet-container a.leaflet-popup-close-button {
   color: var(--color-text);
 }
+
+/* Year switcher (header) and period bar (panels) */
+
+.year-switcher {
+  display: inline-flex;
+  align-items: center;
+  border-radius: var(--radius-round);
+  background: var(--color-surface-alt);
+}
+
+.year-switcher-value {
+  min-width: 3.2em;
+  text-align: center;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 479px) {
+  /* Room for year and garden switcher on small phones */
+  .app-header {
+    gap: var(--space-2);
+  }
+
+  .app-header .menu-button {
+    max-width: 38vw;
+    padding: var(--space-2) var(--space-3);
+  }
+
+  .app-brand span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+  }
+}
+
+.period-bar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border-radius: var(--radius-large);
+  background: var(--color-surface-alt);
+}
+
+.period-bar-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 36px;
+}
+
+.period-bar-row .icon {
+  color: var(--color-accent);
+}
+
+.period-bar-label {
+  flex: 1;
+}
+
+.period-today {
+  min-height: 36px;
+  padding: 0 var(--space-3);
+}
+
+.period-slider {
+  width: 100%;
+  height: var(--touch-target);
+  accent-color: var(--color-primary);
+}
+
+.period-slider:disabled {
+  opacity: 0.4;
+}
+
+.period-whole-year,
+.checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--touch-target);
+  cursor: pointer;
+}
+
+.period-whole-year input,
+.checkbox-row input {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--color-primary);
+  flex: none;
+}
+
+/* Plantings */
+
+.plant-swatch {
+  display: inline-block;
+  flex: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.2);
+}
+
+.status-chip {
+  display: inline-flex;
+  align-items: center;
+  flex: none;
+  padding: 1px var(--space-2);
+  border-radius: var(--radius-round);
+  border: 1px solid currentColor;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.status-chip.is-planned {
+  color: var(--color-info);
+}
+
+.status-chip.is-active {
+  color: var(--color-success);
+}
+
+.status-chip.is-past {
+  color: var(--color-text-muted);
+}
+
+.planting-row,
+.history-row {
+  align-items: center;
+}
+
+.planting-row-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.planting-row-name {
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.history-row[aria-current="true"] {
+  background: var(--color-primary-soft);
+}
+
+.bed-overview {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.bed-history-title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
+
+.bed-history-title .icon {
+  color: var(--color-accent);
+}
+
+.bed-thumbnail {
+  flex: none;
+  border-radius: var(--radius-small);
+  background: var(--map-plan-bg);
+}
+
+.bed-thumbnail-bed {
+  fill: var(--map-bed-fill);
+  stroke: var(--map-bed-stroke);
+  stroke-width: 1.5;
+}
+
+.bed-thumbnail-area {
+  fill-opacity: 0.6;
+  stroke-width: 1;
+}
+
+.copy-forward {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border-radius: var(--radius-large);
+  border: 1px solid var(--color-border);
+}
+
+.copy-forward summary {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 36px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.copy-forward[open] summary {
+  margin-bottom: var(--space-2);
+}
+
+.copy-forward summary .icon {
+  color: var(--color-primary);
+}
+
+.textarea {
+  min-height: 72px;
+  resize: vertical;
+}
+
+.draw-bar-controls .field {
+  flex: 1 1 160px;
+}
+
+.leaflet-tooltip.map-name-label.is-planting {
+  font-size: 12px;
+  font-weight: 700;
+}

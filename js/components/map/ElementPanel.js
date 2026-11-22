@@ -7,18 +7,19 @@ import { resizeRectangle, rotate } from '../../logic/geometry.js';
 import { formatArea, formatLength } from '../../logic/units.js';
 import AppIcon from '../AppIcon.js';
 import LengthInput from '../LengthInput.js';
+import PlantSelect from '../PlantSelect.js';
 import { TYPE_ICONS } from './ToolPalette.js';
 import { elementName } from './elementText.js';
 
 export default {
   name: 'ElementPanel',
-  components: { AppIcon, LengthInput },
+  components: { AppIcon, LengthInput, PlantSelect },
   props: {
     element: { type: Object, required: true },
     units: { type: String, default: 'metric' },
     editMode: { type: String, default: 'shape' },
   },
-  emits: ['close', 'update', 'geometry', 'mode', 'delete'],
+  emits: ['close', 'update', 'geometry', 'mode', 'delete', 'open-bed'],
   setup(props, { emit }) {
     const { t, locale } = useI18n();
     const name = ref(props.element.name);
@@ -93,6 +94,20 @@ export default {
         <h2>{{ title }}</h2>
       </div>
       <p class="muted small">{{ t('elements.types.' + element.type) }}</p>
+
+      <button v-if="element.type === 'bed'" type="button" class="btn btn-primary" @click="$emit('open-bed')">
+        <AppIcon name="seedling" />
+        <span>{{ t('map.panel.openBed') }}</span>
+      </button>
+
+      <PlantSelect
+        v-if="element.type === 'tree' || element.type === 'shrub'"
+        :model-value="element.plantId ?? null"
+        :placement="element.type"
+        :label="t('map.panel.plant')"
+        allow-none
+        @update:model-value="$emit('update', { plantId: $event })"
+      />
 
       <div class="field">
         <label for="element-name">{{ t('common.name') }}</label>

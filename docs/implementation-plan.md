@@ -119,7 +119,15 @@ Geometry: conversion round trip, area of known polygons, lengths, overlap cases,
 
 ## Milestone 3 – Beds and plantings
 
-**Scope**
+**Status: done.** Deviations from the original scope:
+
+- **No temporary plant list.** `js/data/plants.js` starts the real catalog with final ids and the fields milestone 3 needs (15 plants: vegetables, herbs, strawberries for beds; apple and cherry for trees; redcurrant and raspberry for shrubs). Milestone 4 extends these entries, so no migration is needed.
+- **Count** is stored as `null` while the user has not entered one; the estimate is computed when shown, so it follows reshaping.
+- **Shapes stay in the bed**: areas sticking out of a convex bed are clipped to it; otherwise (and for single plants) shapes outside the bed are rejected with a message.
+- **Moving or rotating a bed moves its plantings**; resizing leaves them in place. Deleting a bed deletes its plantings (undo restores both).
+- The bed editor lives at `/map/bed/:id`; the date slider and "whole year" switch are in the side panel, the year switcher in the header.
+
+**Scope (as planned)**
 
 - Bed editor: the map component focused on one bed, rest dimmed.
 - Planting areas (polygon / rectangle inside the bed) and single plant points; shapes are kept inside the bed.

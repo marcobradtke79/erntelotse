@@ -7,6 +7,7 @@ import { GARDEN_NAME_MAX_LENGTH } from './gardenModel.js';
 import { UNIT_SYSTEMS } from './units.js';
 import { LANGUAGE_CODES } from '../i18n/languages.js';
 import { validateElement } from './elements.js';
+import { validatePlanting } from './plantings.js';
 
 export const THEMES = ['system', 'light', 'dark'];
 
@@ -74,6 +75,14 @@ export function validateGarden(doc) {
       for (const code of validateElement(element)) problems.push({ path: `elements[${index}]`, code: `element.${code}` });
     });
     if (doc.elements.filter((element) => element?.type === 'parcel').length > 1) problems.push({ path: 'elements', code: 'element.parcelCount' });
+  }
+  if (Array.isArray(doc.plantings)) {
+    const bedIds = new Set((Array.isArray(doc.elements) ? doc.elements : []).filter((element) => element?.type === 'bed').map((element) => element.id));
+    doc.plantings.forEach((planting, index) => {
+      if (!isObject(planting)) return;
+      for (const code of validatePlanting(planting)) problems.push({ path: `plantings[${index}]`, code: `planting.${code}` });
+      if (typeof planting.bedId === 'string' && !bedIds.has(planting.bedId)) problems.push({ path: `plantings[${index}]`, code: 'planting.unknownBed' });
+    });
   }
   for (const key of ['plantOverrides', 'taskStates']) {
     if (!isObject(doc[key])) problems.push({ path: key, code: 'type' });

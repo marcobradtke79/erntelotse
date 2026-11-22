@@ -56,7 +56,10 @@ export function normaliseGeometry(geometry) {
 export function createElement({ type, geometry, name = '' }) {
   if (!ELEMENT_TYPES[type]) throw new Error(`Unknown element type ${type}`);
   const element = { id: newId('e'), type, name, geometry: normaliseGeometry(geometry) };
-  if (type === 'tree' || type === 'shrub') element.plantedYear = null;
+  if (type === 'tree' || type === 'shrub') {
+    element.plantId = null;
+    element.plantedYear = null;
+  }
   return element;
 }
 
@@ -144,6 +147,7 @@ export function validateElement(element) {
     if (!isNumber(geometry.width) || geometry.width <= 0) problems.push('width');
   }
   if ('plantedYear' in element && element.plantedYear !== null && !Number.isInteger(element.plantedYear)) problems.push('plantedYear');
+  if ('plantId' in element && element.plantId !== null && (typeof element.plantId !== 'string' || element.plantId === '')) problems.push('plantId');
   return problems;
 }
 

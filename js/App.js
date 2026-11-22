@@ -4,11 +4,13 @@ import { useRoute } from 'vue-router';
 import { PRIMARY_NAV, SECONDARY_NAV } from './navigation.js';
 import AppIcon from './components/AppIcon.js';
 import GardenSwitcher from './components/GardenSwitcher.js';
+import YearSwitcher from './components/YearSwitcher.js';
+import { gardens } from './stores/gardens.js';
 import ToastHost from './components/ToastHost.js';
 
 export default {
   name: 'App',
-  components: { AppIcon, GardenSwitcher, ToastHost },
+  components: { AppIcon, GardenSwitcher, YearSwitcher, ToastHost },
   setup() {
     const { t } = useI18n();
     const route = useRoute();
@@ -39,8 +41,11 @@ export default {
     }
 
     const fullBleed = computed(() => Boolean(route.meta.fullBleed));
+    // By path, so that /map/bed/:id keeps "Map" highlighted
+    const isActive = (path) => route.path === path || route.path.startsWith(`${path}/`);
+    const showPeriod = computed(() => Boolean(route.meta.period) && Boolean(gardens.active));
 
-    return { t, main, announcement, moreActive, fullBleed, skipToContent, primary: PRIMARY_NAV, secondary: SECONDARY_NAV };
+    return { t, main, announcement, moreActive, fullBleed, showPeriod, isActive, skipToContent, primary: PRIMARY_NAV, secondary: SECONDARY_NAV };
   },
   template: `
     <div class="app">
@@ -52,19 +57,20 @@ export default {
           <span>{{ t('app.name') }}</span>
         </router-link>
         <span class="app-header-spacer"></span>
+        <YearSwitcher v-if="showPeriod" />
         <GardenSwitcher />
       </header>
 
       <nav class="app-nav" :aria-label="t('nav.label')">
         <ul>
           <li v-for="item in primary" :key="item.path">
-            <router-link :to="item.path" class="nav-link" active-class="active">
+            <router-link :to="item.path" class="nav-link" :class="{ active: isActive(item.path) }" :aria-current="isActive(item.path) ? 'page' : null">
               <AppIcon :name="item.icon" />
               <span>{{ t(item.labelKey) }}</span>
             </router-link>
           </li>
           <li v-for="item in secondary" :key="item.path" class="nav-secondary">
-            <router-link :to="item.path" class="nav-link" active-class="active">
+            <router-link :to="item.path" class="nav-link" :class="{ active: isActive(item.path) }" :aria-current="isActive(item.path) ? 'page' : null">
               <AppIcon :name="item.icon" />
               <span>{{ t(item.labelKey) }}</span>
             </router-link>
