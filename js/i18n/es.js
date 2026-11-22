@@ -113,9 +113,23 @@ export default {
       deleteAllConfirm: 'Eliminar todo',
       deletedAll: 'Todos los datos se han eliminado',
     },
+    weather: {
+      title: 'Tiempo',
+      label: 'Mostrar la previsión del tiempo para jardines con ubicación',
+      hint: 'Avisos de helada y consejos de riego en el resumen. La previsión viene de Open-Meteo.',
+    },
+    install: {
+      title: 'Instalar la aplicación',
+      text: 'Instala Erntelotse en tu móvil u ordenador. Así se abre como una aplicación y funciona sin internet.',
+      button: 'Instalar',
+      installed: 'Erntelotse está instalada en este dispositivo.',
+      ios: 'En iPhone y iPad: toca el botón de compartir en Safari y luego «Añadir a pantalla de inicio».',
+      browser: 'Si tu navegador puede instalar aplicaciones, lo encontrarás en su menú, p. ej. «Instalar aplicación» o «Añadir a pantalla de inicio».',
+    },
     privacy: {
       title: 'Privacidad',
       text: 'Erntelotse no tiene cuenta ni servidor. Tus jardines se quedan en este navegador mientras no los exportes.',
+      requests: 'Solo se contactan tres servicios, y solo cuando los usas: OpenStreetMap para el mapa de calles, Nominatim (OpenStreetMap) para buscar lugares y Open-Meteo para el tiempo, que recibe la posición de tu jardín redondeada a 1 km aproximadamente. Como cualquier sitio web, ven tu dirección IP.',
     },
   },
   elements: {
@@ -155,6 +169,7 @@ export default {
       label: 'Fondo',
       street: 'Callejero',
       plan: 'Cuadrícula',
+      offline: 'El mapa de calles necesita conexión a internet',
     },
     draw: {
       rectangle: 'Toca una esquina y después la esquina opuesta.',
@@ -219,7 +234,7 @@ export default {
       modeHint: {
         shape: 'Arrastra las esquinas. Arrastra un punto intermedio para añadir una esquina.',
         shapeCircle: 'Arrastra el punto del borde para cambiar el tamaño, o el centro para moverlo.',
-        shapeLine: 'Arrastra los puntos. Arrastra un punto intermedio para añadir un quiebro.',
+        shapeLine: 'Arrastra los puntos. Arrastra un punto intermedio para añadir un vértice.',
         move: 'Arrastra el elemento a otro lugar.',
         rotate: 'Arrastra una esquina para girar el elemento.',
       },
@@ -392,7 +407,7 @@ export default {
     },
     text: {
       sowIndoor: 'Sembrar en semillero',
-      sowOutdoor: 'Sembrar en el exterior',
+      sowOutdoor: 'Sembrar directamente',
       plantOut: 'Trasplantar',
       harvest: 'Cosechar',
     },
@@ -424,10 +439,10 @@ export default {
       water: 'Riega abundantemente al pie, sobre todo cuando se forman los frutos.',
     },
     onion: {
-      stopWatering: 'Deja de regar cuando las hojas empiecen a caer: así los bulbos maduran y se conservan mejor.',
+      stopWatering: 'Deja de regar cuando las hojas se doblen: así los bulbos maduran y se conservan mejor.',
     },
     basil: {
-      pinch: 'Despunta las puntas y los botones florales para que la planta se mantenga frondosa.',
+      pinch: 'Despunta los tallos y quita los botones florales para que la planta se mantenga frondosa.',
     },
     parsley: {
       germination: 'El perejil germina despacio (hasta cuatro semanas); mantén húmeda la línea de siembra hasta entonces.',
@@ -479,7 +494,7 @@ export default {
       thin: 'Aclara las plántulas a unos 10 cm; las hojas jóvenes van bien en ensalada.',
     },
     spinach: {
-      bolt: 'Mantén la tierra húmeda; la sequía y los días largos hacen que se espigue.',
+      bolt: 'Mantén la tierra húmeda; la sequía y los días largos hacen que la espinaca se espigue.',
     },
     chard: {
       outerLeaves: 'Cosecha las hojas exteriores y deja el corazón; así sigue creciendo hasta el otoño.',
@@ -542,14 +557,14 @@ export default {
       cutFlowers: 'Corta con regularidad; quita las flores, salvo que quieras dejarlas para las abejas.',
     },
     dill: {
-      resow: 'Siembra un poco cada tres semanas para tener siempre.',
+      resow: 'Siembra un poco cada tres semanas para tener siempre eneldo fresco.',
     },
     thyme: {
       cutBack: 'Recorta un tercio en primavera para que se mantenga compacto.',
     },
     rosemary: {
       cutBack: 'Recorta ligeramente en primavera, nunca en la madera vieja.',
-      winterProtection: 'Protégelo de las heladas fuertes con un velo o lleva la maceta a un sitio fresco y luminoso.',
+      winterProtection: 'Protégelo de las heladas fuertes con manta térmica o lleva la maceta a un sitio fresco y luminoso.',
     },
     sage: {
       cutBack: 'Recorta en primavera para que la planta siga frondosa.',
@@ -602,7 +617,7 @@ export default {
     rose: {
       springPruning: 'Poda cuando florezca la forsitia: quita la madera seca y acorta los brotes fuertes.',
       fertilize: 'Abona con abono para rosales o compost en primavera.',
-      deadhead: 'Corta las flores marchitas hasta la siguiente hoja completa; los rosales reflorecientes vuelven a florecer.',
+      deadhead: 'Corta las flores marchitas hasta la siguiente hoja completa; los rosales remontantes vuelven a florecer.',
       summerFertilize: 'Abona por segunda vez a principios de verano, no más tarde, para que los brotes maduren antes del invierno.',
     },
     hydrangea: {
@@ -641,7 +656,7 @@ export default {
     due: 'Tareas de {month}',
     nothingDue: 'No hay nada que hacer este mes.',
     noPlantings: 'Todavía no hay nada planificado. Planifica tus bancales en el mapa y aquí aparecerán los consejos.',
-    toMap: 'Ir al mapa',
+    toMap: 'Ir al plano',
     sowNow: 'Sembrar y plantar en {month}',
     nothingToSow: 'Este mes no se siembra ni se planta nada del catálogo.',
     beds: 'Bancales',
@@ -697,7 +712,7 @@ export default {
     changed: 'Ajustada',
     windows: {
       sowIndoor: 'Sembrar en semillero',
-      sowOutdoor: 'Sembrar en el exterior',
+      sowOutdoor: 'Sembrar directamente',
       plantOut: 'Trasplantar',
       harvest: 'Cosecha',
     },
@@ -812,9 +827,9 @@ export default {
     title: 'Vecinos y rotación',
     none: 'No hay observaciones sobre rotación ni vecinos.',
     issues: {
-      sameFamily: '{plant} ({family}) creció aquí en {year}. Espera hasta {until} o elige otro lugar.',
-      heavyAfterHeavy: '{plant}, también muy exigente, creció aquí en {year}. Incorpora compost antes de plantar.',
-      afterLegumes: 'Bien: {plant} creció aquí en {year} y dejó nitrógeno en la tierra.',
+      sameFamily: 'En {year} ya creció aquí la misma familia: {plant} ({family}). Espera hasta {until} o elige otro lugar.',
+      heavyAfterHeavy: 'En {year} ya creció aquí otro cultivo muy exigente: {plant}. Incorpora compost antes de plantar.',
+      afterLegumes: 'Bien: en {year} crecieron aquí leguminosas ({plant}), que dejaron nitrógeno en la tierra.',
       goodSequence: 'Bien: después de {plant} ({year}), conviene una planta menos exigente.',
     },
     goodNeighbours: 'Buenos vecinos cerca: {plants}',
@@ -829,6 +844,29 @@ export default {
       rotation: 'su familia creció aquí hace poco',
       goodGroup: 'Buenos vecinos aquí',
     },
+  },
+  weather: {
+    title: 'Tiempo',
+    today: 'Hoy',
+    days: 'Próximos días',
+    updated: 'Previsión de {time}',
+    stale: 'sin conexión, previsión anterior',
+    source: 'Datos meteorológicos de Open-Meteo.com',
+    sky: {
+      frost: 'Posible helada',
+      rain: 'Lluvia',
+      sunny: 'Soleado y cálido',
+      mixed: 'Variable',
+    },
+    notes: {
+      frost: '{day}: posible helada, hasta {temperature}. Protege {plants} o espera para trasplantar.',
+      water: 'Vienen días cálidos y secos. Riega a fondo por la mañana o por la tarde.',
+      rained: '{amount} de lluvia en los últimos tres días: no hace falta regar.',
+    },
+  },
+  pwa: {
+    updateReady: 'Hay una nueva versión de Erntelotse lista.',
+    reload: 'Actualizar',
   },
   placeholder: {
     noGardenTitle: 'Ningún jardín seleccionado',

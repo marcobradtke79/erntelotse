@@ -16,7 +16,7 @@ Erntelotse is a progressive web app for garden planning.
 
 ## Status
 
-Milestones 1–5 are done: foundation, map and drawing, beds and plantings, catalog of 62 plants with icons and hints (dashboard, calendar, plant pages, custom plants, climate), planning aids (crop rotation, neighbours, task states, journal, backup reminder). Next is milestone 6: weather, PWA/offline, GitHub Pages, final accessibility and translation pass. There is no satellite background (decided; see `docs/concept.md` §8). The specification is in `docs/`; read the relevant document before implementing anything:
+Milestones 1–6 are implemented: foundation, map and drawing, beds and plantings, catalog of 62 plants with icons and hints (dashboard, calendar, plant pages, custom plants, climate), planning aids (crop rotation, neighbours, task states, journal, backup reminder), weather and PWA (Open-Meteo forecast, installable, offline, update notice). Publishing on GitHub Pages (deploy from `main`, repository root) is still open. There is no satellite background (decided; see `docs/concept.md` §8). The specification is in `docs/`; read the relevant document before implementing anything:
 
 - `docs/concept.md` – features, data model, plant catalog format, hint and planning rules, architecture
 - `docs/design-rules.md` – colours, typography, icons, layout, map interaction, text and accessibility rules
@@ -39,6 +39,9 @@ python3 -m http.server 8000      # serve the repository root
 - New test files must be added to `tests/files.js`; tests use `describe/test/expect` from `tests/harness.js`
 - `node --check <file>` is a quick syntax check for view and component modules, which only run in the browser
 - `python3 -m http.server` sends no cache headers, so Chrome may keep serving old CSS/JS after edits; hard-reload, or use a server that sends `Cache-Control: no-store` while testing
+- **After adding, removing or changing any app file, run `node tools/precache.mjs`**: it writes the precache list and a content-hash version into `sw.js`. `node tests/node.mjs` fails while it is out of date. Without a new version, installed apps never see the change.
+- On localhost / 127.0.0.1 the service worker is not registered (and old registrations are removed), so edits show up directly. Add `?sw` before the hash (`http://localhost:8000/?sw#/dashboard`) to test offline start and updates.
+- App icons: `python3 tools/app-icons.py assets/icons/app` renders the PNGs from the favicon design (needs Pillow).
 
 The app must be served over http(s); ES modules and the service worker do not work from `file://`.
 
@@ -55,12 +58,15 @@ The app must be served over http(s); ES modules and the service worker do not wo
 - Plants: built-in data in `js/data/plants.js` (+ `families.js`); names `plants.<id>`, care texts `careHints.<id>.<hint>`. `js/logic/catalog.js` merges built-ins, per-garden `plantOverrides` and `customPlants`; components must read plants via `js/stores/catalog.js` (`plantById`, `plantLabel`), not `getPlant`, or custom plants break. Adding a plant: data entry, neighbour pairs, name and care texts in five languages, and a `plant-<id>` symbol in `assets/icons/plants/plants.svg`; `tests/catalog.test.js` and `tests/i18n.test.js` check all of these. Plant icons: `js/components/PlantIcon.js` (custom plants get their category icon in their colour).
 - Hints: `js/logic/hints.js` (`hintsFor`, `suggestions`, `proposedStart`) on top of `js/logic/climate.js` (ISO weeks, climate shift). Hints are derived on the fly; views: `DashboardView`, `CalendarView`; display helpers in `js/components/tasks/`.
 - Planning aids: `js/logic/rotation.js` (rotation check, neighbours, badges, picker advice) and `js/logic/tasks.js` (task states, overdue, journal helpers). Task states and journal change through `setTaskState`, `addJournalEntry`, `updateJournalEntry`, `deleteJournalEntry` in the gardens store; marking a task done writes its journal entry. Exports go through `js/services/backup.js` (records `exportedAt` for the reminder).
+- Weather: `js/logic/weatherRules.js` (frost, watering, rain notes; pure) and `js/services/weather.js` (Open-Meteo, position rounded to ~1 km, cache `erntelotse:weather:<id>`, 3 h max age, offline fallback up to 24 h) → `js/stores/weather.js` → `js/components/WeatherCard.js` on the dashboard. Switch: `settings.weather`.
+- PWA: `manifest.webmanifest`, `sw.js` (cache-first for same-origin files, never for OSM tiles or other hosts), `js/services/pwa.js` (registration, install prompt, update toast). `js/stores/network.js` tracks online/offline; offline the map uses the grid.
 - `js/stores/period.js` – the shown year and day (or whole year), shared by map, bed editor and calendar; past years are read-only until unlocked per session.
 
-## Vue reactivity pitfalls (hit four times)
+## Vue reactivity pitfalls (hit five times)
 
 - `structuredClone` throws on Vue proxies. Copy data with `JSON.parse(JSON.stringify(...))` (all stored data is JSON) – the store's save copy and the pure logic modules already do.
 - `reactive.list = reactive.list.filter(...)` stores proxies inside the raw document, which then breaks saving. Filter the raw array: `toRaw(reactive.list).filter(...)`.
+- A `watch` created while a component's `setup` runs stops when that component unmounts. Store-level watchers started lazily from a component need `effectScope(true).run(...)` (see `js/stores/weather.js`).
 
 ## Map pitfalls (each one cost a debugging round)
 
@@ -70,7 +76,7 @@ The app must be served over http(s); ES modules and the service worker do not wo
 - Geoman keeps options passed to `layer.pm.enable()` on the layer: after `draggable: false`, `enableLayerDrag()` silently does nothing unless `setOptions({ draggable: true })` comes first.
 - Element layers must let clicks bubble to the map, otherwise drawing on top of existing shapes cannot place points.
 - Element names go into map labels as text nodes, never as HTML strings (names can come from imported files).
-- In a hidden browser tab (automation) `requestAnimationFrame` does not run, so Leaflet fade/zoom animations never finish; that is not an app bug.
+- In a hidden browser tab (automation) `requestAnimationFrame` does not run, so Leaflet fade/zoom animations never finish, and `setTimeout` is throttled to about 1 s; that is not an app bug. For timings, yield with a `MessageChannel` and look at long tasks.
 
 ## Fixed decisions
 

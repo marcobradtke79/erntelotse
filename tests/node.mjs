@@ -15,4 +15,9 @@ for (const result of failed) {
   console.log(`✗ ${result.file} › ${result.group ? `${result.group} › ` : ''}${result.name}\n  ${result.error?.message}`);
 }
 console.log(`${failed.length ? '✗' : '✓'} ${results.length - failed.length}/${results.length} passed`);
-process.exitCode = failed.length ? 1 : 0;
+
+// Node only: the service worker's precache list must match the app files
+const { precacheBlock, currentBlock } = await import('../tools/precache.mjs');
+const precacheOk = currentBlock() === precacheBlock();
+if (!precacheOk) console.log('✗ sw.js precache list is out of date: run node tools/precache.mjs');
+process.exitCode = failed.length || !precacheOk ? 1 : 0;

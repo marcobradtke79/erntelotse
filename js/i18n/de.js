@@ -113,9 +113,23 @@ export default {
       deleteAllConfirm: 'Alles löschen',
       deletedAll: 'Alle Daten gelöscht',
     },
+    weather: {
+      title: 'Wetter',
+      label: 'Wettervorhersage für Gärten mit Standort anzeigen',
+      hint: 'Frostwarnungen und Gießhinweise auf der Übersicht. Die Vorhersage kommt von Open-Meteo.',
+    },
+    install: {
+      title: 'App installieren',
+      text: 'Installiere Erntelotse auf deinem Handy oder Computer. Dann startet es wie eine App und funktioniert ohne Internet.',
+      button: 'Installieren',
+      installed: 'Erntelotse ist auf diesem Gerät installiert.',
+      ios: 'Auf iPhone und iPad: Tippe in Safari auf „Teilen“ und dann auf „Zum Home-Bildschirm“.',
+      browser: 'Wenn dein Browser Apps installieren kann, findest du das in seinem Menü, z. B. „App installieren“ oder „Zum Startbildschirm hinzufügen“.',
+    },
     privacy: {
       title: 'Datenschutz',
       text: 'Erntelotse hat kein Konto und keinen Server. Deine Gärten bleiben in diesem Browser, solange du sie nicht exportierst.',
+      requests: 'Nur drei Dienste werden kontaktiert, und nur wenn du sie nutzt: OpenStreetMap für die Straßenkarte, Nominatim (OpenStreetMap) für die Ortssuche und Open-Meteo für das Wetter, das dafür die Lage deines Gartens auf etwa 1 km gerundet erhält. Wie jede Website sehen sie deine IP-Adresse.',
     },
   },
   elements: {
@@ -155,6 +169,7 @@ export default {
       label: 'Hintergrund',
       street: 'Straßenkarte',
       plan: 'Raster',
+      offline: 'Die Straßenkarte braucht eine Internetverbindung',
     },
     draw: {
       rectangle: 'Tippe auf eine Ecke, dann auf die gegenüberliegende Ecke.',
@@ -218,7 +233,7 @@ export default {
       },
       modeHint: {
         shape: 'Ziehe die Ecken. Ziehe einen Mittelpunkt, um eine Ecke hinzuzufügen.',
-        shapeCircle: 'Ziehe den Punkt am Rand, um die Größe zu ändern, oder die Mitte, um ihn zu verschieben.',
+        shapeCircle: 'Ziehe den Punkt am Rand, um die Größe zu ändern, oder die Mitte, um das Element zu verschieben.',
         shapeLine: 'Ziehe die Punkte. Ziehe einen Mittelpunkt, um einen Knick hinzuzufügen.',
         move: 'Ziehe das Element an eine neue Stelle.',
         rotate: 'Ziehe an einer Ecke, um das Element zu drehen.',
@@ -234,7 +249,7 @@ export default {
       number: 'Gib eine Zahl ein.',
       tooSmall: 'Gib mindestens 1 cm ein.',
       tooLarge: 'Das ist zu groß für einen Garten.',
-      invalidShape: 'Diese Form geht nicht: Kanten dürfen sich nicht kreuzen und sie braucht eine Fläche.',
+      invalidShape: 'Diese Form geht nicht: Die Kanten dürfen sich nicht kreuzen, und die Form braucht eine Fläche.',
     },
   },
   plants: {
@@ -495,7 +510,7 @@ export default {
       coverHead: 'Knicke einige Blätter über die Blume, damit sie weiß bleibt.',
     },
     broccoli: {
-      sideShoots: 'Lass die Pflanze nach dem Schnitt des Haupttriebs stehen: Seitentriebe geben eine zweite Ernte.',
+      sideShoots: 'Lass die Pflanze nach dem Schnitt der Hauptblume stehen: Seitentriebe geben eine zweite Ernte.',
     },
     kohlrabi: {
       water: 'Gieße gleichmäßig; bei Trockenheit werden Kohlrabi holzig oder platzen.',
@@ -592,7 +607,7 @@ export default {
       summerPruning: 'Schneide Pflaumen im Sommer nach der Ernte; dann heilen die Wunden am besten.',
     },
     peach: {
-      leafCurl: 'Schütze den Baum vor dem Austrieb vor Regen oder spritze ein Mittel gegen Kräuselkrankheit.',
+      leafCurl: 'Halte vor dem Austrieb Regen vom Baum fern oder spritze ein Mittel gegen die Kräuselkrankheit.',
       springPruning: 'Schneide zur Blütezeit; Pfirsiche tragen an den Vorjahrestrieben, lass also genug davon stehen.',
     },
     lavender: {
@@ -641,7 +656,7 @@ export default {
     due: 'Zu tun im {month}',
     nothingDue: 'In diesem Monat steht nichts an.',
     noPlantings: 'Noch ist nichts geplant. Plane deine Beete auf der Karte, dann erscheinen hier die Hinweise.',
-    toMap: 'Zur Karte',
+    toMap: 'Zum Plan',
     sowNow: 'Säen und pflanzen im {month}',
     nothingToSow: 'In diesem Monat wird nichts aus dem Katalog gesät oder gepflanzt.',
     beds: 'Beete',
@@ -679,7 +694,7 @@ export default {
     tasksStarting: '{count} Aufgabe beginnt | {count} Aufgaben beginnen',
     legend: 'Aufgabenarten',
     nothingOnDay: 'An diesem Tag steht nichts an.',
-    nothingInYear: 'In {year} ist noch nichts gepflanzt.',
+    nothingInYear: 'Im Jahr {year} ist noch nichts gepflanzt.',
     phases: {
       grow: 'Im Beet',
       sow: 'Aussaat',
@@ -812,9 +827,9 @@ export default {
     title: 'Nachbarn und Fruchtfolge',
     none: 'Keine Hinweise zu Fruchtfolge oder Nachbarn.',
     issues: {
-      sameFamily: '{plant} ({family}) wuchs hier {year}. Warte bis {until} oder wähle einen anderen Platz.',
-      heavyAfterHeavy: '{plant}, ebenfalls ein Starkzehrer, wuchs hier {year}. Arbeite vor dem Pflanzen Kompost ein.',
-      afterLegumes: 'Gut: {plant} wuchs hier {year} und hat Stickstoff im Boden hinterlassen.',
+      sameFamily: 'Hier wuchs {year} schon dieselbe Familie: {plant} ({family}). Warte bis {until} oder wähle einen anderen Platz.',
+      heavyAfterHeavy: 'Hier wuchs {year} schon ein Starkzehrer: {plant}. Arbeite vor dem Pflanzen Kompost ein.',
+      afterLegumes: 'Gut: Hier wuchsen {year} Hülsenfrüchtler ({plant}) und haben Stickstoff im Boden hinterlassen.',
       goodSequence: 'Gut: Nach {plant} ({year}) passt eine Pflanze mit geringerem Bedarf.',
     },
     goodNeighbours: 'Gute Nachbarn in der Nähe: {plants}',
@@ -829,6 +844,29 @@ export default {
       rotation: 'Verwandte wuchsen hier vor Kurzem',
       goodGroup: 'Gute Nachbarn hier',
     },
+  },
+  weather: {
+    title: 'Wetter',
+    today: 'Heute',
+    days: 'Die nächsten Tage',
+    updated: 'Vorhersage von {time}',
+    stale: 'offline, ältere Vorhersage',
+    source: 'Wetterdaten von Open-Meteo.com',
+    sky: {
+      frost: 'Frost möglich',
+      rain: 'Regen',
+      sunny: 'Sonnig und warm',
+      mixed: 'Wechselhaft',
+    },
+    notes: {
+      frost: '{day}: Frost möglich, bis {temperature}. Schütze {plants} oder warte mit dem Auspflanzen.',
+      water: 'Warme, trockene Tage stehen bevor. Gieß morgens oder abends durchdringend.',
+      rained: '{amount} Regen in den letzten drei Tagen – Gießen ist nicht nötig.',
+    },
+  },
+  pwa: {
+    updateReady: 'Eine neue Version von Erntelotse ist bereit.',
+    reload: 'Aktualisieren',
   },
   placeholder: {
     noGardenTitle: 'Kein Garten ausgewählt',

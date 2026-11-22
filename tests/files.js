@@ -18,4 +18,5 @@ export const TEST_FILES = [
   'hints.test.js',
   'rotation.test.js',
   'tasks.test.js',
+  'weather.test.js',
 ];

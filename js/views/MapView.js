@@ -5,6 +5,7 @@ import {
   gardens, editor, addElement, updateElementGeometry, updateElement, deleteElement, restoreElement, undo, redo, setLocation,
 } from '../stores/gardens.js';
 import { settings } from '../stores/settings.js';
+import { network } from '../stores/network.js';
 import { period } from '../stores/period.js';
 import { showToast, showError } from '../stores/toast.js';
 import { ELEMENT_TYPES, createElement, createElementAt, elementsBounds } from '../logic/elements.js';
@@ -55,6 +56,7 @@ export default {
 
     const hasLocation = computed(() => Boolean(garden.value?.location));
     const background = computed(() => {
+      if (!network.online) return 'plan';
       if (locating.value) return 'street';
       return hasLocation.value ? chosenBackground.value : 'plan';
     });
@@ -206,7 +208,7 @@ export default {
     });
 
     return {
-      t, mapRef, garden, settings, editor, period, tool, selectedId, selected, editMode, snapping, background, chosenBackground,
+      t, network, mapRef, garden, settings, editor, period, tool, selectedId, selected, editMode, snapping, background, chosenBackground,
       locating, hasLocation, hasParcel, activeToolName, drawHint, canFinish, measured, measuredText, addOpen, panelCollapsed,
       pick, setShape, onCreate, onDrawEnd, onSelect, addBySize, remove, startLocating, confirmLocation, cancelLocating,
       removeLocation, undo, redo, ELEMENT_TOOLS, MORE_ELEMENT_TOOLS,
@@ -247,7 +249,7 @@ export default {
 
         <div class="map-topbar" v-if="!locating">
           <div class="segmented" role="group" :aria-label="t('map.background.label')" v-if="hasLocation">
-            <button type="button" :aria-pressed="background === 'street' ? 'true' : 'false'" @click="chosenBackground = 'street'">{{ t('map.background.street') }}</button>
+            <button type="button" :aria-pressed="background === 'street' ? 'true' : 'false'" :disabled="!network.online" :title="network.online ? null : t('map.background.offline')" @click="chosenBackground = 'street'">{{ t('map.background.street') }}</button>
             <button type="button" :aria-pressed="background === 'plan' ? 'true' : 'false'" @click="chosenBackground = 'plan'">{{ t('map.background.plan') }}</button>
           </div>
           <button type="button" class="map-button" :title="t(hasLocation ? 'map.location.change' : 'map.location.set')" @click="startLocating">

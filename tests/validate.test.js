@@ -104,6 +104,10 @@ describe('validateSettings', () => {
     expect(codes(validateSettings({ language: 'it', units: 'si', theme: 'blue', activeGardenId: 5 })))
       .toEqual(['language:unknown', 'units:unknown', 'theme:unknown', 'activeGardenId:format']);
   });
+  test('weather switch: optional (older settings), boolean when present', () => {
+    expect(validateSettings({ ...good, weather: false })).toEqual([]);
+    expect(codes(validateSettings({ ...good, weather: 'yes' }))).toEqual(['weather:type']);
+  });
 });
 
 describe('validateIndex', () => {

@@ -247,7 +247,14 @@ Rotation (same family inside and outside the gap, overlapping and separate areas
 
 ## Milestone 6 – Weather and PWA
 
-**Scope**
+**Status: implemented; publishing on GitHub Pages is still open.** Notes on the implementation:
+
+- Weather is on by default and can be switched off in the settings; the privacy card names all three external services. Offline, a forecast of the last 24 hours is still shown and marked as older; without one there is no card.
+- `sw.js` gets its file list and version from `node tools/precache.mjs` (content hash); the Node test run fails when it is out of date. On localhost the worker only runs with `?sw`, so development is not served from the cache.
+- Install: the browser's install prompt as a button in the settings where available, otherwise a short hint (share menu on iPhone/iPad). App icons are rendered from the favicon design by `tools/app-icons.py`.
+- Final pass: translation review of de, fr, es and pt (45 fixes, among them verb agreement with plural plant names in the rotation texts); reflow checked at 320 px (the garden switcher shows only its icon below 360 px); a garden with 60 beds, 30 trees and 720 plantings over three years shows no long tasks when opening dashboard, calendar, map or bed editor.
+
+**Scope (as planned)**
 
 - Weather service: Open-Meteo forecast for gardens with a location, cached with a maximum age, switchable off, silent when offline.
 - Weather rules: frost warning for frost-tender plantings, watering hint in dry warm spells, "no watering needed" after rain. Weather card on the dashboard.

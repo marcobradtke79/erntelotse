@@ -113,9 +113,23 @@ export default {
       deleteAllConfirm: 'Delete everything',
       deletedAll: 'All data deleted',
     },
+    weather: {
+      title: 'Weather',
+      label: 'Show the weather forecast for gardens with a location',
+      hint: 'Frost warnings and watering hints on the dashboard. The forecast comes from Open-Meteo.',
+    },
+    install: {
+      title: 'Install the app',
+      text: 'Install Erntelotse on your phone or computer. It then starts like an app and works without internet.',
+      button: 'Install',
+      installed: 'Erntelotse is installed on this device.',
+      ios: 'On iPhone and iPad: tap the share button in Safari, then “Add to Home Screen”.',
+      browser: 'If your browser can install apps, you find it in its menu, e.g. “Install app” or “Add to Home screen”.',
+    },
     privacy: {
       title: 'Privacy',
       text: 'Erntelotse has no account and no server. Your gardens stay in this browser unless you export them.',
+      requests: 'Only three services are contacted, and only when you use them: OpenStreetMap for the street map, Nominatim (OpenStreetMap) for the place search, and Open-Meteo for the weather, which receives your garden’s position rounded to about 1 km. Like every website, they see your IP address.',
     },
   },
   elements: {
@@ -155,6 +169,7 @@ export default {
       label: 'Background',
       street: 'Street map',
       plan: 'Grid',
+      offline: 'The street map needs an internet connection',
     },
     draw: {
       rectangle: 'Tap one corner, then the opposite corner.',
@@ -829,6 +844,29 @@ export default {
       rotation: 'relatives grew here recently',
       goodGroup: 'Good neighbours here',
     },
+  },
+  weather: {
+    title: 'Weather',
+    today: 'Today',
+    days: 'Next days',
+    updated: 'Forecast from {time}',
+    stale: 'offline, older forecast',
+    source: 'Weather data by Open-Meteo.com',
+    sky: {
+      frost: 'Frost possible',
+      rain: 'Rain',
+      sunny: 'Sunny and warm',
+      mixed: 'Mixed',
+    },
+    notes: {
+      frost: '{day}: frost possible, down to {temperature}. Protect {plants} or wait with planting out.',
+      water: 'Warm and dry days ahead. Water deeply in the morning or evening.',
+      rained: '{amount} of rain in the last three days – no need to water.',
+    },
+  },
+  pwa: {
+    updateReady: 'A new version of Erntelotse is ready.',
+    reload: 'Update',
   },
   placeholder: {
     noGardenTitle: 'No garden selected',

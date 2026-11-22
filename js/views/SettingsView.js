@@ -2,7 +2,8 @@ import { ref, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import { LANGUAGES } from '../i18n/languages.js';
-import { settings, setLanguage, setUnits, setTheme } from '../stores/settings.js';
+import { settings, setLanguage, setUnits, setTheme, setWeather } from '../stores/settings.js';
+import { pwa, promptInstall } from '../services/pwa.js';
 import { gardens, clearAllData } from '../stores/gardens.js';
 import { showToast, showError } from '../stores/toast.js';
 import { formatArea, formatBytes, formatLength, formatTemperature, formatWeight, UNIT_SYSTEMS } from '../logic/units.js';
@@ -59,7 +60,7 @@ export default {
 
     return {
       t, locale, settings, gardens, LANGUAGES, UNIT_SYSTEMS, THEMES,
-      setLanguage, setUnits, setTheme, unitExample,
+      setLanguage, setUnits, setTheme, setWeather, unitExample, pwa, promptInstall,
       usedBytes, usagePercent, formatBytes, ESTIMATED_CAPACITY_BYTES,
       exportBackup, deleteAllOpen, confirmDeleteAll,
     };
@@ -119,6 +120,36 @@ export default {
 
         <ClimateSettings />
 
+        <section class="card" aria-labelledby="settings-weather">
+          <div class="card-header">
+            <AppIcon name="cloud-sun" />
+            <h2 id="settings-weather">{{ t('settings.weather.title') }}</h2>
+          </div>
+          <label class="choice">
+            <input type="checkbox" :checked="settings.weather" @change="setWeather($event.target.checked)" />
+            <span>{{ t('settings.weather.label') }}</span>
+          </label>
+          <p class="field-hint">{{ t('settings.weather.hint') }}</p>
+        </section>
+
+        <section class="card" aria-labelledby="settings-install">
+          <div class="card-header">
+            <AppIcon name="install" />
+            <h2 id="settings-install">{{ t('settings.install.title') }}</h2>
+          </div>
+          <p v-if="pwa.installed">{{ t('settings.install.installed') }}</p>
+          <template v-else>
+            <p>{{ t('settings.install.text') }}</p>
+            <div v-if="pwa.canPrompt" class="btn-row">
+              <button type="button" class="btn btn-primary" @click="promptInstall">
+                <AppIcon name="install" />
+                <span>{{ t('settings.install.button') }}</span>
+              </button>
+            </div>
+            <p v-else class="field-hint">{{ pwa.ios ? t('settings.install.ios') : t('settings.install.browser') }}</p>
+          </template>
+        </section>
+
         <section class="card" aria-labelledby="settings-data">
           <div class="card-header">
             <AppIcon name="database" />
@@ -148,6 +179,7 @@ export default {
             <h2 id="settings-privacy">{{ t('settings.privacy.title') }}</h2>
           </div>
           <p>{{ t('settings.privacy.text') }}</p>
+          <p>{{ t('settings.privacy.requests') }}</p>
         </section>
       </div>
 

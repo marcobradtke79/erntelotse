@@ -55,7 +55,7 @@ All data is plain JSON. Lengths are stored in metres, weights in kilograms, date
 
 | Key | Content |
 |---|---|
-| `erntelotse:settings` | App settings: language, units, theme, active garden id |
+| `erntelotse:settings` | App settings: language, units, theme, weather on/off (`weather`, optional, default on), active garden id |
 | `erntelotse:gardens` | Index of gardens: id, name, updatedAt |
 | `erntelotse:garden:<id>` | One garden document (see below) |
 | `erntelotse:weather:<id>` | Cached forecast for a garden with fetch time |
@@ -228,7 +228,7 @@ For gardens with a location and weather enabled, a forecast of a few days is fet
 - a **frost warning** when the minimum temperature falls near or below 0 °C while frost-tender plantings are out or about to be planted,
 - a **watering hint** during dry, warm spells, and a note that watering can be skipped after rain.
 
-Without network the app works unchanged and simply shows no weather notes.
+Without network the app works unchanged. A forecast fetched within the last 24 hours is still shown offline (marked as older); otherwise there is no weather card. The forecast is requested for the garden position rounded to two decimals (about 1 km), cached for 3 hours per garden, and Open-Meteo is credited in the card. Rules (`js/logic/weatherRules.js`): frost when a minimum of 1 °C or less is forecast for the next seven days while frost-tender plants are in the ground or planned within 14 days after that day; watering when at least two of the next three days reach 25 °C with less than 2 mm of rain in the last three and next three days; no watering needed after 10 mm or more in the last three days. Watering notes only appear while something grows.
 
 ## 7. Architecture
 
@@ -291,6 +291,7 @@ One Leaflet map component (`js/components/map/GardenMap.js`) serves the map view
 - The service worker precaches the app shell (HTML, CSS, JS, vendor files, icons) under a versioned cache name; a new version is announced in the app and activated on reload.
 - OpenStreetMap's tile usage policy does not permit offline use of `tile.openstreetmap.org` (no prefetching, no "save for offline"); re-visits served from the browser's normal HTTP cache are allowed. The service worker therefore does not store these tiles. Offline, the map view falls back to the grid, which shows the whole garden.
 - Everything except the street map, place search and weather works offline.
+- Implementation: `sw.js` holds the list of app files and a version that is a hash of their contents, both written by `node tools/precache.mjs` (no build step; the result is committed). Same-origin requests are answered from the cache (navigations with `index.html`); requests to other hosts are not touched. A new worker waits until the user chooses "Update" in the notice, then every open tab reloads. On a local development server the worker is only registered with `?sw` in the address.
 
 ### 7.7 External services and privacy
 

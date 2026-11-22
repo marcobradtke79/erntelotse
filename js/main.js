@@ -6,6 +6,7 @@ import { settings, initSettings } from './stores/settings.js';
 import { initGardens } from './stores/gardens.js';
 import { showToast } from './stores/toast.js';
 import { router } from './router.js';
+import { initPwa } from './services/pwa.js';
 import App from './App.js';
 
 initSettings(storage);
@@ -19,3 +20,4 @@ initGardens(storage);
 if (!persistent) showToast('errors.storageUnavailable', { type: 'error', persistent: true });
 
 createApp(App).use(i18n).use(router).mount('#app');
+initPwa();

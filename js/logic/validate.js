@@ -117,6 +117,8 @@ export function validateSettings(settings) {
   if (!LANGUAGE_CODES.includes(settings.language)) problems.push({ path: 'language', code: 'unknown' });
   if (!UNIT_SYSTEMS.includes(settings.units)) problems.push({ path: 'units', code: 'unknown' });
   if (!THEMES.includes(settings.theme)) problems.push({ path: 'theme', code: 'unknown' });
+  // added in milestone 6; older settings have no value and get the default
+  if (settings.weather !== undefined && typeof settings.weather !== 'boolean') problems.push({ path: 'weather', code: 'type' });
   if (settings.activeGardenId !== null && (typeof settings.activeGardenId !== 'string' || !ID_PATTERN.test(settings.activeGardenId))) {
     problems.push({ path: 'activeGardenId', code: 'format' });
   }

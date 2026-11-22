@@ -19,11 +19,12 @@ import AppIcon from '../components/AppIcon.js';
 import PlantIcon from '../components/PlantIcon.js';
 import EmptyState from '../components/EmptyState.js';
 import HintItem from '../components/tasks/HintItem.js';
+import WeatherCard from '../components/WeatherCard.js';
 import { TASK_ICONS } from '../components/tasks/taskText.js';
 
 export default {
   name: 'DashboardView',
-  components: { PlantIcon, AppIcon, EmptyState, HintItem },
+  components: { PlantIcon, AppIcon, EmptyState, HintItem, WeatherCard },
   setup() {
     const { t, locale } = useI18n();
     const garden = computed(() => gardens.active);
@@ -138,6 +139,8 @@ export default {
             </router-link>
           </div>
         </section>
+
+        <WeatherCard :garden="garden" />
 
         <section v-if="backupDue" class="card backup-card" aria-labelledby="dashboard-backup">
           <div class="card-header">

@@ -1,0 +1,18 @@
+{
+  "name": "Erntelotse",
+  "short_name": "Erntelotse",
+  "description": "Garden planning in your browser: beds, plantings, care hints and harvest journal.",
+  "id": "./",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#FFF9EC",
+  "theme_color": "#FFF9EC",
+  "categories": ["lifestyle", "productivity"],
+  "icons": [
+    { "src": "assets/icons/app/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icons/app/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icons/app/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "assets/icons/app/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}

@@ -55,7 +55,7 @@ export default {
     deleted: 'Jardin « {name} » supprimé',
     deleteTitle: 'Supprimer le jardin ?',
     deleteText: '« {name} » et tout ce qui y est planifié seront supprimés de ce navigateur.',
-    deleteHint: 'Exporte-le d’abord si tu pourrais en avoir besoin plus tard.',
+    deleteHint: 'Exporte-le d’abord si tu risques d’en avoir besoin plus tard.',
     exported: 'Jardin exporté',
     loadError: 'Le jardin « {name} » n’a pas pu être chargé. Les données enregistrées sont endommagées.',
     loadErrorTooNew: 'Le jardin « {name} » a été enregistré par une version plus récente d’Erntelotse. Mets l’application à jour.',
@@ -113,9 +113,23 @@ export default {
       deleteAllConfirm: 'Tout supprimer',
       deletedAll: 'Toutes les données ont été supprimées',
     },
+    weather: {
+      title: 'Météo',
+      label: 'Afficher les prévisions météo pour les jardins avec un emplacement',
+      hint: 'Alertes de gel et conseils d’arrosage dans l’aperçu. Les prévisions viennent d’Open-Meteo.',
+    },
+    install: {
+      title: 'Installer l’application',
+      text: 'Installe Erntelotse sur ton téléphone ou ton ordinateur. Elle démarre alors comme une application et fonctionne sans internet.',
+      button: 'Installer',
+      installed: 'Erntelotse est installée sur cet appareil.',
+      ios: 'Sur iPhone et iPad : touche le bouton de partage dans Safari, puis « Sur l’écran d’accueil ».',
+      browser: 'Si ton navigateur peut installer des applications, tu trouves l’option dans son menu, par ex. « Installer l’application » ou « Ajouter à l’écran d’accueil ».',
+    },
     privacy: {
       title: 'Confidentialité',
       text: 'Erntelotse n’a ni compte ni serveur. Tes jardins restent dans ce navigateur tant que tu ne les exportes pas.',
+      requests: 'Seuls trois services sont contactés, et uniquement quand tu les utilises : OpenStreetMap pour le plan des rues, Nominatim (OpenStreetMap) pour la recherche de lieu et Open-Meteo pour la météo, qui reçoit la position de ton jardin arrondie à environ 1 km. Comme tout site web, ils voient ton adresse IP.',
     },
   },
   elements: {
@@ -155,6 +169,7 @@ export default {
       label: 'Fond',
       street: 'Plan des rues',
       plan: 'Grille',
+      offline: 'Le plan des rues nécessite une connexion internet',
     },
     draw: {
       rectangle: 'Touche un coin, puis le coin opposé.',
@@ -444,14 +459,14 @@ export default {
     },
     cherry: {
       fertilize: 'Étale du compost autour de l’arbre au printemps.',
-      summerPruning: 'Taille les cerisiers juste après la récolte ; en été, les plaies cicatrisent le mieux.',
+      summerPruning: 'Taille les cerisiers juste après la récolte ; c’est en été que les plaies cicatrisent le mieux.',
     },
     redcurrant: {
       pruning: 'Coupe les plus vieilles branches à la base et garde huit à dix jeunes pousses.',
-      fertilize: 'Paille avec du compost au printemps.',
+      fertilize: 'Paille le sol avec du compost au printemps.',
     },
     raspberry: {
-      mulch: 'Paille avec du compost ou des feuilles ; les framboisiers ont des racines superficielles et aiment un sol frais.',
+      mulch: 'Paille le sol avec du compost ou des feuilles ; les framboisiers ont des racines superficielles et aiment un sol frais.',
       cutCanes: 'Coupe au ras du sol les cannes qui ont fructifié cette année.',
     },
     runnerBean: {
@@ -569,7 +584,7 @@ export default {
     },
     blackcurrant: {
       pruning: 'Coupe les plus vieilles branches à la base ; le cassis fructifie le mieux sur le jeune bois.',
-      fertilize: 'Paille avec du compost au printemps.',
+      fertilize: 'Paille le sol avec du compost au printemps.',
     },
     gooseberry: {
       pruning: 'Éclaircis l’arbuste pour que l’air et la lumière atteignent le centre.',
@@ -577,7 +592,7 @@ export default {
     },
     blueberry: {
       pruning: 'Enlève les plus vieilles branches ; le myrtillier fructifie sur le bois plus jeune.',
-      acidSoil: 'Le myrtillier a besoin d’un sol acide : paille avec de l’écorce de pin et utilise un engrais pour rhododendrons.',
+      acidSoil: 'Le myrtillier a besoin d’un sol acide : paille le sol avec de l’écorce de pin et utilise un engrais pour rhododendrons.',
     },
     pear: {
       winterPruning: 'Taille par un jour hors gel : enlève les branches mortes, qui se croisent ou trop verticales.',
@@ -641,7 +656,7 @@ export default {
     due: 'À faire en {month}',
     nothingDue: 'Rien à faire ce mois-ci.',
     noPlantings: 'Rien n’est encore planifié. Planifie tes plates-bandes sur la carte et les conseils apparaîtront ici.',
-    toMap: 'Aller à la carte',
+    toMap: 'Aller au plan',
     sowNow: 'Semer et planter en {month}',
     nothingToSow: 'Aucune plante du catalogue n’est semée ni plantée ce mois-ci.',
     beds: 'Plates-bandes',
@@ -812,9 +827,9 @@ export default {
     title: 'Voisins et rotation',
     none: 'Aucune remarque sur la rotation ou les voisins.',
     issues: {
-      sameFamily: '{plant} ({family}) a poussé ici en {year}. Attends {until} ou choisis un autre endroit.',
-      heavyAfterHeavy: '{plant}, également gourmand, a poussé ici en {year}. Incorpore du compost avant de planter.',
-      afterLegumes: 'Bien : {plant} a poussé ici en {year} et a laissé de l’azote dans le sol.',
+      sameFamily: 'La même famille a déjà poussé ici en {year} : {plant} ({family}). Attends jusqu’en {until} ou choisis un autre endroit.',
+      heavyAfterHeavy: 'Une autre culture gourmande a poussé ici en {year} : {plant}. Incorpore du compost avant de planter.',
+      afterLegumes: 'Bien : des légumineuses ({plant}) ont poussé ici en {year} et ont laissé de l’azote dans le sol.',
       goodSequence: 'Bien : après {plant} ({year}), une plante moins exigeante convient au sol.',
     },
     goodNeighbours: 'Bons voisins à proximité : {plants}',
@@ -829,6 +844,29 @@ export default {
       rotation: 'même famille cultivée ici récemment',
       goodGroup: 'Bons voisins ici',
     },
+  },
+  weather: {
+    title: 'Météo',
+    today: 'Aujourd’hui',
+    days: 'Prochains jours',
+    updated: 'Prévisions de {time}',
+    stale: 'hors ligne, prévisions anciennes',
+    source: 'Données météo : Open-Meteo.com',
+    sky: {
+      frost: 'Gel possible',
+      rain: 'Pluie',
+      sunny: 'Ensoleillé et chaud',
+      mixed: 'Variable',
+    },
+    notes: {
+      frost: '{day} : gel possible, jusqu’à {temperature}. Protège {plants} ou attends avant de planter.',
+      water: 'Des jours chauds et secs arrivent. Arrose abondamment le matin ou le soir.',
+      rained: '{amount} de pluie ces trois derniers jours – pas besoin d’arroser.',
+    },
+  },
+  pwa: {
+    updateReady: 'Une nouvelle version d’Erntelotse est prête.',
+    reload: 'Mettre à jour',
   },
   placeholder: {
     noGardenTitle: 'Aucun jardin sélectionné',

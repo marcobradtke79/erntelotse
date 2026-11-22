@@ -1,4 +1,4 @@
-// App settings: language, units, theme, active garden. Persisted on every change.
+// App settings: language, units, theme, weather on/off, active garden. Persisted on every change.
 
 import { reactive } from 'vue';
 import { detectLanguage } from '../i18n/languages.js';
@@ -10,6 +10,7 @@ export const settings = reactive({
   language: 'en',
   units: 'metric',
   theme: 'system',
+  weather: true,
   activeGardenId: null,
 });
 
@@ -20,6 +21,7 @@ export function defaultSettings() {
     language: detectLanguage(globalThis.navigator?.languages ?? [globalThis.navigator?.language]),
     units: 'metric',
     theme: 'system',
+    weather: true,
     activeGardenId: null,
   };
 }
@@ -48,6 +50,7 @@ function update(changes) {
 export const setLanguage = (language) => update({ language });
 export const setUnits = (units) => update({ units });
 export const setTheme = (theme) => update({ theme });
+export const setWeather = (weather) => update({ weather });
 export const setActiveGardenId = (activeGardenId) => update({ activeGardenId });
 
 /** Replaces all settings, e.g. from a backup. */

@@ -6,7 +6,7 @@ export default {
   nav: {
     label: 'Navegação principal',
     dashboard: 'Resumo',
-    map: 'Planta',
+    map: 'Mapa',
     calendar: 'Calendário',
     plants: 'Plantas',
     journal: 'Diário',
@@ -113,9 +113,23 @@ export default {
       deleteAllConfirm: 'Eliminar tudo',
       deletedAll: 'Todos os dados foram eliminados',
     },
+    weather: {
+      title: 'Tempo',
+      label: 'Mostrar a previsão do tempo para jardins com localização',
+      hint: 'Avisos de geada e dicas de rega no resumo. A previsão vem do Open-Meteo.',
+    },
+    install: {
+      title: 'Instalar a aplicação',
+      text: 'Instale o Erntelotse no seu telemóvel ou computador. Assim abre como uma aplicação e funciona sem internet.',
+      button: 'Instalar',
+      installed: 'O Erntelotse está instalado neste dispositivo.',
+      ios: 'No iPhone e iPad: toque no botão de partilha no Safari e depois em «Adicionar ao ecrã principal».',
+      browser: 'Se o seu navegador conseguir instalar aplicações, encontra a opção no menu, por ex. «Instalar aplicação» ou «Adicionar ao ecrã principal».',
+    },
     privacy: {
       title: 'Privacidade',
       text: 'O Erntelotse não tem conta nem servidor. Os seus jardins ficam neste navegador enquanto não os exportar.',
+      requests: 'Só são contactados três serviços, e apenas quando os usa: OpenStreetMap para o mapa de ruas, Nominatim (OpenStreetMap) para a pesquisa de locais e Open-Meteo para o tempo, que recebe a posição do seu jardim arredondada a cerca de 1 km. Como qualquer site, veem o seu endereço IP.',
     },
   },
   elements: {
@@ -149,12 +163,13 @@ export default {
       select: 'Selecionar',
       more: 'Mais elementos',
       measure: 'Medir',
-      snapping: 'Ajustar a margens e cantos',
+      snapping: 'Ajustar a lados e cantos',
     },
     background: {
       label: 'Fundo',
       street: 'Mapa de ruas',
       plan: 'Grelha',
+      offline: 'O mapa de ruas precisa de ligação à internet',
     },
     draw: {
       rectangle: 'Toque num canto e depois no canto oposto.',
@@ -218,7 +233,7 @@ export default {
       },
       modeHint: {
         shape: 'Arraste os cantos. Arraste um ponto intermédio para acrescentar um canto.',
-        shapeCircle: 'Arraste o ponto da margem para alterar o tamanho, ou o centro para o mover.',
+        shapeCircle: 'Arraste o ponto do contorno para alterar o tamanho, ou o centro para o mover.',
         shapeLine: 'Arraste os pontos. Arraste um ponto intermédio para acrescentar uma curva.',
         move: 'Arraste o elemento para outro lugar.',
         rotate: 'Arraste um canto para rodar o elemento.',
@@ -234,7 +249,7 @@ export default {
       number: 'Escreva um número.',
       tooSmall: 'Escreva pelo menos 1 cm.',
       tooLarge: 'É demasiado grande para um jardim.',
-      invalidShape: 'Esta forma não é possível: as margens não se podem cruzar e precisa de uma área.',
+      invalidShape: 'Esta forma não é possível: os lados não se podem cruzar e precisa de uma área.',
     },
   },
   plants: {
@@ -259,11 +274,11 @@ export default {
     pumpkin: 'Abóboras',
     garlic: 'Alho',
     leek: 'Alho-francês',
-    springOnion: 'Cebolinhas',
+    springOnion: 'Cebolas novas',
     beetroot: 'Beterrabas',
     spinach: 'Espinafres',
     chard: 'Acelgas',
-    kale: 'Couve-galega',
+    kale: 'Couve-frisada',
     cabbage: 'Couve-repolho',
     cauliflower: 'Couve-flor',
     broccoli: 'Brócolos',
@@ -276,7 +291,7 @@ export default {
     sweetCorn: 'Milho doce',
     celeriac: 'Aipo-rábano',
     fennel: 'Funcho',
-    parsnip: 'Pastinacas',
+    parsnip: 'Pastinagas',
     lambsLettuce: 'Alface-de-cordeiro',
     asparagus: 'Espargos',
     rhubarb: 'Ruibarbo',
@@ -288,7 +303,7 @@ export default {
     mint: 'Hortelã',
     oregano: 'Orégão',
     coriander: 'Coentros',
-    blackberry: 'Amoreiras-silvestres',
+    blackberry: 'Amoras-silvestres',
     blackcurrant: 'Groselheira-negra',
     gooseberry: 'Groselheira-espinhosa',
     blueberry: 'Mirtilo',
@@ -345,7 +360,7 @@ export default {
   },
   bed: {
     backToBed: 'Voltar ao canteiro',
-    backToMap: 'Planta do jardim',
+    backToMap: 'Mapa do jardim',
     fit: 'Mostrar o canteiro inteiro',
     panel: 'Detalhes do canteiro',
     onDay: 'No canteiro neste dia',
@@ -392,7 +407,7 @@ export default {
     },
     text: {
       sowIndoor: 'Semear em alfobre',
-      sowOutdoor: 'Semear ao ar livre',
+      sowOutdoor: 'Semear diretamente',
       plantOut: 'Transplantar',
       harvest: 'Colher',
     },
@@ -525,7 +540,7 @@ export default {
       earthUp: 'Amontoe um pouco de terra nos bolbos para ficarem brancos e tenros.',
     },
     parsnip: {
-      thin: 'Desbaste para 10 cm; a pastinaca germina devagar, tenha paciência.',
+      thin: 'Desbaste para 10 cm; a pastinaga germina devagar, tenha paciência.',
     },
     lambsLettuce: {
       germination: 'Mantenha a linha de sementeira húmida até as plântulas nascerem.',
@@ -536,13 +551,13 @@ export default {
     },
     rhubarb: {
       fertilize: 'Espalhe composto à volta da planta no início da primavera.',
-      stopHarvest: 'Pare a colheita por volta de 24 de junho; os pés mais tardios têm mais ácido oxálico.',
+      stopHarvest: 'Pare a colheita por volta de 24 de junho; os talos mais tardios têm mais ácido oxálico.',
     },
     chives: {
       cutFlowers: 'Corte com regularidade; retire as flores, a não ser que as queira deixar para as abelhas.',
     },
     dill: {
-      resow: 'Semeie um pouco de três em três semanas para ter sempre.',
+      resow: 'Semeie um pouco de três em três semanas para ter sempre endro fresco.',
     },
     thyme: {
       cutBack: 'Corte um terço na primavera para se manter compacto.',
@@ -697,7 +712,7 @@ export default {
     changed: 'Ajustada',
     windows: {
       sowIndoor: 'Semear em alfobre',
-      sowOutdoor: 'Semear ao ar livre',
+      sowOutdoor: 'Semear diretamente',
       plantOut: 'Transplantar',
       harvest: 'Colheita',
     },
@@ -812,9 +827,9 @@ export default {
     title: 'Vizinhos e rotação',
     none: 'Sem observações sobre rotação ou vizinhos.',
     issues: {
-      sameFamily: '{plant} ({family}) cresceu aqui em {year}. Espere até {until} ou escolha outro local.',
-      heavyAfterHeavy: '{plant}, também muito exigente, cresceu aqui em {year}. Incorpore composto antes de plantar.',
-      afterLegumes: 'Bom: {plant} cresceu aqui em {year} e deixou azoto na terra.',
+      sameFamily: 'Em {year} já cresceu aqui a mesma família: {plant} ({family}). Espere até {until} ou escolha outro local.',
+      heavyAfterHeavy: 'Em {year} já cresceu aqui outra cultura muito exigente: {plant}. Incorpore composto antes de plantar.',
+      afterLegumes: 'Bom: em {year} cresceram aqui leguminosas ({plant}), que deixaram azoto na terra.',
       goodSequence: 'Bom: depois de {plant} ({year}), convém uma planta menos exigente.',
     },
     goodNeighbours: 'Bons vizinhos por perto: {plants}',
@@ -829,6 +844,29 @@ export default {
       rotation: 'a mesma família cresceu aqui há pouco',
       goodGroup: 'Bons vizinhos aqui',
     },
+  },
+  weather: {
+    title: 'Tempo',
+    today: 'Hoje',
+    days: 'Próximos dias',
+    updated: 'Previsão de {time}',
+    stale: 'offline, previsão anterior',
+    source: 'Dados meteorológicos de Open-Meteo.com',
+    sky: {
+      frost: 'Geada possível',
+      rain: 'Chuva',
+      sunny: 'Sol e calor',
+      mixed: 'Variável',
+    },
+    notes: {
+      frost: '{day}: geada possível, até {temperature}. Proteja {plants} ou espere para plantar.',
+      water: 'Vêm aí dias quentes e secos. Regue bem de manhã ou ao fim do dia.',
+      rained: '{amount} de chuva nos últimos três dias – não é preciso regar.',
+    },
+  },
+  pwa: {
+    updateReady: 'Está pronta uma nova versão do Erntelotse.',
+    reload: 'Atualizar',
   },
   placeholder: {
     noGardenTitle: 'Nenhum jardim selecionado',

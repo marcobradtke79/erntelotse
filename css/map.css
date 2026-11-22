@@ -863,3 +863,15 @@
   font-size: 12px;
   font-weight: 700;
 }
+
+@media (max-width: 359px) {
+  /* Very narrow screens and 400 % zoom: the garden switcher keeps its icon; its
+     accessible name still contains the garden name */
+  .app-header .menu-button {
+    max-width: none;
+  }
+
+  .app-header .menu-button-label {
+    display: none;
+  }
+}

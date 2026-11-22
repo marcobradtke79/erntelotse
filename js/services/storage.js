@@ -252,6 +252,20 @@ export function createStorage(backend) {
       }
     },
 
+    /** Cached forecast of a garden, or null (corrupt entries count as missing). */
+    readWeather(id) {
+      try {
+        const value = readJson(KEYS.weather(id));
+        return value && Array.isArray(value.days) && typeof value.fetchedAt === 'number' ? value : null;
+      } catch {
+        return null;
+      }
+    },
+
+    writeWeather(id, value) {
+      writeJson(KEYS.weather(id), value);
+    },
+
     deleteGarden(id) {
       backend.removeItem(KEYS.garden(id));
       backend.removeItem(KEYS.weather(id));
