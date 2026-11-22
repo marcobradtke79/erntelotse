@@ -1,9 +1,9 @@
 // Display helpers for plantings: plant name, period, status.
 
-import { getPlant } from '../../data/plants.js';
+import { plantNameById } from '../../stores/catalog.js';
 
 export function plantName(plantId, t) {
-  return getPlant(plantId).id === 'unknown' ? t('planting.unknownPlant') : t(`plants.${plantId}`);
+  return plantNameById(plantId, t);
 }
 
 function formatDay(iso, locale, withYear) {

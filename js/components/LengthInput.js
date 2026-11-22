@@ -3,7 +3,7 @@
 
 import { ref, computed, watch, nextTick } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { parseNumber, toInputLength, fromInputLength, lengthInputUnit, formatNumber } from '../logic/units.js';
+import { parseNumber, toInputLength, fromInputLength, lengthInputUnit, formatNumber, M_PER_IN } from '../logic/units.js';
 import { checkSize } from '../logic/elements.js';
 
 let counter = 0;
@@ -14,7 +14,7 @@ export default {
     modelValue: { type: Number, default: null },
     label: { type: String, required: true },
     units: { type: String, default: 'metric' },
-    /** 'length' converts between m and ft; 'degrees' and 'plain' do not */
+    /** 'length': m or ft; 'short': cm or in (spacings); 'degrees' and 'plain' are not converted */
     quantity: { type: String, default: 'length' },
     min: { type: Number, default: null },
   },
@@ -28,13 +28,27 @@ export default {
     const unit = computed(() => {
       if (props.quantity === 'degrees') return '°';
       if (props.quantity === 'plain') return '';
+      if (props.quantity === 'short') return props.units === 'imperial' ? 'in' : 'cm';
       return lengthInputUnit(props.units);
     });
 
     function display(value) {
       if (value === null || value === undefined) return '';
-      const shown = props.quantity === 'length' ? toInputLength(value, props.units) : value;
-      return formatNumber(shown, locale.value, props.quantity === 'degrees' ? 1 : 3).replace(/ | /g, '');
+      return formatNumber(toShown(value), locale.value, props.quantity === 'degrees' || props.quantity === 'short' ? 1 : 3).replace(/ | /g, '');
+    }
+
+    const isLength = () => props.quantity === 'length' || props.quantity === 'short';
+
+    function toShown(metres) {
+      if (props.quantity === 'length') return toInputLength(metres, props.units);
+      if (props.quantity === 'short') return props.units === 'imperial' ? metres / M_PER_IN : metres * 100;
+      return metres;
+    }
+
+    function fromShown(value) {
+      if (props.quantity === 'length') return fromInputLength(value, props.units);
+      if (props.quantity === 'short') return props.units === 'imperial' ? value * M_PER_IN : value / 100;
+      return value;
     }
 
     watch(() => [props.modelValue, props.units, locale.value], () => {
@@ -57,8 +71,8 @@ export default {
         error.value = t('map.errors.number');
         return;
       }
-      if (props.quantity === 'length') {
-        const metres = fromInputLength(value, props.units);
+      if (isLength()) {
+        const metres = fromShown(value);
         const problem = checkSize(metres);
         if (problem) {
           error.value = t(`map.errors.${problem}`);

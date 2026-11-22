@@ -255,6 +255,48 @@ export function redo() {
   syncHistory();
 }
 
+// --- Climate, custom plants and catalog overrides (no undo) ---------------
+
+export function setClimate(climate) {
+  mutateActive((garden) => {
+    garden.climate = { hemisphere: climate.hemisphere, shiftWeeks: climate.shiftWeeks };
+  });
+}
+
+/** Adds or replaces a custom plant. */
+export function saveCustomPlant(plant) {
+  mutateActive((garden) => {
+    const plain = JSON.parse(JSON.stringify(plant));
+    const index = garden.customPlants.findIndex((item) => item.id === plant.id);
+    if (index === -1) garden.customPlants.push(plain);
+    else garden.customPlants.splice(index, 1, plain);
+  });
+}
+
+/** Number of plantings, trees and shrubs that use a plant. */
+export function plantUsage(plantId) {
+  const garden = gardens.active;
+  if (!garden) return 0;
+  return garden.plantings.filter((planting) => planting.plantId === plantId).length +
+    garden.elements.filter((element) => element.plantId === plantId).length;
+}
+
+export function deleteCustomPlant(id) {
+  mutateActive((garden) => {
+    garden.customPlants = toRaw(garden.customPlants).filter((plant) => plant.id !== id);
+  });
+}
+
+/** Stores the user's changes to a built-in plant; null removes them. */
+export function setOverride(plantId, override) {
+  mutateActive((garden) => {
+    const overrides = { ...toRaw(garden.plantOverrides) };
+    if (override) overrides[plantId] = JSON.parse(JSON.stringify(override));
+    else delete overrides[plantId];
+    garden.plantOverrides = overrides;
+  });
+}
+
 /** Places the garden on the map. Element coordinates are relative, so they move along. */
 export function setLocation(location) {
   mutateActive((garden) => {

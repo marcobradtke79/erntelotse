@@ -155,30 +155,34 @@ About 60 built-in plants: common vegetables, herbs, berries, fruit trees and a f
 ```js
 {
   id: 'tomato',
-  category: 'vegetable',        // vegetable | herb | berry | fruitTree | shrub | flower
-  family: 'solanaceae',         // botanical family, used for crop rotation
-  feeder: 'heavy',              // heavy | medium | light | fixer (legumes)
+  category: 'vegetable',        // vegetable | herb | berry | fruitTree | shrub
+  family: 'solanaceae',         // js/data/families.js, used for crop rotation
+  placement: 'bed',             // bed | tree | shrub
   lifecycle: 'annual',          // annual | biennial | perennial
+  color: '#E5483A',
+  feeder: 'heavy',              // heavy | medium | light | fixer (legumes)
   frostTender: true,
   water: 'high',                // low | medium | high
+  rotationGapYears: 3,
   spacing: { row: 0.8, plant: 0.6 },   // metres
-  rotationGapYears: 4,
-  windows: {                    // calendar weeks, Central Europe reference
-    sowIndoor: [[8, 14]],
+  growDays: 140,                // proposed time in the bed; null for perennials
+  harvestDays: 70,              // how long the harvest of one planting lasts
+  windows: {                    // ISO calendar weeks, Central Europe reference
+    sowIndoor: [[10, 14]],
     sowOutdoor: [],
-    plantOut: [[20, 24]],
-    harvest: [[28, 42]]
+    plantOut: [[20, 23]],
+    harvest: [[29, 41]]
   },
-  care: [
-    { type: 'fertilize', weeks: [[22, 34]], everyWeeks: 2, hint: 'tomato.fertilize' },
-    { type: 'prune', weeks: [[23, 36]], everyWeeks: 1, hint: 'tomato.sideShoots' }
+  care: [                       // type: care | fertilize | prune | water; text: careHints.<id>.<hint>
+    { type: 'prune', weeks: [24, 36], everyWeeks: 1, hint: 'sideShoots' },
+    { type: 'fertilize', weeks: [24, 34], everyWeeks: 2, hint: 'fertilize' },
+    { type: 'water', weeks: [22, 38], hint: 'water' }
   ],
-  companions: { good: ['basil', 'carrot', 'parsley'], bad: ['potato', 'fennel'] },
-  icon: 'tomato'
+  companions: { good: ['basil', 'carrot', 'parsley', 'lettuce', 'onion', 'radish'], bad: ['potato'] }
 }
 ```
 
-Catalog content (dates, companions, rotation gaps) is horticultural knowledge with regional variation. It is written from established gardening references, and the user can override any value per plant.
+Catalog content (dates, companions, rotation gaps) is horticultural knowledge with regional variation. It is written from established gardening references. Per garden, the user can adjust spacing, times and windows of a built-in plant (stored as `plantOverrides[id]`, only the changed fields) and add custom plants (`customPlants`, ids `c_…`, without care rules and companions). `js/logic/catalog.js` merges these; components read plants through `js/stores/catalog.js`. Tests check that every plant is complete, companions are symmetric, and every name and care text exists in the messages.
 
 ## 6. Hints, climate and planning rules
 
@@ -186,11 +190,11 @@ These rules are implemented as pure functions without access to the DOM, storage
 
 ### 6.1 Hint engine
 
-`hints(garden, catalog, range, weather?) → Hint[]`
+`hintsFor(garden, catalog, { from, to }) → Hint[]` in `js/logic/hints.js` (weather follows in milestone 6)
 
-- For every planting and every tree or shrub, the plant's activity windows and care rules are projected onto the requested date range, shifted by the garden's climate setting.
-- A window becomes a hint with a start, an end, a task type, the plant, the place (bed or element) and a text key. Repeating care rules (`everyWeeks`) produce one hint per repetition.
-- Planting dates take precedence over catalog windows: a planting that starts on 20 May produces its "plant out" hint for that date, and its harvest hint from the catalog's growing duration.
+- Task types: sow, plant (out), care, fertilize, prune, water, harvest.
+- For every planting and every tree or shrub with a plant, the plant's care rules (catalog weeks, shifted by the garden's climate) are projected onto the requested date range, limited to the planting's period. Repeating care rules (`everyWeeks`) produce one hint per repetition.
+- Planting dates take precedence over catalog windows: a planting that starts on 20 May produces its "plant out" (or "sow outdoors") hint for that date; indoor sowing comes as many weeks earlier as the catalog's sowing and planting-out windows are apart; the harvest runs from the planting's end date back by the plant's `harvestDays`. Open-ended plantings, trees and shrubs get the catalog's harvest window every year.
 - Each hint has a deterministic key; the stored task state decides whether it shows as open, done or skipped. Open hints whose window has passed are shown as overdue for a limited time and then dropped.
 - **Suggestions**: independent of plantings, the dashboard lists catalog plants that can be sown or planted out in the current month.
 
@@ -199,7 +203,7 @@ These rules are implemented as pure functions without access to the DOM, storage
 Catalog weeks describe Central Europe (last frost around mid May). Each garden has:
 
 - `hemisphere`: `north` or `south`. South shifts all windows by 26 weeks.
-- `shiftWeeks`: from about −6 (mild, earlier spring) to +6 (cold, later spring). The user chooses a preset (mild / average / cold) or enters the typical last frost date, from which the shift is calculated.
+- `shiftWeeks`: from −8 (mild, earlier spring) to +8 (cold, later spring). The user chooses a preset (mild −2 / like Central Europe 0 / cold +2) or enters the typical last frost date, from which the shift is calculated (weeks from 15 May). Implemented in `js/logic/climate.js`; window boundaries up to week 26 count as spring, later ones as autumn.
 
 Spring windows move by the full shift; autumn windows move in the opposite direction (a colder climate has a later spring and an earlier autumn), so the season stretches or shrinks rather than slides.
 

@@ -52,3 +52,19 @@ describe('messages', () => {
     });
   }
 });
+
+describe('catalog texts', () => {
+  test('every plant has a name and every care rule a text in English', async () => {
+    const { PLANTS } = await import('../js/data/plants.js');
+    const { FAMILY_IDS } = await import('../js/data/families.js');
+    const missing = [];
+    for (const plant of PLANTS) {
+      if (!(`plants.${plant.id}` in flat.en)) missing.push(`plants.${plant.id}`);
+      for (const rule of plant.care) {
+        if (!(`careHints.${plant.id}.${rule.hint}` in flat.en)) missing.push(`careHints.${plant.id}.${rule.hint}`);
+      }
+    }
+    for (const family of FAMILY_IDS) if (!(`families.${family}` in flat.en)) missing.push(`families.${family}`);
+    expect(missing).toEqual([]);
+  });
+});

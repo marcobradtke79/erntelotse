@@ -2,7 +2,7 @@
 
 import { computed } from 'vue';
 import { bounds } from '../../logic/geometry.js';
-import { getPlant } from '../../data/plants.js';
+import { plantById as getPlant } from '../../stores/catalog.js';
 
 const WIDTH = 96;
 const HEIGHT = 64;

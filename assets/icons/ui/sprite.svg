@@ -163,6 +163,37 @@
   <symbol id="chevron-left" viewBox="0 0 24 24">
     <path d="m15 6-6 6 6 6" />
   </symbol>
+  <symbol id="seed" viewBox="0 0 24 24">
+    <path d="M12 3c4 3 6 7 6 10.5a6 6 0 0 1-12 0C6 10 8 6 12 3Z" />
+    <path d="M12 8v9" />
+  </symbol>
+  <symbol id="bag" viewBox="0 0 24 24">
+    <path d="M7 7h10l2 13H5L7 7Z" />
+    <path d="M9 7V5.5a3 3 0 0 1 6 0V7" />
+    <path d="M10 13.5c1.2-1.6 2.8-1.6 4 0" />
+  </symbol>
+  <symbol id="shears" viewBox="0 0 24 24">
+    <circle cx="6" cy="17" r="2.8" />
+    <circle cx="6" cy="7" r="2.8" />
+    <path d="M8.3 15.3 20 5M8.3 8.7 20 19M13 12h.01" />
+  </symbol>
+  <symbol id="watering-can" viewBox="0 0 24 24">
+    <path d="M4 10h11v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8Z" />
+    <path d="M15 12.5 21 8M15 15l2 0M4 12H2.5A1.5 1.5 0 0 1 1 10.5V9" />
+    <path d="M7 10a2.5 2.5 0 0 1 5 0" />
+  </symbol>
+  <symbol id="basket" viewBox="0 0 24 24">
+    <path d="M3 10h18l-2 9.5a1.5 1.5 0 0 1-1.5 1.2h-11A1.5 1.5 0 0 1 5 19.5L3 10Z" />
+    <path d="m8 10 3-6M16 10l-3-6M9 14v3M15 14v3M12 14v3" />
+  </symbol>
+  <symbol id="spade" viewBox="0 0 24 24">
+    <path d="M12 2v11" />
+    <path d="M8 13h8v4a4 4 0 0 1-8 0v-4Z" />
+    <path d="M10 2h4" />
+  </symbol>
+  <symbol id="list" viewBox="0 0 24 24">
+    <path d="M9 6h11M9 12h11M9 18h11M4.5 6h.01M4.5 12h.01M4.5 18h.01" />
+  </symbol>
   <symbol id="chevron-right" viewBox="0 0 24 24">
     <path d="m9 6 6 6-6 6" />
   </symbol>

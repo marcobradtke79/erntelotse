@@ -16,7 +16,7 @@ import { loadLeaflet } from '../../services/leaflet.js';
 import { createProjection, PLAN_ORIGIN, distance, centroid, edgeLengths, midpoint, polylineLength, bounds } from '../../logic/geometry.js';
 import { ELEMENT_TYPES, DRAW_ORDER, normaliseGeometry, isUsablePolygon, elementsBounds, measure } from '../../logic/elements.js';
 import { visiblePlantings, normaliseShape } from '../../logic/plantings.js';
-import { getPlant } from '../../data/plants.js';
+import { plantById as getPlant, plantLabel } from '../../stores/catalog.js';
 import { formatArea, formatLength } from '../../logic/units.js';
 import { elementStyle, plantingStyle, selectedStyle, measureStyle } from './styles.js';
 import { createGridLayer } from './gridLayer.js';
@@ -128,7 +128,7 @@ export default {
           type: 'planting',
           plantId: planting.plantId,
           color: plant.color,
-          name: own && planting.shape.kind === 'polygon' ? t(`plants.${plant.id}`) : '',
+          name: own && planting.shape.kind === 'polygon' ? plantLabel(plant, t) : '',
           geometry: planting.shape.kind === 'point'
             ? { kind: 'point', at: planting.shape.at, radius: Math.max(MIN_PLANT_RADIUS, plant.spacing.plant / 2) }
             : planting.shape,
@@ -606,7 +606,7 @@ export default {
       }
     });
 
-    watch(() => [props.garden.elements, props.garden.plantings], () => sync(), { deep: true });
+    watch(() => [props.garden.elements, props.garden.plantings, props.garden.customPlants, props.garden.plantOverrides], () => sync(), { deep: true });
     watch(() => [props.period.year, props.period.day, props.focusBedId, props.readOnly], () => sync());
     watch(() => props.garden.location, () => {
       if (reproject() && props.garden.location) fitGarden();

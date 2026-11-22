@@ -8,9 +8,10 @@ import { gardens, editor, addPlantings, updatePlanting, deletePlanting, undo, re
 import { settings } from '../stores/settings.js';
 import { period, setYear, isLocked, unlockYear, currentYear } from '../stores/period.js';
 import { showToast, showError } from '../stores/toast.js';
-import { getPlant } from '../data/plants.js';
+import { plantById as getPlant } from '../stores/catalog.js';
 import { createPlanting, defaultEnd, fitShapeToBed, copyForward, shapeArea } from '../logic/plantings.js';
 import { todayIso, toIsoDate } from '../logic/dates.js';
+import { proposedStart } from '../logic/hints.js';
 import { formatArea, formatLength } from '../logic/units.js';
 import { measure } from '../logic/elements.js';
 import { useMapKeys } from '../composables/useMapKeys.js';
@@ -96,9 +97,14 @@ export default {
       if (tool.value && tool.value.type !== 'measure') tool.value = buildTool(tool.value.type);
     });
 
-    /** Start date for new plantings: the shown day, else today in this year, else 1 April. */
-    function newStart() {
+    /**
+     * Start date for new plantings: the shown day; for the whole year the plant's
+     * planting-out or sowing window (climate-adjusted); else today or 1 April.
+     */
+    function newStart(plant) {
       if (period.day) return period.day;
+      const proposed = proposedStart(plant, garden.value.climate, period.year);
+      if (proposed) return proposed;
       return period.year === currentYear() ? todayIso() : toIsoDate(period.year, 4, 1);
     }
 
@@ -110,7 +116,7 @@ export default {
         return;
       }
       const plant = getPlant(plantId.value);
-      const start = newStart();
+      const start = newStart(plant);
       const planting = createPlanting({ bedId: bed.value.id, plantId: plant.id, shape: fitted.shape, start, end: defaultEnd(plant, start) });
       addPlantings([planting]);
       if (tool.value?.draw === 'point') return; // keep placing single plants

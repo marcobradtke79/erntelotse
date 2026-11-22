@@ -482,6 +482,9 @@
 .measure-list dd {
   margin: 0;
   font-weight: 700;
+  /* Long German compounds (Nachtschattengewächse) must not be cut off */
+  overflow-wrap: anywhere;
+  hyphens: auto;
 }
 
 .size-grid {

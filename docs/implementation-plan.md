@@ -158,7 +158,24 @@ Planting filters by year and date (including periods crossing New Year and open-
 
 ## Milestone 4 – Catalog and hints
 
-**Scope**
+**Split into 4a (engine) and 4b (content), decided with the user.** The plant list (62 plants) is agreed:
+
+- Vegetables (35): carrot, tomato, lettuce, radish, bush bean, runner bean, pea, potato, zucchini, cucumber, pumpkin, onion, garlic, leek, beetroot, spinach, Swiss chard, kale, white cabbage, cauliflower, broccoli, kohlrabi, Brussels sprouts, bell pepper, chili, eggplant, sweet corn, celeriac, fennel, parsnip, lamb's lettuce, rocket, spring onion, asparagus (perennial), rhubarb (perennial)
+- Herbs (10): basil, parsley, chives, dill, thyme, rosemary, sage, mint, oregano, coriander (chives to oregano perennial)
+- Berries (7): strawberry (bed, perennial), raspberry, blackberry, redcurrant, blackcurrant, gooseberry, blueberry (shrubs)
+- Fruit trees (6): apple, pear, sweet cherry (`cherry`), sour cherry, plum, peach
+- Shrubs (4): lavender, rose, hydrangea, elder
+
+**4a – status: done.** Catalog format and families; climate module (ISO weeks, presets, last frost); catalog with user overrides and custom plants; hint engine with suggestions and proposed start dates; dashboard; calendar (month and year); plants list and detail with calendar strip, care, companions; custom plants and adjusting built-in plants; climate settings per garden; the bed editor proposes dates from the catalog and climate. Content for the 15 plants of milestone 3. Deviations:
+
+- A seventh task type **care** (earthing up, mulching, thinning fruit) with its own colour and icon; the design rules list it.
+- Catalog plants have `harvestDays` (how long one planting's harvest lasts); the harvest hint of a planting runs from its end date backwards.
+- Custom plants have no care rules and no companions; adjusting a built-in plant covers spacing, times and windows.
+- Plant icons are colour swatches until 4b.
+
+**4b – open.** The remaining 47 plants with windows, care, companions and texts in five languages, in batches by category; plant icon set (one SVG per plant plus category icons); the catalog and i18n completeness tests already cover new entries.
+
+**Scope (as planned)**
 
 - Final catalog format; plant families module.
 - Catalog content for about 60 plants, filled in batches by category (vegetables, herbs, berries, fruit trees, shrubs), each batch with names and hint texts in five languages. The plant list is agreed before content work starts.

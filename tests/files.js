@@ -13,4 +13,7 @@ export const TEST_FILES = [
   'history.test.js',
   'dates.test.js',
   'plantings.test.js',
+  'climate.test.js',
+  'catalog.test.js',
+  'hints.test.js',
 ];

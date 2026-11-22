@@ -2,12 +2,12 @@
 
 import { measure } from '../../logic/elements.js';
 import { formatArea, formatLength } from '../../logic/units.js';
-import { isKnownPlant } from '../../data/plants.js';
+import { catalog, plantLabel } from '../../stores/catalog.js';
 
 /** The element's own name; for unnamed trees and shrubs the plant; else the type. */
 export function elementName(element, t) {
   if (element.name) return element.name;
-  if (element.plantId && isKnownPlant(element.plantId)) return t(`plants.${element.plantId}`);
+  if (element.plantId && catalog.value.has(element.plantId)) return plantLabel(catalog.value.get(element.plantId), t);
   return t(`elements.types.${element.type}`);
 }
 

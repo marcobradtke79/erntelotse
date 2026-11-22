@@ -48,6 +48,7 @@ Each task type has a fixed colour and a fixed icon. Colour is never the only sig
 |---|---|---|---|---|
 | Sow | `--task-sow` | `#A67C00` | `#FFD54A` | seed |
 | Plant out | `--task-plant` | `#2E9E4F` | `#6FD98A` | seedling |
+| Care (earthing up, mulching, thinning) | `--task-care` | `#0F7F7F` | `#5ED1D1` | spade |
 | Fertilize | `--task-fertilize` | `#A8622A` | `#E3A06A` | bag |
 | Prune | `--task-prune` | `#8A4FD3` | `#BE97F5` | shears |
 | Water | `--task-water` | `#1F86D6` | `#74B6FF` | watering can |

@@ -2,7 +2,7 @@
 
 import { ref, computed, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { getPlant } from '../../data/plants.js';
+import { plantById as getPlant } from '../../stores/catalog.js';
 import { estimateCount, shapeArea, plantingStatus, defaultEnd, NOTE_MAX_LENGTH } from '../../logic/plantings.js';
 import { isIsoDate, todayIso } from '../../logic/dates.js';
 import { formatArea } from '../../logic/units.js';

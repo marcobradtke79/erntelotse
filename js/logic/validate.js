@@ -8,6 +8,7 @@ import { UNIT_SYSTEMS } from './units.js';
 import { LANGUAGE_CODES } from '../i18n/languages.js';
 import { validateElement } from './elements.js';
 import { validatePlanting } from './plantings.js';
+import { validateCustomPlant, validateOverrides } from './catalog.js';
 
 export const THEMES = ['system', 'light', 'dark'];
 
@@ -86,6 +87,15 @@ export function validateGarden(doc) {
   }
   for (const key of ['plantOverrides', 'taskStates']) {
     if (!isObject(doc[key])) problems.push({ path: key, code: 'type' });
+  }
+  if (Array.isArray(doc.customPlants)) {
+    doc.customPlants.forEach((plant, index) => {
+      if (!isObject(plant)) return;
+      for (const code of validateCustomPlant(plant)) problems.push({ path: `customPlants[${index}]`, code: `customPlant.${code}` });
+    });
+  }
+  if (isObject(doc.plantOverrides)) {
+    for (const id of validateOverrides(doc.plantOverrides)) problems.push({ path: `plantOverrides.${id}`, code: 'override' });
   }
   return problems;
 }

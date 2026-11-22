@@ -3,7 +3,7 @@
 
 import { ref, computed, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { getPlant } from '../../data/plants.js';
+import { plantById as getPlant } from '../../stores/catalog.js';
 import { visiblePlantings, plantingsOfBed, historyByYear, plantingStatus, plantCount, canCopyForward, touchesYear } from '../../logic/plantings.js';
 import { todayIso, yearOf } from '../../logic/dates.js';
 import AppIcon from '../AppIcon.js';

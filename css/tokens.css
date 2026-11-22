@@ -37,6 +37,7 @@
   --task-prune: #8A4FD3;
   --task-water: #1F86D6;
   --task-harvest: #D93A4A;
+  --task-care: #0F7F7F;
 
   /* Map (docs/design-rules.md §2.3); read by js/components/map/styles.js */
   --map-plan-bg: #FBF6E9;
@@ -127,6 +128,7 @@
   --task-prune: #BE97F5;
   --task-water: #74B6FF;
   --task-harvest: #FF7D86;
+  --task-care: #5ED1D1;
 
   --map-plan-bg: #20242A;
   --map-grid-minor: rgba(243, 241, 234, 0.07);

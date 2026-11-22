@@ -2,7 +2,7 @@
 
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { plantsFor } from '../data/plants.js';
+import { catalog, plantLabel } from '../stores/catalog.js';
 
 let counter = 0;
 
@@ -22,9 +22,9 @@ export default {
     const id = `plant-select-${++counter}`;
     const groups = computed(() => {
       const byCategory = new Map();
-      for (const plant of plantsFor(props.placement)) {
+      for (const plant of catalog.value.all().filter((item) => item.placement === props.placement)) {
         if (!byCategory.has(plant.category)) byCategory.set(plant.category, []);
-        byCategory.get(plant.category).push({ id: plant.id, name: t(`plants.${plant.id}`) });
+        byCategory.get(plant.category).push({ id: plant.id, name: plantLabel(plant, t) });
       }
       return [...byCategory.entries()].map(([category, plants]) => ({
         category,

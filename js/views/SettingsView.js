@@ -13,10 +13,11 @@ import { storage } from '../services/appStorage.js';
 import AppDialog from '../components/AppDialog.js';
 import AppIcon from '../components/AppIcon.js';
 import ImportButton from '../components/ImportButton.js';
+import ClimateSettings from '../components/ClimateSettings.js';
 
 export default {
   name: 'SettingsView',
-  components: { AppDialog, AppIcon, ImportButton },
+  components: { AppDialog, AppIcon, ImportButton, ClimateSettings },
   setup() {
     const { t, locale } = useI18n();
     const router = useRouter();
@@ -115,6 +116,8 @@ export default {
             </div>
           </fieldset>
         </section>
+
+        <ClimateSettings />
 
         <section class="card" aria-labelledby="settings-data">
           <div class="card-header">

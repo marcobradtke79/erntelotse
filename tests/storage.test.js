@@ -99,7 +99,7 @@ describe('quota', () => {
     const storage = createStorage(backend);
     const a = garden('A', 'g_a');
     storage.writeGarden(a);
-    const big = { ...a, customPlants: [{ id: 'c_1', note: 'x'.repeat(5000) }] };
+    const big = { ...a, journal: [{ id: 'j_1', note: 'x'.repeat(5000) }] };
     expect(() => storage.writeGarden(big)).toThrow(StorageQuotaError);
     expect(storage.readGarden('g_a')).toEqual(a);
     expect(storage.readIndex()).toHaveLength(1);
@@ -169,7 +169,7 @@ describe('usage, clearAll and replaceAll', () => {
     const storage = createStorage(backend);
     const old = garden('Old', 'g_old');
     storage.writeGarden(old);
-    const huge = { ...garden('Huge', 'g_huge'), customPlants: [{ id: 'c_1', note: 'x'.repeat(4000) }] };
+    const huge = { ...garden('Huge', 'g_huge'), journal: [{ id: 'j_1', note: 'x'.repeat(4000) }] };
     expect(() => storage.replaceAll([huge], null)).toThrow(StorageQuotaError);
     expect(storage.readGarden('g_old')).toEqual(old);
     expect(storage.readIndex().map((entry) => entry.id)).toEqual(['g_old']);
