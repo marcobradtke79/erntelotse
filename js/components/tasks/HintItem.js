@@ -6,6 +6,7 @@ import { useI18n } from 'vue-i18n';
 import { stateOf } from '../../logic/tasks.js';
 import { todayIso } from '../../logic/dates.js';
 import { setTaskState } from '../../stores/gardens.js';
+import { showToast } from '../../stores/toast.js';
 import AppIcon from '../AppIcon.js';
 import PlantIcon from '../PlantIcon.js';
 import { TASK_ICONS, hintTitle, hintAdvice, hintPlantName, hintPlace, hintPeriod } from './taskText.js';
@@ -30,7 +31,11 @@ export default {
       period: hintPeriod(props.hint, locale.value),
     }));
     const state = computed(() => stateOf(props.hint, props.garden.taskStates));
-    const set = (value) => setTaskState(props.hint, value, todayIso());
+    function set(value) {
+      // a sowing marked done uses up seeds from the stock
+      const taken = setTaskState(props.hint, value, todayIso());
+      if (taken?.count) showToast('seeds.taken', { params: { count: taken.count, plant: hintPlantName(props.hint, t) } });
+    }
     return { t, text, state, set, TASK_ICONS };
   },
   template: `

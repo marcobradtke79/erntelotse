@@ -10,6 +10,7 @@ export const PRIMARY_NAV = [
 
 export const SECONDARY_NAV = [
   { path: '/journal', labelKey: 'nav.journal', icon: 'book' },
+  { path: '/seeds', labelKey: 'nav.seeds', icon: 'seed' },
   { path: '/gardens', labelKey: 'nav.gardens', icon: 'garden' },
   { path: '/settings', labelKey: 'nav.settings', icon: 'settings' },
 ];

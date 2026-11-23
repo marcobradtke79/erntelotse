@@ -32,17 +32,25 @@ Related documents: [design rules](design-rules.md) · [implementation plan](impl
 | **Dashboard** | The current month for the active garden: tasks due now, overdue tasks, weather notes, what can be sown or planted this month, warnings (rotation, frost). |
 | **Map / Plan** | The garden drawn to scale. Two backgrounds: street map (OpenStreetMap) for tracing, and grid (clean metre or foot grid). Year switcher shows the plantings of any year. A satellite/aerial background is postponed (see §8). |
 | **Bed editor** | Zoomed view of one bed. Draw planting areas, place individual plants, set dates, see rotation and companion feedback, browse the bed's history. |
-| **Calendar** | Month grid with tasks per day/week, plus a year overview with one row per planting showing its sowing, growing and harvest windows. |
-| **Plants** | The catalog: built-in plants and custom plants, with care data, calendar, companions. Create and edit custom plants, override values of built-in ones. |
+| **Calendar** | Three views. **Season** (default): the next 13 weeks from the week shown on the map timeline as a Gantt chart with one column per week, moved in steps of 4 weeks, also across the turn of the year; the shown week is one position in time for map, bed and calendar. **Month**: grid with tasks per day. **Year**: the same Gantt chart with one column per month. The Gantt chart: groups per bed (and one for trees and shrubs), one row per planting with pre-cultivation, time in the bed, harvest and a mark per activity. A row opens into one lane per activity type; an activity opens its details with done/skip and links to the bed and to its week on the map. Activity types can be switched off, beds collapsed to one summary track, and in the Year view a month shown closer (three months wide). A bed selected on the map, and the bed editor, open the same chart for that bed alone in a dialog ("Gantt chart", Season or Year). |
+| **Plants** | The catalog: built-in plants and custom plants, with care data, calendar, companions. The list marks plants that are grown in the current year and plants that are planned (with the date they go into the bed) and can be filtered by both; a plant's page lists where it grows and where it is planned. Create and edit custom plants, override values of built-in ones. |
 | **Journal** | Chronological log of done tasks and free entries (sown, fertilized, pruned, harvested with amount, note). |
+| **Seeds** | The seed stock (plant, variety, number of seeds, use-by year, note) and a shopping list from the plan: seeds that are missing, and young plants to buy for plantings without pre-cultivation. |
 | **Settings** | Language, units (metric/imperial), theme (system/light/dark), climate setting of the garden, weather on/off, full backup export/import, delete all data. |
 
 ## 3. Core workflows
 
-1. **Create a garden.** Name it, optionally search for or pan to its location, choose the climate setting.
-2. **Trace the parcel** on the street map, or skip the map and draw it on the grid, or add it by entering dimensions.
+1. **Create a garden.** Name it. The map then opens with a guided setup (every step can be skipped, revisited or finished later):
+   1. **Place** – search for the address, use the device position or pan the street map until the cross is on the garden. Without a connection, or when skipped, the garden is planned on the grid. A position south of the equator switches the climate to the southern hemisphere.
+   2. **Boundary** – trace the parcel on the street map (rectangle or free shape), or enter its size.
+   3. **Structures** – add what helps with orientation: paths, buildings, greenhouse, pond, large trees (tree circles without a plant), fences, hedges, lawn, compost.
+   4. **Beds** – draw the planting beds (rectangle, free shape or by size). Plants are assigned inside each bed afterwards.
+   5. **Climate** – confirm the climate setting.
+
+   The setup is the map view with `?setup=1`; its progress is not stored, the first step follows from what the garden already has. Gardens without a boundary offer "Set up step by step" in the map panel.
+2. **Change the outline** at any time on the map: move or reshape the parcel and structures, or place the garden elsewhere.
 3. **Add elements.** Beds (polygon or quick rectangle), trees and shrubs (circle with canopy diameter, plant type, planting year), and other elements such as house, path, lawn, pond, compost, greenhouse, fence or hedge.
-4. **Plan plantings.** Open a bed, draw an area and pick a plant, or place single plants. Start and end dates are proposed from the catalog and can be changed. The app estimates the number of plants from the area and the plant spacing.
+4. **Plan plantings.** Open a bed and choose "Add planting": pick the plant, the period (from – until, or open-ended for perennials) and where it goes – a drawn area, the whole bed or single plants. The period is proposed from the plant's planting or sowing window (the next one from the shown day on) and its growing time, and can be changed before and after drawing. The app estimates the number of plants from the area and the plant spacing. A bed plant's page offers the same from the other side: "Plan planting" shows the period suggested for the current or coming season, asks for the bed – each bed is listed with its size and the area that stays free during the whole suggested period (bed area minus the largest area planted at the same time; single plants count with their spacing) – and opens that bed with the dialog filled in and the timeline moved to the suggested start. The map panel leads there: it offers to draw beds while there are none and to open the first bed while nothing is planted; a selected bed lists its plantings of the shown year.
 5. **Follow hints.** The dashboard and calendar show what is due. A hint is marked done or skipped; done tasks appear in the journal.
 6. **Review history.** Switch the year on the map or open a bed's history to see what grew where.
 7. **Plan next year.** Switch to next year, optionally copy perennial plantings forward, place new plantings and let rotation and companion checks guide the layout.
@@ -66,7 +74,7 @@ Each garden document carries a `schemaVersion`. On load and on import, documents
 
 ```json
 {
-  "schemaVersion": 1,
+  "schemaVersion": 3,
   "id": "g_8f3k2a",
   "name": "Home garden",
   "createdAt": "2026-11-21T10:00:00Z",
@@ -92,7 +100,7 @@ Each garden document carries a `schemaVersion`. On load and on import, documents
     {
       "id": "p_1", "bedId": "e_2", "plantId": "carrot",
       "shape": { "kind": "polygon", "points": [[2, 2], [4, 2], [4, 3.2], [2, 3.2]] },
-      "start": "2026-04-10", "end": "2026-08-15",
+      "start": "2026-04-10", "end": "2026-08-15", "preStart": null,
       "count": 120, "note": ""
     },
     {
@@ -119,7 +127,7 @@ Each garden document carries a `schemaVersion`. On load and on import, documents
 ### 4.3 Entities
 
 - **Element** – anything drawn on the garden. `type` is one of `parcel`, `bed`, `tree`, `shrub`, `building`, `path`, `lawn`, `pond`, `compost`, `greenhouse`, `fence`, `hedge`. Geometry kinds: `polygon`, `circle` (trees, shrubs), `line` with a width (paths, fences, hedges). Trees and shrubs reference a plant and have a planting year; the circle is the current canopy.
-- **Planting** – a plant type in a bed for a period. Its shape is an area (`polygon`) or a single plant (`point`), always inside its bed. `end` may be `null` for perennials still in place. `count` is `null` until the user enters a number; until then the app estimates it from area and spacing. A planting is *planned* if it starts in the future, *active* if today lies within its period and *past* otherwise – this is derived, not stored. Moving or rotating a bed moves its plantings along; deleting a bed deletes them.
+- **Planting** – a plant type in a bed for a period. Its shape is an area (`polygon`) or a single plant (`point`), always inside its bed. `end` may be `null` for perennials still in place. `preStart` is the optional start of a **pre-cultivation** (raising the plants indoors or in pots before `start`): it is saved with the planting and shown on the bed's timeline and in the week's list, but the planting covers its place in the bed only from `start` on, so another planting can use the area until then. Schema version 2 added it; version 1 documents get the date the app assumed until then (plants with an indoor sowing window) or `null`. `count` is `null` until the user enters a number; until then the app estimates it from area and spacing. A planting is *planned* if it starts in the future (*pre-cultivation* while today lies between `preStart` and `start`), *active* if today lies within its period and *past* otherwise – this is derived, not stored. Moving or rotating a bed moves its plantings along; deleting a bed deletes them.
 - **Tree / shrub** – besides the crown circle they have `plantId` (a catalog plant with placement `tree` or `shrub`, or `null`) and `plantedYear`.
 - **Custom plant** – same structure as a catalog entry (section 5), with the name entered by the user instead of translation keys.
 - **Plant override** – partial catalog entry keyed by plant id, merged over the built-in entry (for example other sowing weeks that fit the user's experience).
@@ -139,7 +147,9 @@ Moving the garden on the map changes only the origin; all coordinates stay as th
 
 There is no stored "year plan". Each view filters plantings by date:
 
-- The **year switcher** shows all plantings whose period touches the selected year; a date slider within the year shows the bed on a given day.
+- The **timeline** of the map and the bed editor shows one week of the selected year (ISO weeks, Monday to Sunday) and moves week by week with buttons, slider or arrow keys, also across the turn of the year. Map and lists show every planting that is in the ground on at least one day of that week. On the garden map the timeline also shows how many plantings are in the ground in each week, planted areas carry their plant's icon, and the panel lists the week's plants with their beds.
+- "Show the whole year" and the **year switcher** show all plantings whose period touches the selected year.
+- The bed's **year timeline** shows every planting that touches the selected year as a bar from January to December (planned, growing and finished ones), with a marker for the shown week; single plants of one kind with the same period share a row.
 - **History** of a bed is the list of its plantings grouped by year.
 - **Planning next year** is creating plantings with future dates. "Copy forward" duplicates selected plantings into the next year with shifted dates; open-ended perennials need no copy.
 
@@ -148,6 +158,16 @@ There is no stored "year plan". Each view filters plantings by date:
 - **Garden export**: one `.json` file with the garden document plus the app name and export format version.
 - **Full backup**: all gardens and settings in one file.
 - **Import** validates structure and types before anything is stored, migrates old versions, and asks whether to replace or add as a copy when the garden id already exists.
+
+### 4.6 Seed stock
+
+The garden document has `seedStock: [{ id, plantId, variety, seeds, useBy, note }]` (schema version 3; `seeds` is a whole number, `useBy` a year or `null`). It belongs to the garden and travels with export and import.
+
+- **Need** is derived, never stored: for every planting whose sowing is still ahead (its date is at most 14 days in the past and its task is neither done nor skipped), number of plants × 2 seeds (a reserve). Pre-cultivated plantings need seeds on `preStart`, directly sown ones on `start`; plantings that are planted out without pre-cultivation need young plants instead and are listed separately.
+- **Shopping list** = need per plant minus the stock of that plant, sorted by the date first needed. A need of more than 10 seeds is shown as the area to sow (the part of the planned area the stock does not cover) instead of a seed count; small needs and single plants keep the count. Seeds past their use-by year still count but are flagged.
+- **Using up:** marking a sowing task done takes that planting's seeds out of the stock (entries with the earliest use-by year first, never below zero) and records what was taken in the task state (`taskStates[key].seeds`), so undoing the task returns exactly that.
+
+Implemented in `js/logic/seeds.js`.
 
 ## 5. Plant catalog
 
@@ -195,7 +215,7 @@ These rules are implemented as pure functions without access to the DOM, storage
 
 - Task types: sow, plant (out), care, fertilize, prune, water, harvest.
 - For every planting and every tree or shrub with a plant, the plant's care rules (catalog weeks, shifted by the garden's climate) are projected onto the requested date range, limited to the planting's period. Repeating care rules (`everyWeeks`) produce one hint per repetition.
-- Planting dates take precedence over catalog windows: a planting that starts on 20 May produces its "plant out" (or "sow outdoors") hint for that date; indoor sowing comes as many weeks earlier as the catalog's sowing and planting-out windows are apart; the harvest runs from the planting's end date back by the plant's `harvestDays`. Open-ended plantings, trees and shrubs get the catalog's harvest window every year.
+- Planting dates take precedence over catalog windows: a planting that starts on 20 May produces its "plant out" (or "sow outdoors") hint for that date; a planting with a pre-cultivation gets its "sow indoors" hint on `preStart` (proposed as many weeks before `start` as the catalog's sowing and planting-out windows are apart; not proposed when that date has already passed), a planting without one gets none; the harvest runs from the planting's end date back by the plant's `harvestDays`. Open-ended plantings, trees and shrubs get the catalog's harvest window every year.
 - Each hint has a deterministic key; the stored task state decides whether it shows as open, done or skipped. Open hints whose window has passed are shown as overdue for a limited time and then dropped.
 - **Suggestions**: independent of plantings, the dashboard lists catalog plants that can be sown or planted out in the current month.
 

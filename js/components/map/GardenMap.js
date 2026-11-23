@@ -169,8 +169,10 @@ export default {
           plantId: planting.plantId,
           color: plant.color,
           name: own && planting.shape.kind === 'polygon' ? plantLabel(plant, t) : '',
-          // Single plants get an icon-only label in the bed editor
-          icon: own,
+          // Bed editor: icon and name (single plants: icon only). Garden map: areas show
+          // their plant's icon below the bed's name, so the week's plants can be told apart
+          icon: own || (!focus && planting.shape.kind === 'polygon'),
+          labelBelow: !focus,
           badges: own ? props.badges[planting.id] ?? [] : [],
           geometry: planting.shape.kind === 'point'
             ? { kind: 'point', at: planting.shape.at, radius: Math.max(MIN_PLANT_RADIUS, plant.spacing.plant / 2) }
@@ -247,6 +249,7 @@ export default {
           direction: 'center',
           className: item.source === 'planting' ? 'map-name-label is-planting' : 'map-name-label',
           interactive: false,
+          offset: item.labelBelow ? [0, 18] : [0, 0],
           opacity: item.dimmed ? 0.4 : 0.95,
         });
       }

@@ -13,6 +13,8 @@ export default {
   props: {
     open: { type: Boolean, default: false },
     title: { type: String, required: true },
+    /** Room for wide content such as a chart */
+    wide: { type: Boolean, default: false },
   },
   emits: ['update:open', 'close'],
   setup(props, { emit }) {
@@ -62,7 +64,7 @@ export default {
     return { t, dialog, titleId, close, onCancel, onClick };
   },
   template: `
-    <dialog ref="dialog" class="dialog" :aria-labelledby="titleId" @cancel="onCancel" @click="onClick">
+    <dialog ref="dialog" class="dialog" :class="{ 'dialog-wide': wide }" :aria-labelledby="titleId" @cancel="onCancel" @click="onClick">
       <div class="dialog-content" v-if="open">
         <div class="dialog-header">
           <h2 :id="titleId">{{ title }}</h2>

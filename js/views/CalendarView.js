@@ -1,31 +1,32 @@
-// Calendar (docs/concept.md §2): month grid with the tasks of each day, and a year
-// overview with one row per planting, tree and shrub.
+// Calendar (docs/concept.md §2). Three views: Season (default) – the next 13 weeks from
+// the shown week as a Gantt chart with a column per week; Month – grid with the tasks of
+// each day; Year – the Gantt chart with a column per month (js/components/gantt/).
 
 import { ref, computed, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { gardens } from '../stores/gardens.js';
-import { catalog, plantLabel } from '../stores/catalog.js';
-import { period, setYear } from '../stores/period.js';
+import { catalog } from '../stores/catalog.js';
+import { period, setYear, showThisWeek } from '../stores/period.js';
+import { yearRange as yearSpanOf } from '../logic/gantt.js';
+import { useSeason } from '../composables/useSeason.js';
 import { hintsFor, hintsOn, TASK_TYPES } from '../logic/hints.js';
-import { todayIso, toIsoDate, addDays, yearOf, dayOfYear, daysInYear, maxDate, minDate } from '../logic/dates.js';
-import { touchesYear } from '../logic/plantings.js';
+import { todayIso, toIsoDate, addDays } from '../logic/dates.js';
 import AppIcon from '../components/AppIcon.js';
-import PlantIcon from '../components/PlantIcon.js';
 import EmptyState from '../components/EmptyState.js';
 import HintItem from '../components/tasks/HintItem.js';
 import { TASK_ICONS } from '../components/tasks/taskText.js';
-import { elementName } from '../components/map/elementText.js';
+import GanttChart from '../components/gantt/GanttChart.js';
 
 const MAX_MARKERS = 3;
 
 export default {
   name: 'CalendarView',
-  components: { PlantIcon, AppIcon, EmptyState, HintItem },
+  components: { AppIcon, EmptyState, HintItem, GanttChart },
   setup() {
     const { t, locale } = useI18n();
     const garden = computed(() => gardens.active);
     const today = todayIso();
-    const mode = ref('month');
+    const mode = ref('season');
     const month = ref(period.day ? Number(period.day.slice(5, 7)) : Number(today.slice(5, 7)));
     const selectedDay = ref(today);
 
@@ -35,6 +36,11 @@ export default {
 
     const yearRange = computed(() => ({ from: `${period.year}-01-01`, to: `${period.year}-12-31` }));
     const hints = computed(() => (garden.value ? hintsFor(garden.value, catalog.value, yearRange.value) : []));
+
+    // --- Season: 13 weeks from the shown week (shared with the bed's Gantt dialog) ---
+    const { season, seasonTitle, moveSeason, isThisWeek } = useSeason();
+    const seasonHints = computed(() => (garden.value ? hintsFor(garden.value, catalog.value, season.value) : []));
+    const yearSpan = computed(() => yearSpanOf(period.year));
 
     // --- Month grid (weeks start on Monday) ---
     const monthTitle = computed(() => new Intl.DateTimeFormat(locale.value, { month: 'long', year: 'numeric', timeZone: 'UTC' })
@@ -85,47 +91,10 @@ export default {
       return cell.count ? `${date}: ${t('calendar.tasksStarting', { count: cell.count }, cell.count)}` : date;
     }
 
-    // --- Year overview ---
-    const yearRows = computed(() => {
-      const g = garden.value;
-      if (!g) return [];
-      const year = period.year;
-      const first = `${year}-01-01`;
-      const last = `${year}-12-31`;
-      const days = daysInYear(year);
-      const position = (start, end) => {
-        const from = maxDate(start, first);
-        const to = minDate(end, last);
-        return { left: ((dayOfYear(from) - 1) / days) * 100, width: Math.max(0.6, ((dayOfYear(to) - dayOfYear(from) + 1) / days) * 100) };
-      };
-      const rows = [];
-      for (const planting of g.plantings.filter((p) => touchesYear(p, year)).sort((a, b) => a.start.localeCompare(b.start))) {
-        const plant = catalog.value.get(planting.plantId);
-        const bed = g.elements.find((element) => element.id === planting.bedId);
-        const own = hints.value.filter((hint) => hint.sourceId === planting.id);
-        const segments = [{ phase: 'grow', ...position(planting.start, planting.end ?? last), color: plant.color }];
-        for (const hint of own.filter((h) => h.type === 'sow' || h.type === 'harvest')) {
-          segments.push({ phase: hint.type, ...position(hint.start, hint.end) });
-        }
-        rows.push({ id: planting.id, plantId: planting.plantId, name: plantLabel(plant, t), place: bed ? elementName(bed, t) : '', color: plant.color, segments });
-      }
-      for (const element of g.elements.filter((e) => (e.type === 'tree' || e.type === 'shrub') && e.plantId && catalog.value.has(e.plantId))) {
-        const plant = catalog.value.get(element.plantId);
-        const own = hints.value.filter((hint) => hint.sourceId === element.id);
-        const segments = own.filter((h) => h.type === 'harvest' || h.type === 'prune').map((hint) => ({ phase: hint.type, ...position(hint.start, hint.end) }));
-        rows.push({ id: element.id, plantId: element.plantId, name: elementName(element, t), place: t(`elements.types.${element.type}`), color: plant.color, segments });
-      }
-      return rows;
-    });
-    const monthMarks = computed(() => {
-      const format = new Intl.DateTimeFormat(locale.value, { month: 'narrow', timeZone: 'UTC' });
-      return Array.from({ length: 12 }, (_, i) => format.format(new Date(Date.UTC(period.year, i, 1))));
-    });
-    const todayLine = computed(() => (yearOf(today) === period.year ? ((dayOfYear(today) - 0.5) / daysInYear(period.year)) * 100 : null));
-
     return {
       t, garden, mode, month, monthTitle, weekdays, weeks, selectedDay, dayHints, dayTitle, today, period,
-      moveMonth, dayLabel, yearRows, monthMarks, todayLine, TASK_ICONS, TASK_TYPES,
+      moveMonth, dayLabel, hints, TASK_ICONS, TASK_TYPES,
+      season, seasonHints, seasonTitle, moveSeason, yearSpan, showThisWeek, isThisWeek,
     };
   },
   template: `
@@ -133,6 +102,7 @@ export default {
       <div class="page-header">
         <h1>{{ t('nav.calendar') }}</h1>
         <div class="segmented" role="group" :aria-label="t('calendar.view')" v-if="garden">
+          <button type="button" :aria-pressed="mode === 'season' ? 'true' : 'false'" @click="mode = 'season'">{{ t('calendar.season') }}</button>
           <button type="button" :aria-pressed="mode === 'month' ? 'true' : 'false'" @click="mode = 'month'">{{ t('calendar.month') }}</button>
           <button type="button" :aria-pressed="mode === 'year' ? 'true' : 'false'" @click="mode = 'year'">{{ t('calendar.year') }}</button>
         </div>
@@ -193,40 +163,21 @@ export default {
         </section>
       </div>
 
-      <section v-else class="card year-overview" :aria-label="t('calendar.year')">
-        <p v-if="!yearRows.length" class="muted">{{ t('calendar.nothingInYear', { year: period.year }) }}</p>
-        <template v-else>
-          <div class="year-row year-head" aria-hidden="true">
-            <span class="year-row-label"></span>
-            <div class="year-months"><span v-for="(m, i) in monthMarks" :key="i">{{ m }}</span></div>
-          </div>
-          <ul class="plain-list">
-            <li v-for="row in yearRows" :key="row.id" class="year-row">
-              <span class="year-row-label">
-                <PlantIcon :plant-id="row.plantId" :size="24" />
-                <span><strong>{{ row.name }}</strong><span class="small muted"> {{ row.place }}</span></span>
-              </span>
-              <div class="year-track">
-                <span v-if="todayLine !== null" class="year-today" :style="{ left: todayLine + '%' }" aria-hidden="true"></span>
-                <span
-                  v-for="(segment, i) in row.segments"
-                  :key="i"
-                  class="year-segment"
-                  :class="'phase-' + segment.phase + (segment.phase !== 'grow' ? ' task-' + segment.phase : '')"
-                  :style="{ left: segment.left + '%', width: segment.width + '%', '--plant-color': segment.color }"
-                  :title="t('calendar.phases.' + segment.phase)"
-                ></span>
-              </div>
-            </li>
-          </ul>
-          <ul class="plain-list task-legend">
-            <li class="phase-legend-grow"><span class="year-segment-sample phase-grow"></span>{{ t('calendar.phases.grow') }}</li>
-            <li class="task-sow"><span class="year-segment-sample phase-sow"></span>{{ t('calendar.phases.sow') }}</li>
-            <li class="task-harvest"><span class="year-segment-sample phase-harvest"></span>{{ t('calendar.phases.harvest') }}</li>
-            <li class="task-prune"><span class="year-segment-sample phase-prune"></span>{{ t('calendar.phases.prune') }}</li>
-          </ul>
-        </template>
-      </section>
+      <template v-else-if="mode === 'season'">
+        <div class="calendar-month-header season-header">
+          <button type="button" class="btn btn-icon" :title="t('calendar.earlier')" @click="moveSeason(-4)">
+            <AppIcon name="chevron-left" :label="t('calendar.earlier')" />
+          </button>
+          <h2 aria-live="polite">{{ seasonTitle }}</h2>
+          <button type="button" class="btn btn-icon" :title="t('calendar.later')" @click="moveSeason(4)">
+            <AppIcon name="chevron-right" :label="t('calendar.later')" />
+          </button>
+          <button v-if="!isThisWeek" type="button" class="btn btn-text" @click="showThisWeek">{{ t('period.today') }}</button>
+        </div>
+        <GanttChart :garden="garden" :hints="seasonHints" :span="season" granularity="week" />
+      </template>
+
+      <GanttChart v-else :garden="garden" :hints="hints" :span="yearSpan" granularity="month" />
     </div>
   `,
 };

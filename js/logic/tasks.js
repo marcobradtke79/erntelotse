@@ -74,9 +74,15 @@ export function validateJournalEntry(entry) {
   return problems;
 }
 
+/** Optional: what a done sowing took out of the seed stock, [{ id, count }] */
+function validSeedsUsed(seeds) {
+  if (seeds === undefined) return true;
+  return Array.isArray(seeds) && seeds.every((item) => item && typeof item.id === 'string' && ID_PATTERN.test(item.id) && Number.isInteger(item.count) && item.count > 0);
+}
+
 /** Structural check of the task states object. Returns the keys with problems. */
 export function validateTaskStates(taskStates) {
   return Object.entries(taskStates)
-    .filter(([, value]) => !value || !['done', 'skipped'].includes(value.state) || !isIsoDate(value.on))
+    .filter(([, value]) => !value || !['done', 'skipped'].includes(value.state) || !isIsoDate(value.on) || !validSeedsUsed(value.seeds))
     .map(([key]) => key);
 }

@@ -306,9 +306,31 @@
   box-shadow: var(--shadow-2);
 }
 
-.draw-bar p {
+.draw-bar > p,
+.draw-bar-text {
   flex: 1 1 200px;
+  min-width: 0;
+}
+
+.draw-bar p {
+  margin: 0;
   font-weight: 700;
+}
+
+.draw-bar p.small {
+  font-weight: 400;
+}
+
+/* What is being drawn in the bed: plant and period */
+.draw-bar-what {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  overflow-wrap: anywhere;
+}
+
+.draw-bar-what .plant-icon {
+  flex: none;
 }
 
 .draw-bar .segmented {
@@ -701,6 +723,51 @@
 
 .period-bar-label {
   flex: 1;
+  min-width: 0;
+  text-align: center;
+}
+
+.period-bar-row .period-whole-year {
+  flex: 1;
+}
+
+.period-track {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* Plantings in the ground per week */
+.period-strip {
+  display: flex;
+  align-items: stretch;
+  gap: 1px;
+  height: 24px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.period-strip span {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  align-items: flex-end;
+}
+
+.period-strip i {
+  display: block;
+  width: 100%;
+  border-radius: 1px 1px 0 0;
+  background: var(--color-primary);
+  opacity: 0.45;
+}
+
+.period-strip .is-current {
+  background: var(--color-accent-soft);
+}
+
+.period-strip .is-current i {
+  background: var(--color-accent);
+  opacity: 1;
 }
 
 .period-today {
@@ -761,6 +828,10 @@
   color: var(--color-info);
 }
 
+.status-chip.is-raising {
+  color: var(--color-accent);
+}
+
 .status-chip.is-active {
   color: var(--color-success);
 }
@@ -794,6 +865,142 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
+}
+
+.bed-add {
+  align-self: flex-start;
+}
+
+/* Year timeline of a bed: one row per planting, bars from January to December */
+.bed-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.timeline-months {
+  display: flex;
+  color: var(--color-text-muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.timeline-months span {
+  flex: 1 1 0;
+  min-width: 0;
+  text-align: center;
+  border-left: 1px solid var(--color-border);
+}
+
+.timeline-rows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.timeline-row {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+  min-height: var(--touch-target);
+  padding: var(--space-1) 0;
+  border: 0;
+  border-radius: var(--radius-small);
+  background: none;
+  color: var(--color-text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.timeline-row:hover {
+  background: var(--color-surface-alt);
+}
+
+.timeline-name {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-width: 0;
+  font-size: var(--font-size-small);
+  font-weight: 700;
+}
+
+.timeline-name .plant-icon {
+  flex: none;
+}
+
+.timeline-name span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.timeline-track {
+  position: relative;
+  display: block;
+  height: 12px;
+  border-radius: var(--radius-small);
+  background: var(--color-surface-alt);
+  box-shadow: inset 0 0 0 1px var(--color-border);
+}
+
+.timeline-bar {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  min-width: 4px;
+  border-radius: var(--radius-small);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.25);
+}
+
+/* Pre-cultivation before the bar: hatched, the bed is still free */
+.timeline-pre {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-radius: var(--radius-small) 0 0 var(--radius-small);
+  background: repeating-linear-gradient(135deg, var(--bar) 0 2px, transparent 2px 5px);
+}
+
+.timeline-bar.starts-before {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+.timeline-bar.ends-after {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+/* The shown week */
+.timeline-marker {
+  position: absolute;
+  top: -3px;
+  bottom: -3px;
+  min-width: 3px;
+  border-radius: 2px;
+  box-shadow: inset 0 0 0 1.5px var(--color-text);
+  pointer-events: none;
+}
+
+/* Plantings of the selected bed on the garden map */
+.bed-contents {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.bed-contents-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) 0;
+}
+
+.bed-contents-row .plant-icon {
+  flex: none;
 }
 
 .bed-history-title {
@@ -874,4 +1081,127 @@
   .app-header .menu-button-label {
     display: none;
   }
+}
+
+/* Guided garden setup (map panel) */
+.setup-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.setup-panel h2 {
+  margin: 0;
+  font-size: var(--font-size-section);
+}
+
+.setup-steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+.setup-step {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: var(--touch-target);
+  padding: 0 var(--space-3);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-round);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+  font-size: var(--font-size-small);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.setup-step .icon {
+  width: 18px;
+  height: 18px;
+}
+
+.setup-step.is-past {
+  border-color: var(--color-primary);
+}
+
+.setup-step.is-current {
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+}
+
+.setup-panel > p {
+  margin: 0;
+}
+
+.setup-result {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-weight: 700;
+}
+
+.setup-result .icon {
+  color: var(--color-success);
+}
+
+.setup-tools {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: var(--space-2);
+}
+
+.setup-tool {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+  min-height: 72px;
+  padding: var(--space-2);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-small);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+  font-size: var(--font-size-small);
+  font-weight: 700;
+  text-align: center;
+  overflow-wrap: anywhere;
+  cursor: pointer;
+}
+
+.setup-tool:hover,
+.setup-step:hover {
+  border-color: var(--color-primary);
+}
+
+.setup-tool[aria-pressed='true'],
+.setup-panel .btn[aria-pressed='true'] {
+  border-color: var(--color-primary);
+  background: var(--color-primary-soft);
+}
+
+.setup-tool .icon {
+  color: var(--color-primary);
+}
+
+.setup-actions {
+  margin-top: var(--space-2);
+}
+
+.setup-close {
+  align-self: flex-start;
+}
+
+/* Plants in the garden in the shown week (map panel) */
+.shown-plants h2 {
+  margin: 0 0 var(--space-1);
+  font-size: var(--font-size-section);
+}
+
+.shown-plants .plant-icon {
+  flex: none;
 }

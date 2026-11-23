@@ -31,6 +31,7 @@ export function createGarden({ name, now = new Date(), id = newId('g') }) {
     plantOverrides: {},
     taskStates: {},
     journal: [],
+    seedStock: [],
   };
 }
 

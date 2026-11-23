@@ -8,6 +8,7 @@ import { catalog, plantLabel } from '../stores/catalog.js';
 import { hintsFor, suggestions, TASK_TYPES } from '../logic/hints.js';
 import { todayIso, toIsoDate, addDays, yearOf } from '../logic/dates.js';
 import { isActiveOn } from '../logic/plantings.js';
+import { shoppingList } from '../logic/seeds.js';
 import { measure } from '../logic/elements.js';
 import { formatArea } from '../logic/units.js';
 import { settings } from '../stores/settings.js';
@@ -82,6 +83,7 @@ export default {
         bedArea: formatArea(beds.reduce((sum, bed) => sum + measure(bed).area, 0), settings.units, locale.value),
         growing: g.plantings.filter((planting) => isActiveOn(planting, today)).length,
         planned: g.plantings.filter((planting) => planting.start > today).length,
+        seedsToBuy: shoppingList(g, catalog.value, today).seeds.filter((item) => item.missing > 0).length,
         trees: g.elements.filter((element) => (element.type === 'tree' || element.type === 'shrub')).length,
         climate: presetOf(g.climate.shiftWeeks),
         south: g.climate.hemisphere === 'south',
@@ -184,6 +186,7 @@ export default {
             <div><dt>{{ t('dashboard.growing') }}</dt><dd>{{ summary.growing }}</dd></div>
             <div><dt>{{ t('dashboard.planned') }}</dt><dd>{{ summary.planned }}</dd></div>
             <div><dt>{{ t('dashboard.trees') }}</dt><dd>{{ summary.trees }}</dd></div>
+            <div><dt>{{ t('dashboard.seedsToBuy') }}</dt><dd><router-link to="/seeds">{{ t('seeds.plants', { count: summary.seedsToBuy }, summary.seedsToBuy) }}</router-link></dd></div>
           </dl>
           <p class="small muted">
             {{ t('dashboard.climate', { climate: t('climate.presets.' + summary.climate) }) }}<span v-if="summary.south"> · {{ t('climate.south') }}</span>

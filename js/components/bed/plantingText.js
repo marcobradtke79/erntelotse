@@ -12,6 +12,11 @@ function formatDay(iso, locale, withYear) {
   }).format(new Date(`${iso}T00:00:00Z`));
 }
 
+/** "pre-cultivated from 9 Mar 2026", or '' without pre-cultivation */
+export function preText(planting, locale, t) {
+  return planting.preStart ? t('planting.preFrom', { date: formatDay(planting.preStart, locale, true) }) : '';
+}
+
 /** "1 Apr – 31 May", with years when they differ from `year`; open end: "since 1 Apr 2024" */
 export function periodText(planting, locale, t, year) {
   const startYear = Number(planting.start.slice(0, 4));

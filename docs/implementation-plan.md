@@ -281,6 +281,32 @@ Weather rules against prepared forecast data; cache age handling of the weather 
 
 ---
 
+## After milestone 6: guided garden setup
+
+**Status: done.** Creating a garden opens the map with a setup panel (`js/components/map/SetupPanel.js`): place on the street map → boundary → structures (path, building, greenhouse, pond, large tree, fence, hedge, lawn, compost) → climate. Steps can be skipped and revisited; nothing about the progress is stored. Checked in Chrome: new garden placed by search and traced on the street map, structures drawn, reload resumes at the right step, skipping everything leads to the grid, offline the place step only offers Skip, a garden in Sydney gets the southern hemisphere.
+
+## After milestone 6: planting areas made visible
+
+**Status: done.** Assigning an area of a bed to a plant for a period existed since milestone 3 but was hard to find. Now:
+
+- The bed editor has "Add planting" (`js/components/bed/AddPlantingDialog.js`): plant, period, and where (drawn area, whole bed, single plants). The palette tools open the same dialog; the draw bar shows plant and period. The start is proposed by `startOnOrAfter` in `js/logic/hints.js`. After creating, the view moves to a day on which the planting is in the bed.
+- The bed panel shows a year timeline (`js/components/bed/BedTimeline.js`, `timelineBars` in `js/logic/plantings.js`).
+- The guided setup has a "Beds" step; finishing it offers to open the first bed. The map panel has hint cards for "no beds" and "no plantings", a selected bed lists its plantings, and the element list shows the number of plantings per bed.
+- No change to the stored format.
+
+- Time and place: the timeline (`js/components/PeriodBar.js`) moves in weeks; `period.day` is the Monday of the shown week and `visiblePlantings` shows what is in the ground during it. The garden map shows plant icons on planted areas and lists the week's plants (`js/components/map/ShownPlants.js`).
+- From a plant's page: "Plan planting" (`js/views/PlantDetailView.js`) → choose the bed → `/map/bed/<id>?plant=<plantId>` opens the dialog with `proposedPeriod` (`js/logic/hints.js`) from today on.
+- Pre-cultivation: plantings store `preStart` (schema version 2 with migration in `js/logic/migrate.js`). It is chosen in the add dialog and the planting panel, drawn hatched on the bed timeline, listed per week, and produces the "sow indoors" task; the bed stays free until `start`.
+- Year plan: the calendar's Year view is a Gantt chart (`js/components/gantt/`, pure arrangement in `js/logic/gantt.js`) with three levels – beds and plantings, lanes per activity, activity details – plus a filter by activity type and a three-month zoom.
+- Season: the calendar opens on a Gantt chart of 13 weeks with week columns (`seasonRange`, `weekColumns`, `monthSpans` in `js/logic/gantt.js`); it starts at the shown week (`period.day`) and steps by 4 weeks.
+- Gantt chart of one bed: "Gantt chart" on a selected bed (map) and in the bed editor opens `js/components/gantt/BedGanttDialog.js` (wide `AppDialog`, `ganttGroups(…, { bedId })`); the season logic is shared through `js/composables/useSeason.js`.
+- Seed stock: page `/seeds` (`js/views/SeedsView.js`) with the shopping list from the plan and the stock; `js/logic/seeds.js`; schema version 3 (`seedStock`, migration 2 → 3); a sowing task marked done takes its seeds from the stock.
+- Plants list and plant page show the use in the garden (`plantUse` in `js/logic/plantings.js`): grown this year, planned from a date; filter in the list.
+
+Checked in Chrome (German, dark theme, desktop and 390 px): setup with a bed, tomato area 15 May – 30 Sep drawn, lettuce on the whole bed, single plants, end before start and a locked past year refused, timeline rows open the planting and follow date changes, past year read-only; stepping weeks by button, slider and arrow key changes the plantings on the garden map and in the bed, also across the turn of the year.
+
+---
+
 ## Later ideas (not planned)
 
 - Satellite/aerial background: open national aerial photos chosen by location (e.g. Spain PNOA, France IGN, German states) and/or a user-supplied tile URL or API key
@@ -288,5 +314,5 @@ Weather rules against prepared forecast data; cache age handling of the weather 
 - Own background image (sketch or drone photo) for the plan
 - Photos in the journal
 - Sync between devices
-- Seed stock and shopping list
+- Seed stock: packets and prices, sharing the stock between gardens
 - Larger catalog with varieties

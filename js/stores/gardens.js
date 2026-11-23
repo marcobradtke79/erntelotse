@@ -7,6 +7,9 @@ import { createHistory } from '../logic/history.js';
 import { normaliseGeometry } from '../logic/elements.js';
 import { normaliseShape, moveShape } from '../logic/plantings.js';
 import { journalEntryForHint } from '../logic/tasks.js';
+import { seedNeed, takeSeeds, returnSeeds } from '../logic/seeds.js';
+import { buildCatalog } from '../logic/catalog.js';
+import { PLANTS } from '../data/plants.js';
 import { rigidTransform } from '../logic/geometry.js';
 import { StorageQuotaError, StorageReadError } from '../services/storage.js';
 import { settings, setActiveGardenId, replaceSettings, resetSettings } from './settings.js';
@@ -259,16 +262,66 @@ export function redo() {
 // --- Task states and journal (no undo; done tasks write the journal) ------
 
 /** 'done' writes a journal entry for the task; 'skipped' or 'open' removes it. */
+const SOWING_HINTS = ['sowIndoor', 'sowOutdoor'];
+
+/**
+ * Sets a task's state. A sowing marked done takes its seeds out of the seed stock; leaving
+ * "done" puts back exactly what was taken. Returns { plantId, count } when seeds were taken.
+ */
 export function setTaskState(hint, state, today) {
+  let taken = null;
   mutateActive((garden) => {
     const states = { ...toRaw(garden.taskStates) };
+    let stock = toRaw(garden.seedStock);
+    const before = states[hint.key];
+    if (before?.seeds?.length) stock = returnSeeds(stock, before.seeds);
     if (state === 'open') delete states[hint.key];
     else states[hint.key] = { state, on: today };
+    if (state === 'done' && hint.sourceKind === 'planting' && SOWING_HINTS.includes(hint.hint)) {
+      const planting = garden.plantings.find((item) => item.id === hint.sourceId);
+      const catalog = buildCatalog(PLANTS, toRaw(garden.plantOverrides), toRaw(garden.customPlants));
+      const need = planting ? seedNeed(planting, catalog.get(planting.plantId)) : null;
+      if (need?.kind === 'seeds') {
+        const result = takeSeeds(stock, planting.plantId, need.count);
+        if (result.used.length) {
+          stock = result.seedStock;
+          states[hint.key].seeds = result.used;
+          taken = { plantId: planting.plantId, count: result.used.reduce((sum, item) => sum + item.count, 0) };
+        }
+      }
+    }
     garden.taskStates = states;
+    if (stock !== toRaw(garden.seedStock)) garden.seedStock = stock;
     const journal = toRaw(garden.journal).filter((entry) => entry.taskKey !== hint.key);
     if (state === 'done') journal.push(journalEntryForHint(hint, today));
     garden.journal = journal;
   });
+  return taken;
+}
+
+// --- Seed stock ---------------------------------------------------------------
+
+export function addSeedEntry(entry) {
+  mutateActive((garden) => {
+    garden.seedStock = [...toRaw(garden.seedStock), JSON.parse(JSON.stringify(entry))];
+  });
+}
+
+export function updateSeedEntry(id, fields) {
+  mutateActive((garden) => {
+    garden.seedStock = toRaw(garden.seedStock).map((entry) => (entry.id === id ? { ...entry, ...JSON.parse(JSON.stringify(fields)) } : entry));
+  });
+}
+
+/** Deletes a stock entry. Returns its copy for undo. */
+export function deleteSeedEntry(id) {
+  const entry = gardens.active?.seedStock.find((item) => item.id === id);
+  if (!entry) return null;
+  const copy = JSON.parse(JSON.stringify(entry));
+  mutateActive((garden) => {
+    garden.seedStock = toRaw(garden.seedStock).filter((item) => item.id !== id);
+  });
+  return copy;
 }
 
 export function addJournalEntry(entry) {
@@ -293,6 +346,8 @@ export function deleteJournalEntry(id) {
     garden.journal = toRaw(garden.journal).filter((item) => item.id !== id);
     if (copy.taskKey) {
       const states = { ...toRaw(garden.taskStates) };
+      // the sowing is no longer done: its seeds go back into the stock
+      if (states[copy.taskKey]?.seeds?.length) garden.seedStock = returnSeeds(toRaw(garden.seedStock), states[copy.taskKey].seeds);
       delete states[copy.taskKey];
       garden.taskStates = states;
     }
@@ -344,12 +399,13 @@ export function saveCustomPlant(plant) {
   });
 }
 
-/** Number of plantings, trees and shrubs that use a plant. */
+/** Number of plantings, trees, shrubs and seed stock entries that use a plant. */
 export function plantUsage(plantId) {
   const garden = gardens.active;
   if (!garden) return 0;
   return garden.plantings.filter((planting) => planting.plantId === plantId).length +
-    garden.elements.filter((element) => element.plantId === plantId).length;
+    garden.elements.filter((element) => element.plantId === plantId).length +
+    garden.seedStock.filter((entry) => entry.plantId === plantId).length;
 }
 
 export function deleteCustomPlant(id) {

@@ -295,6 +295,13 @@ fieldset.field {
   max-height: calc(100dvh - 2 * var(--space-4));
 }
 
+/* Wide content such as a chart */
+@media (min-width: 720px) {
+  .dialog.dialog-wide {
+    width: min(1100px, calc(100vw - 2 * var(--space-4)));
+  }
+}
+
 .dialog::backdrop {
   background: var(--color-backdrop);
 }

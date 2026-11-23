@@ -59,7 +59,8 @@ export default {
         if (!garden) return;
         showToast('gardens.created', { params: { name } });
         nameDialog.open = false;
-        router.push('/dashboard');
+        // First step for a new garden: its outline on the map (guided setup)
+        router.push({ path: '/map', query: { setup: '1' } });
         return;
       }
       if (nameDialog.mode === 'rename') {

@@ -1,9 +1,9 @@
 import { describe, test, expect } from './harness.js';
-import { hintsFor, hintsOn, suggestions, proposedStart } from '../js/logic/hints.js';
+import { hintsFor, hintsOn, suggestions, proposedStart, startOnOrAfter, proposedPeriod } from '../js/logic/hints.js';
 import { buildCatalog } from '../js/logic/catalog.js';
 import { createGarden } from '../js/logic/gardenModel.js';
 import { createElementAt } from '../js/logic/elements.js';
-import { createPlanting } from '../js/logic/plantings.js';
+import { createPlanting, proposedPreStart } from '../js/logic/plantings.js';
 import { PLANTS } from '../js/data/plants.js';
 
 const catalog = buildCatalog(PLANTS);
@@ -22,13 +22,22 @@ const year2026 = { from: '2026-01-01', to: '2026-12-31' };
 const types = (hints) => [...new Set(hints.map((hint) => hint.type))];
 
 describe('tomato planting (acceptance)', () => {
-  const garden = gardenWith({ plantings: [{ plantId: 'tomato', start: '2026-05-18', end: '2026-10-04' }] });
+  const garden = gardenWith({ plantings: [{ plantId: 'tomato', start: '2026-05-18', end: '2026-10-04', preStart: proposedPreStart(catalog.get('tomato'), '2026-05-18') }] });
   const hints = hintsFor(garden, catalog, year2026);
   test('sowing, planting out, fertilizing, side shoots and harvest', () => {
     expect(types(hints).sort()).toEqual(['fertilize', 'harvest', 'plant', 'prune', 'sow', 'water'].sort());
   });
   test('indoor sowing 10 weeks before planting out', () => {
     expect(hints.find((hint) => hint.hint === 'sowIndoor').start).toBe('2026-03-09');
+  });
+  test('pre-cultivation is a choice: its own date, or no indoor sowing at all', () => {
+    const own = gardenWith({ plantings: [{ plantId: 'tomato', start: '2026-05-18', end: '2026-10-04', preStart: '2026-04-01' }] });
+    expect(hintsFor(own, catalog, year2026).find((hint) => hint.hint === 'sowIndoor').start).toBe('2026-04-01');
+    const bought = gardenWith({ plantings: [{ plantId: 'tomato', start: '2026-05-18', end: '2026-10-04' }] });
+    expect(hintsFor(bought, catalog, year2026).some((hint) => hint.hint === 'sowIndoor')).toBeFalsy();
+    // a short pre-cultivation ends before the plants go into the bed
+    const short = gardenWith({ plantings: [{ plantId: 'tomato', start: '2026-05-18', end: '2026-10-04', preStart: '2026-05-11' }] });
+    expect(hintsFor(short, catalog, year2026).find((hint) => hint.hint === 'sowIndoor').end).toBe('2026-05-17');
   });
   test('planting out on the planting date', () => {
     expect(hints.find((hint) => hint.type === 'plant').start).toBe('2026-05-18');
@@ -108,5 +117,25 @@ describe('suggestions and proposed start', () => {
   test('proposed start of a planting', () => {
     expect(proposedStart(catalog.get('tomato'), { hemisphere: 'north', shiftWeeks: 0 }, 2026)).toBe('2026-05-11');
     expect(proposedStart(catalog.get('carrot'), { hemisphere: 'north', shiftWeeks: 2 }, 2026)).toBe('2026-03-30');
+  });
+  test('proposed start from a given day on', () => {
+    const climate = { hemisphere: 'north', shiftWeeks: 0 };
+    const tomato = catalog.get('tomato');
+    // before the window: its first day; inside: the day itself; after: next year's window
+    expect(startOnOrAfter(tomato, climate, '2026-02-01')).toBe('2026-05-11');
+    expect(startOnOrAfter(tomato, climate, '2026-05-20')).toBe('2026-05-20');
+    expect(startOnOrAfter(tomato, climate, '2026-11-22')).toBe(proposedStart(tomato, climate, 2027));
+    expect(startOnOrAfter({ windows: {} }, climate, '2026-05-20')).toBe(null);
+  });
+  test('proposed period for the current or the coming season', () => {
+    const climate = { hemisphere: 'north', shiftWeeks: 0 };
+    const tomato = catalog.get('tomato');
+    const current = proposedPeriod(tomato, climate, '2026-05-20');
+    expect(current.start).toBe('2026-05-20');
+    expect(current.end > current.start).toBeTruthy();
+    expect(proposedPeriod(tomato, climate, '2026-11-22').start.slice(0, 4)).toBe('2027');
+    expect(proposedPeriod(catalog.get('strawberry'), climate, '2026-11-22').end).toBe(null);
+    expect(proposedPeriod({ windows: {}, growDays: 10 }, climate, '2026-05-20')).toEqual({ start: '2026-05-20', end: '2026-05-30', preStart: null });
+    expect(current.preStart).toBe(proposedPreStart(tomato, '2026-05-20'));
   });
 });

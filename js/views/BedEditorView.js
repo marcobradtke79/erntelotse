@@ -6,12 +6,12 @@ import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
 import { gardens, editor, addPlantings, updatePlanting, deletePlanting, undo, redo } from '../stores/gardens.js';
 import { settings } from '../stores/settings.js';
-import { period, setYear, isLocked, unlockYear, currentYear } from '../stores/period.js';
+import { period, setYear, setWeek, thisWeek, isLocked, unlockYear, currentYear } from '../stores/period.js';
 import { showToast, showError } from '../stores/toast.js';
 import { plantById as getPlant } from '../stores/catalog.js';
-import { createPlanting, defaultEnd, fitShapeToBed, copyForward, shapeArea } from '../logic/plantings.js';
-import { todayIso, toIsoDate } from '../logic/dates.js';
-import { proposedStart } from '../logic/hints.js';
+import { createPlanting, defaultEnd, fitShapeToBed, copyForward, shapeArea, visiblePlantings } from '../logic/plantings.js';
+import { todayIso, toIsoDate, yearOf, addDays } from '../logic/dates.js';
+import { startOnOrAfter, proposedPeriod } from '../logic/hints.js';
 import { plantingBadges, pickerAdvice } from '../logic/rotation.js';
 import { catalog } from '../stores/catalog.js';
 import { formatArea, formatLength } from '../logic/units.js';
@@ -20,12 +20,14 @@ import { useMapKeys } from '../composables/useMapKeys.js';
 import AppIcon from '../components/AppIcon.js';
 import EmptyState from '../components/EmptyState.js';
 import PeriodBar from '../components/PeriodBar.js';
-import PlantSelect from '../components/PlantSelect.js';
+import PlantIcon from '../components/PlantIcon.js';
 import GardenMap from '../components/map/GardenMap.js';
 import ToolPalette from '../components/map/ToolPalette.js';
 import PlantingPanel from '../components/bed/PlantingPanel.js';
 import BedOverview from '../components/bed/BedOverview.js';
-import { plantName } from '../components/bed/plantingText.js';
+import AddPlantingDialog from '../components/bed/AddPlantingDialog.js';
+import BedGanttDialog from '../components/gantt/BedGanttDialog.js';
+import { plantName, periodText, preText } from '../components/bed/plantingText.js';
 
 const BED_TOOLS = [
   { id: 'area', icon: 'area', labelKey: 'bed.tools.area' },
@@ -34,7 +36,7 @@ const BED_TOOLS = [
 
 export default {
   name: 'BedEditorView',
-  components: { AppIcon, EmptyState, PeriodBar, PlantSelect, GardenMap, ToolPalette, PlantingPanel, BedOverview },
+  components: { AppIcon, EmptyState, PeriodBar, PlantIcon, GardenMap, ToolPalette, PlantingPanel, BedOverview, AddPlantingDialog, BedGanttDialog },
   setup() {
     const { t, locale } = useI18n();
     const route = useRoute();
@@ -46,6 +48,10 @@ export default {
     const tool = ref(null);
     const areaShape = ref('rectangle');
     const plantId = ref('carrot');
+    const addOpen = ref(false);
+    const ganttOpen = ref(false);
+    const addInitial = ref(null);
+    let lastKind = 'area';
     const selectedId = ref(null);
     const editMode = ref('shape');
     const snapping = ref(true);
@@ -63,7 +69,12 @@ export default {
       }
       return formatArea(result.area, settings.units, locale.value);
     });
+    const bedName = computed(() => bed.value?.name || t('elements.types.bed'));
     const drawHint = computed(() => (tool.value ? t(`bed.draw.${tool.value.type === 'area' ? tool.value.draw : tool.value.type}`) : ''));
+    /** What is being drawn: "Carrot · 1 Apr – 30 Jun" */
+    const drawing = computed(() => (tool.value?.plantId
+      ? { plantId: tool.value.plantId, text: [plantName(tool.value.plantId, t), periodText(tool.value, locale.value, t, period.year), preText(tool.value, locale.value, t)].filter(Boolean).join(' · ') }
+      : null));
     const measuredText = computed(() => (measured.value === null ? '' : t('map.draw.measured', { length: formatLength(measured.value, settings.units, locale.value) })));
     const canFinish = computed(() => tool.value?.draw === 'polygon' || tool.value?.type === 'measure');
 
@@ -75,7 +86,7 @@ export default {
     });
     const advice = computed(() => {
       if (!bed.value) return {};
-      const window = period.day ? { start: period.day, end: period.day } : { start: `${period.year}-01-01`, end: `${period.year}-12-31` };
+      const window = period.day ? { start: period.day, end: addDays(period.day, period.days - 1) } : { start: `${period.year}-01-01`, end: `${period.year}-12-31` };
       return pickerAdvice(bed.value.id, window, garden.value.plantings, catalog.value);
     });
 
@@ -88,55 +99,121 @@ export default {
     watch(() => route.params.id, () => {
       tool.value = null;
       selectedId.value = null;
+      addOpen.value = false;
     });
 
-    function buildTool(id) {
-      if (id === 'measure') return { type: 'measure', draw: 'measure' };
-      if (id === 'plant') return { type: 'plant', draw: 'point', plantId: plantId.value };
-      return { type: 'area', draw: areaShape.value, plantId: plantId.value };
-    }
-
+    /** Palette: "Area" and "Single plants" first ask for plant and period. */
     function pick(id) {
       measured.value = null;
       selectedId.value = null;
-      tool.value = id === null ? null : buildTool(id);
+      if (id === 'area' || id === 'plant') {
+        openAdd(id);
+        return;
+      }
+      tool.value = id === 'measure' ? { type: 'measure', draw: 'measure' } : null;
     }
 
     function setAreaShape(shape) {
       areaShape.value = shape;
-      if (tool.value?.type === 'area') tool.value = buildTool('area');
+      if (tool.value?.type === 'area') tool.value = { ...tool.value, draw: shape };
     }
 
-    watch(plantId, () => {
-      if (tool.value && tool.value.type !== 'measure') tool.value = buildTool(tool.value.type);
-    });
+    // --- Adding a planting: plant, period, place -------------------------------
+
+    function openAdd(kind = lastKind) {
+      if (readOnly.value) return;
+      tool.value = null;
+      selectedId.value = null;
+      addInitial.value = { plantId: plantId.value, kind };
+      addOpen.value = true;
+    }
+
+    /** Reopens the dialog with what is being drawn */
+    function changeDrawing() {
+      const current = tool.value;
+      if (!current?.plantId) return;
+      addInitial.value = { plantId: current.plantId, kind: current.type, start: current.start, end: current.end, preStart: current.preStart, keepPre: true };
+      addOpen.value = true;
+    }
+
+    /** Proposed period for a plant; with `start` only the end is proposed. */
+    function propose(id, start = null) {
+      const plant = getPlant(id);
+      const from = start ?? newStart(plant);
+      return { start: from, end: defaultEnd(plant, from) };
+    }
+
+    function onAdd({ plantId: id, kind, start, end, preStart }) {
+      plantId.value = id;
+      lastKind = kind;
+      if (kind === 'whole') {
+        tool.value = null;
+        const planting = place({ kind: 'polygon', points: bed.value.geometry.points }, { plantId: id, start, end, preStart });
+        if (planting) selectPlanting(planting);
+        return;
+      }
+      tool.value = kind === 'plant'
+        ? { type: 'plant', draw: 'point', plantId: id, start, end, preStart }
+        : { type: 'area', draw: areaShape.value, plantId: id, start, end, preStart };
+    }
+
+    /** Creates the planting and shows a time in which it is in the bed. */
+    function place(shape, { plantId: id, start, end, preStart = null }) {
+      const fitted = fitShapeToBed(shape, bed.value.geometry.points);
+      if (fitted.error) {
+        showError(`bed.errors.${fitted.error}`);
+        return null;
+      }
+      const planting = createPlanting({ bedId: bed.value.id, plantId: id, shape: fitted.shape, start, end, preStart });
+      addPlantings([planting]);
+      if (visiblePlantings([planting], period).length === 0) {
+        if (period.day) setWeek(start);
+        else setYear(yearOf(start));
+      }
+      return planting;
+    }
+
+    // Coming from a plant's page ("Plan planting", ?plant=<id>): the dialog opens for that
+    // plant with the period of the current or coming season, and the timeline moves there
+    watch(() => [route.query.plant, bed.value?.id], ([id]) => {
+      if (!id || !bed.value) return;
+      const wanted = catalog.value.get(id);
+      router.replace({ path: route.path });
+      if (!wanted || wanted.placement !== 'bed') return;
+      const proposal = proposedPeriod(wanted, garden.value.climate, todayIso());
+      setWeek(proposal.start);
+      tool.value = null;
+      selectedId.value = null;
+      addInitial.value = { plantId: id, kind: 'area', ...proposal };
+      addOpen.value = true;
+    }, { immediate: true });
+
+    function selectPlanting(planting) {
+      selectedId.value = planting.id;
+      editMode.value = 'shape';
+      panelCollapsed.value = false;
+      showToast('bed.add.planned', { params: { name: plantName(planting.plantId, t), period: periodText(planting, locale.value, t, period.year) } });
+    }
 
     /**
-     * Start date for new plantings: the shown day; for the whole year the plant's
-     * planting-out or sowing window (climate-adjusted); else today or 1 April.
+     * Start proposed for a new planting: the first day from the shown week on (this week
+     * and the whole current year: from today; the whole of another year: from 1 January)
+     * that lies in the plant's planting-out or sowing window (climate-adjusted). Plants
+     * without a window start in the shown week, today or on 1 April.
      */
     function newStart(plant) {
-      if (period.day) return period.day;
-      const proposed = proposedStart(plant, garden.value.climate, period.year);
-      if (proposed) return proposed;
-      return period.year === currentYear() ? todayIso() : toIsoDate(period.year, 4, 1);
+      const thisYear = period.year === currentYear();
+      const shown = period.day === thisWeek() ? todayIso() : period.day;
+      const from = shown ?? (thisYear ? todayIso() : toIsoDate(period.year, 1, 1));
+      return startOnOrAfter(plant, garden.value.climate, from) ?? shown ?? (thisYear ? todayIso() : toIsoDate(period.year, 4, 1));
     }
 
     function onCreate({ geometry }) {
       if (!bed.value || readOnly.value) return;
-      const fitted = fitShapeToBed(geometry, bed.value.geometry.points);
-      if (fitted.error) {
-        showError(`bed.errors.${fitted.error}`);
-        return;
-      }
-      const plant = getPlant(plantId.value);
-      const start = newStart(plant);
-      const planting = createPlanting({ bedId: bed.value.id, plantId: plant.id, shape: fitted.shape, start, end: defaultEnd(plant, start) });
-      addPlantings([planting]);
-      if (tool.value?.draw === 'point') return; // keep placing single plants
-      selectedId.value = planting.id;
-      editMode.value = 'shape';
-      panelCollapsed.value = false;
+      const chosen = tool.value?.start ? tool.value : { plantId: plantId.value, ...propose(plantId.value) };
+      const planting = place(geometry, chosen);
+      if (!planting || tool.value?.draw === 'point') return; // keep placing single plants
+      selectPlanting(planting);
     }
 
     function onChange({ id, shape }) {
@@ -195,7 +272,12 @@ export default {
 
     return {
       t, mapRef, garden, bed, badges, advice, settings, editor, period, tool, areaShape, plantId, selectedId, selected, editMode, snapping,
-      measuredText, drawHint, canFinish, panelCollapsed, readOnly, background, bedSize, BED_TOOLS,
+      measuredText, drawHint, drawing, canFinish, panelCollapsed, readOnly, background, bedSize, bedName, BED_TOOLS,
+      addOpen, addInitial, openAdd, ganttOpen,
+      assignFromGantt: () => {
+        ganttOpen.value = false;
+        openAdd();
+      }, changeDrawing, propose, onAdd, isLocked,
       pick, setAreaShape, onCreate, onChange, onDrawEnd, onSelect, remove, copyToNextYear, undo, redo, setYear, unlockYear,
       activeTool: computed(() => tool.value?.type ?? null),
       onUpdate: (fields) => updatePlanting(selectedId.value, fields),
@@ -250,9 +332,15 @@ export default {
         </div>
 
         <div v-if="tool" class="draw-bar" role="status">
-          <p>{{ measuredText || drawHint }}</p>
+          <div class="draw-bar-text">
+            <p v-if="drawing" class="draw-bar-what">
+              <PlantIcon :plant-id="drawing.plantId" :size="24" />
+              <span>{{ drawing.text }}</span>
+            </p>
+            <p :class="{ small: drawing }">{{ measuredText || drawHint }}</p>
+          </div>
           <div class="btn-row draw-bar-controls">
-            <PlantSelect v-if="tool.type !== 'measure'" v-model="plantId" placement="bed" :label="t('planting.plant')" :advice="advice" hide-label />
+            <button v-if="drawing" type="button" class="btn btn-text" @click="changeDrawing">{{ t('bed.add.change') }}</button>
             <div v-if="tool.type === 'area'" class="segmented" role="group" :aria-label="t('map.draw.shape')">
               <button type="button" :aria-pressed="tool.draw === 'rectangle' ? 'true' : 'false'" :title="t('map.draw.shapeRectangle')" @click="setAreaShape('rectangle')">
                 <AppIcon name="rectangle" :label="t('map.draw.shapeRectangle')" />
@@ -278,9 +366,13 @@ export default {
         <div class="map-panel-content">
           <div class="panel-header bed-title">
             <div>
-              <h2>{{ bed.name || t('elements.types.bed') }}</h2>
+              <h2>{{ bedName }}</h2>
               <p class="small muted">{{ bedSize }}</p>
             </div>
+            <button type="button" class="btn btn-secondary" @click="ganttOpen = true">
+              <AppIcon name="calendar" />
+              <span>{{ t('calendar.gantt.bedButton') }}</span>
+            </button>
           </div>
           <PeriodBar />
           <div v-if="readOnly" class="hint-card">
@@ -314,9 +406,13 @@ export default {
             @select="onSelect"
             @year="setYear"
             @copy="copyToNextYear"
+            @add="openAdd()"
           />
         </div>
       </aside>
+
+      <BedGanttDialog v-model:open="ganttOpen" :garden="garden" :bed="bed" @assign="assignFromGantt" />
+      <AddPlantingDialog v-model:open="addOpen" :bed-name="bedName" :initial="addInitial" :propose="propose" :is-locked="isLocked" :advice="advice" @submit="onAdd" />
     </div>
 
     <div v-else class="page">

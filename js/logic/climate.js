@@ -31,6 +31,11 @@ export function isoWeekOf(iso) {
   return { year: weekYear, week: 1 + Math.round((thursday - firstThursday) / (7 * 86400000)) };
 }
 
+/** 52 or 53: 28 December always lies in the last ISO week of its year. */
+export function isoWeeksInYear(year) {
+  return isoWeekOf(toIsoDate(year, 12, 28)).week;
+}
+
 /** Shifts one window boundary by the garden's climate. */
 export function shiftWeek(week, climate) {
   const shift = climate?.shiftWeeks ?? 0;

@@ -45,6 +45,12 @@ export function daysBetween(from, to) {
   return Math.round((toUtc(to) - toUtc(from)) / DAY_MS);
 }
 
+/** Monday of the week a date lies in. */
+export function mondayOf(iso) {
+  const weekday = (new Date(`${iso}T00:00:00Z`).getUTCDay() + 6) % 7; // Monday = 0
+  return addDays(iso, -weekday);
+}
+
 /** Same day in another year; 29 February becomes 28 February in common years. */
 export function addYears(iso, years) {
   const [y, m, d] = iso.split('-').map(Number);

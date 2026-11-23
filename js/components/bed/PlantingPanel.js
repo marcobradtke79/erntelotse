@@ -4,8 +4,8 @@ import { ref, computed, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { plantById as getPlant, catalog, plantNameById } from '../../stores/catalog.js';
 import { rotationCheck, neighbourRelations } from '../../logic/rotation.js';
-import { estimateCount, shapeArea, plantingStatus, defaultEnd, NOTE_MAX_LENGTH } from '../../logic/plantings.js';
-import { isIsoDate, todayIso } from '../../logic/dates.js';
+import { estimateCount, shapeArea, plantingStatus, defaultEnd, proposedPreStart, NOTE_MAX_LENGTH } from '../../logic/plantings.js';
+import { isIsoDate, todayIso, addDays, daysBetween } from '../../logic/dates.js';
 import { formatArea } from '../../logic/units.js';
 import AppIcon from '../AppIcon.js';
 import PlantIcon from '../PlantIcon.js';
@@ -64,7 +64,30 @@ export default {
         return;
       }
       dateError.value = '';
-      emit('update', { start });
+      // the pre-cultivation keeps its lead
+      const preStart = props.planting.preStart ? addDays(props.planting.preStart, daysBetween(props.planting.start, start)) : null;
+      emit('update', { start, preStart });
+    }
+
+    function setPre(event) {
+      const proposed = proposedPreStart(plant.value, props.planting.start) ?? addDays(props.planting.start, -28);
+      dateError.value = '';
+      emit('update', { preStart: event.target.checked ? proposed : null });
+    }
+
+    function setPreStart(event) {
+      const preStart = event.target.value;
+      if (!isIsoDate(preStart)) {
+        dateError.value = t('planting.errors.date');
+        return;
+      }
+      if (preStart >= props.planting.start) {
+        dateError.value = t('planting.errors.preAfterStart');
+        event.target.value = props.planting.preStart ?? '';
+        return;
+      }
+      dateError.value = '';
+      emit('update', { preStart });
     }
 
     function setEnd(event) {
@@ -129,7 +152,7 @@ export default {
 
     return {
       t, plant, title, status, estimate, isArea, area, dateError, note, NOTE_MAX_LENGTH,
-      setPlant, setStart, setEnd, setOpenEnd, setCount, saveNote, modes, modeIcons, findings, findingIcons,
+      setPlant, setStart, setEnd, setOpenEnd, setPre, setPreStart, setCount, saveNote, modes, modeIcons, findings, findingIcons,
     };
   },
   template: `
@@ -170,6 +193,15 @@ export default {
         <input type="checkbox" :checked="planting.end === null" :disabled="readOnly" @change="setOpenEnd" />
         <span>{{ t('planting.openEnd') }}</span>
       </label>
+      <label class="checkbox-row">
+        <input type="checkbox" :checked="planting.preStart !== null" :disabled="readOnly" @change="setPre" />
+        <span>{{ t('planting.pre') }}</span>
+      </label>
+      <div v-if="planting.preStart !== null" class="field">
+        <label for="planting-pre">{{ t('planting.preStart') }}</label>
+        <input id="planting-pre" class="input" type="date" :value="planting.preStart" :max="planting.start" :disabled="readOnly" @change="setPreStart" />
+        <p class="field-hint">{{ t('planting.preHint') }}</p>
+      </div>
       <p v-if="dateError" class="field-error" role="alert">{{ dateError }}</p>
 
       <div class="field">

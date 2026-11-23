@@ -1,6 +1,7 @@
 import { describe, test, expect } from './harness.js';
+import { mondayOf } from '../js/logic/dates.js';
 import {
-  isoWeekMonday, isoWeekOf, shiftWeek, windowDates, windowInstances, shiftFromLastFrost, lastFrostForShift, presetOf,
+  isoWeekMonday, isoWeekOf, isoWeeksInYear, shiftWeek, windowDates, windowInstances, shiftFromLastFrost, lastFrostForShift, presetOf,
 } from '../js/logic/climate.js';
 
 describe('ISO weeks', () => {
@@ -13,6 +14,11 @@ describe('ISO weeks', () => {
   test('week of a date', () => {
     expect(isoWeekOf('2026-05-11')).toEqual({ year: 2026, week: 20 });
     expect(isoWeekOf('2027-01-01')).toEqual({ year: 2026, week: 53 });
+    expect(isoWeeksInYear(2026)).toBe(53);
+    expect(isoWeeksInYear(2027)).toBe(52);
+    expect(mondayOf('2027-01-01')).toBe('2026-12-28');
+    expect(mondayOf('2026-05-11')).toBe('2026-05-11');
+    expect(mondayOf('2026-05-17')).toBe('2026-05-11');
     expect(isoWeekOf('2025-12-29')).toEqual({ year: 2026, week: 1 });
     expect(isoWeekOf('2024-12-31')).toEqual({ year: 2025, week: 1 });
   });

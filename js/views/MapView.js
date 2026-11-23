@@ -1,8 +1,8 @@
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, nextTick } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import {
-  gardens, editor, addElement, updateElementGeometry, updateElement, deleteElement, restoreElement, undo, redo, setLocation,
+  gardens, editor, addElement, updateElementGeometry, updateElement, deleteElement, restoreElement, undo, redo, setLocation, setClimate,
 } from '../stores/gardens.js';
 import { settings } from '../stores/settings.js';
 import { network } from '../stores/network.js';
@@ -21,6 +21,9 @@ import ElementPanel from '../components/map/ElementPanel.js';
 import ElementList from '../components/map/ElementList.js';
 import AddElementDialog from '../components/map/AddElementDialog.js';
 import LocationBar from '../components/map/LocationBar.js';
+import SetupPanel from '../components/map/SetupPanel.js';
+import ShownPlants from '../components/map/ShownPlants.js';
+import BedGanttDialog from '../components/gantt/BedGanttDialog.js';
 import { elementName } from '../components/map/elementText.js';
 
 /** Where to start looking for the garden, by UI language */
@@ -36,10 +39,11 @@ const NUMBERED_TYPES = ['bed', 'greenhouse'];
 
 export default {
   name: 'MapView',
-  components: { AppIcon, EmptyState, PeriodBar, GardenMap, ToolPalette, ElementPanel, ElementList, AddElementDialog, LocationBar },
+  components: { AppIcon, EmptyState, PeriodBar, GardenMap, ToolPalette, ElementPanel, ElementList, AddElementDialog, LocationBar, SetupPanel, ShownPlants, BedGanttDialog },
   setup() {
     const { t, locale } = useI18n();
     const router = useRouter();
+    const route = useRoute();
     const mapRef = ref(null);
     const garden = computed(() => gardens.active);
 
@@ -52,6 +56,10 @@ export default {
     const locating = ref(false);
     const measured = ref(null);
     const addOpen = ref(false);
+    const addType = ref(null);
+    const ganttOpen = ref(false);
+    const mapReady = ref(false);
+    let startViewPending = false;
     const panelCollapsed = ref(false);
 
     const hasLocation = computed(() => Boolean(garden.value?.location));
@@ -62,6 +70,8 @@ export default {
     });
     const selected = computed(() => garden.value?.elements.find((element) => element.id === selectedId.value) ?? null);
     const hasParcel = computed(() => garden.value?.elements.some((element) => element.type === 'parcel') ?? false);
+    const firstBed = computed(() => garden.value?.elements.find((element) => element.type === 'bed') ?? null);
+    const hasPlantings = computed(() => (garden.value?.plantings.length ?? 0) > 0);
     const activeToolName = computed(() => (tool.value ? tool.value.type ?? 'measure' : null));
     const drawHint = computed(() => (tool.value ? t(`map.draw.${tool.value.draw}`) : ''));
     const canFinish = computed(() => ['polygon', 'line', 'measure'].includes(tool.value?.draw));
@@ -71,9 +81,13 @@ export default {
       tool.value = null;
       selectedId.value = null;
       locating.value = false;
+      if (setup.value && garden.value) goStep(firstStep());
     });
     watch(selected, (element) => {
       if (!element) selectedId.value = null;
+    });
+    watch(selectedId, () => {
+      ganttOpen.value = false;
     });
 
     // --- Tools ----------------------------------------------------------------
@@ -140,6 +154,11 @@ export default {
       selectedId.value = element.id;
     }
 
+    function openAddDialog(type = null) {
+      addType.value = type;
+      addOpen.value = true;
+    }
+
     function remove() {
       const element = selected.value;
       if (!element) return false;
@@ -161,9 +180,21 @@ export default {
       locating.value = true;
       panelCollapsed.value = false;
       if (!hasLocation.value) {
-        const [lat, lng, zoom] = START_VIEWS[locale.value] ?? START_VIEWS.en;
-        setTimeout(() => mapRef.value?.flyTo(lat, lng, zoom), 0);
+        // The map may still be loading (setup opened directly): then wait for 'ready'
+        if (mapReady.value) setTimeout(flyToStart, 0);
+        else startViewPending = true;
       }
+    }
+
+    function flyToStart() {
+      const [lat, lng, zoom] = START_VIEWS[locale.value] ?? START_VIEWS.en;
+      mapRef.value?.flyTo(lat, lng, zoom);
+    }
+
+    function onMapReady() {
+      mapReady.value = true;
+      if (startViewPending && locating.value && !hasLocation.value) flyToStart();
+      startViewPending = false;
     }
 
     function confirmLocation() {
@@ -181,16 +212,93 @@ export default {
       locating.value = false;
       chosenBackground.value = 'street';
       showToast('map.location.saved');
+      if (setup.value) {
+        // Gardens south of the equator get the southern seasons right away
+        const hemisphere = center.lat < 0 ? 'south' : 'north';
+        if (garden.value.climate.hemisphere !== hemisphere) setClimate({ ...garden.value.climate, hemisphere });
+        goStep('boundary');
+      }
     }
 
     function cancelLocating() {
       locating.value = false;
       setTimeout(() => mapRef.value?.fitGarden(), 0);
+      if (setup.value && step.value === 'place') goStep('boundary');
     }
 
     function removeLocation() {
       setLocation(null);
       locating.value = false;
+      if (setup.value) goStep('boundary');
+    }
+
+    // --- Guided setup (?setup=1) ----------------------------------------------
+    // Progress is not stored: the first step follows from what the garden already has.
+
+    const setup = computed(() => route.query.setup === '1');
+    const step = ref('place');
+
+    function firstStep() {
+      if (!hasLocation.value && network.online) return 'place';
+      if (!hasParcel.value) return 'boundary';
+      return 'structures';
+    }
+
+    function goStep(name) {
+      tool.value = null;
+      measured.value = null;
+      if (step.value === 'place' && locating.value && name !== 'place') {
+        locating.value = false;
+        setTimeout(() => mapRef.value?.fitGarden(), 0);
+      }
+      step.value = name;
+      panelCollapsed.value = false;
+      if (name === 'place') {
+        if (network.online) startLocating();
+        else locating.value = false;
+      }
+    }
+
+    // Without a connection there is no street map to place the garden on
+    watch(() => network.online, () => {
+      if (setup.value && step.value === 'place') goStep('place');
+    });
+
+    watch(setup, (on) => {
+      if (on && garden.value) goStep(firstStep());
+      else if (!on) locating.value = false;
+    }, { immediate: true });
+
+    function startSetup() {
+      router.push({ path: '/map', query: { setup: '1' } });
+    }
+
+    function leaveSetup(done) {
+      tool.value = null;
+      locating.value = false;
+      router.replace('/map');
+      const bed = firstBed.value;
+      if (done && bed) showToast('setup.doneBeds', { action: { key: 'setup.plantFirstBed', handler: () => openBed(bed.id) } });
+      else if (done) showToast('setup.done');
+      nextTick(() => mapRef.value?.fitGarden());
+    }
+
+    function drawFromSetup({ type, draw }) {
+      selectedId.value = null;
+      pick(type);
+      if (draw && tool.value) setShape(draw);
+    }
+
+    function redrawParcel() {
+      const parcel = garden.value.elements.find((element) => element.type === 'parcel');
+      if (!parcel) return;
+      selectedId.value = parcel.id;
+      remove();
+      pick('parcel');
+    }
+
+    function openBed(id) {
+      router.push(`/map/bed/${id}`);
     }
 
     // --- Keyboard -------------------------------------------------------------
@@ -212,7 +320,8 @@ export default {
       locating, hasLocation, hasParcel, activeToolName, drawHint, canFinish, measured, measuredText, addOpen, panelCollapsed,
       pick, setShape, onCreate, onDrawEnd, onSelect, addBySize, remove, startLocating, confirmLocation, cancelLocating,
       removeLocation, undo, redo, ELEMENT_TOOLS, MORE_ELEMENT_TOOLS,
-      openBed: (id) => router.push(`/map/bed/${id}`),
+      onMapReady, setup, step, goStep, startSetup, leaveSetup, drawFromSetup, redrawParcel, openAddDialog, addType,
+      openBed, firstBed, hasPlantings, ganttOpen,
       changeGeometry: (geometry) => updateElementGeometry(selectedId.value, geometry),
       onChange: ({ id, geometry }) => updateElementGeometry(id, geometry),
       onUpdate: (fields) => updateElement(selectedId.value, fields),
@@ -243,6 +352,7 @@ export default {
           @draw-end="onDrawEnd"
           @invalid="onInvalid"
           @measure="onMeasure"
+          @ready="onMapReady"
         />
 
         <ToolPalette v-if="!locating" :items="ELEMENT_TOOLS" :more="MORE_ELEMENT_TOOLS" :active="activeToolName" :snapping="snapping" @pick="pick" @toggle-snapping="snapping = !snapping" />
@@ -294,8 +404,28 @@ export default {
         </button>
         <div class="map-panel-content">
           <!-- In the panel, not over the map: the cross in the middle must stay visible -->
+          <SetupPanel
+            v-if="setup"
+            :garden="garden"
+            :step="step"
+            :units="settings.units"
+            :online="network.online"
+            :active-tool="tool?.type ?? null"
+            :active-draw="tool?.draw ?? null"
+            @step="goStep"
+            @draw="drawFromSetup"
+            @add-by-size="openAddDialog"
+            @select="onSelect"
+            @redraw-parcel="redrawParcel"
+            @finish="leaveSetup(true)"
+            @close="leaveSetup(false)"
+            @fly="mapRef?.flyTo($event.lat, $event.lng, $event.zoom)"
+            @confirm-location="confirmLocation"
+            @skip-location="cancelLocating"
+            @remove-location="removeLocation"
+          />
           <LocationBar
-            v-if="locating"
+            v-else-if="locating"
             :has-location="hasLocation"
             @fly="mapRef?.flyTo($event.lat, $event.lng, $event.zoom)"
             @confirm="confirmLocation"
@@ -303,34 +433,66 @@ export default {
             @remove="removeLocation"
           />
           <template v-else>
-          <PeriodBar />
-          <div v-if="!hasLocation && !selected" class="hint-card">
-            <AppIcon name="pin" />
-            <div>
-              <p><strong>{{ t('map.noLocation.title') }}</strong></p>
-              <p class="small">{{ t('map.noLocation.text') }}</p>
-              <button type="button" class="btn btn-secondary" @click="startLocating">{{ t('map.location.set') }}</button>
+            <PeriodBar :plantings="garden.plantings" />
+            <div v-if="firstBed && !hasPlantings && !selected" class="hint-card">
+              <AppIcon name="seedling" />
+              <div>
+                <p><strong>{{ t('map.hints.noPlantings.title') }}</strong></p>
+                <p class="small">{{ t('map.hints.noPlantings.text') }}</p>
+                <button type="button" class="btn btn-secondary" @click="openBed(firstBed.id)">{{ t('map.hints.noPlantings.action') }}</button>
+              </div>
             </div>
-          </div>
+            <div v-else-if="!hasLocation && !selected" class="hint-card">
+              <AppIcon name="pin" />
+              <div>
+                <p><strong>{{ t('map.noLocation.title') }}</strong></p>
+                <p class="small">{{ t('map.noLocation.text') }}</p>
+                <div class="btn-row">
+                  <button type="button" class="btn btn-secondary" @click="startLocating">{{ t('map.location.set') }}</button>
+                  <button type="button" class="btn btn-text" @click="startSetup">{{ t('setup.start') }}</button>
+                </div>
+              </div>
+            </div>
+            <div v-else-if="!hasParcel && !selected" class="hint-card">
+              <AppIcon name="parcel" />
+              <div>
+                <p><strong>{{ t('setup.noParcel.title') }}</strong></p>
+                <p class="small">{{ t('setup.noParcel.text') }}</p>
+                <button type="button" class="btn btn-secondary" @click="startSetup">{{ t('setup.start') }}</button>
+              </div>
+            </div>
+            <div v-else-if="!firstBed && !selected" class="hint-card">
+              <AppIcon name="bed" />
+              <div>
+                <p><strong>{{ t('map.hints.noBeds.title') }}</strong></p>
+                <p class="small">{{ t('map.hints.noBeds.text') }}</p>
+                <button type="button" class="btn btn-secondary" @click="pick('bed')">{{ t('map.hints.noBeds.action') }}</button>
+              </div>
+            </div>
+          </template>
           <ElementPanel
-            v-if="selected"
+            v-if="selected && !locating"
             :key="selected.id"
             :element="selected"
             :units="settings.units"
             :edit-mode="editMode"
+            :plantings="garden.plantings"
+            :year="period.year"
             @close="selectedId = null"
             @update="onUpdate"
             @geometry="changeGeometry"
             @mode="editMode = $event"
             @delete="remove"
             @open-bed="openBed(selected.id)"
+            @gantt="ganttOpen = true"
           />
-          <ElementList v-else :elements="garden.elements" :units="settings.units" @select="onSelect" @add="addOpen = true" />
-          </template>
+          <ShownPlants v-if="hasPlantings && !selected && !setup && !locating" :garden="garden" :period="period" @open-bed="openBed" />
+          <ElementList v-if="!selected && !setup && !locating" :elements="garden.elements" :units="settings.units" :plantings="garden.plantings" :year="period.year" @select="onSelect" @add="openAddDialog()" />
         </div>
       </aside>
 
-      <AddElementDialog v-model:open="addOpen" :units="settings.units" :has-parcel="hasParcel" @add="addBySize" />
+      <BedGanttDialog v-if="selected && selected.type === 'bed'" v-model:open="ganttOpen" :garden="garden" :bed="selected" @assign="openBed(selected.id)" />
+      <AddElementDialog v-model:open="addOpen" :units="settings.units" :has-parcel="hasParcel" :initial-type="addType" @add="addBySize" />
     </div>
 
     <div v-else class="page">

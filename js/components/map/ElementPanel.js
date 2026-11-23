@@ -10,16 +10,22 @@ import LengthInput from '../LengthInput.js';
 import PlantSelect from '../PlantSelect.js';
 import { TYPE_ICONS } from './ToolPalette.js';
 import { elementName } from './elementText.js';
+import { plantingsOfBed, touchesYear } from '../../logic/plantings.js';
+import { plantName, periodText } from '../bed/plantingText.js';
+import PlantIcon from '../PlantIcon.js';
 
 export default {
   name: 'ElementPanel',
-  components: { AppIcon, LengthInput, PlantSelect },
+  components: { AppIcon, LengthInput, PlantSelect, PlantIcon },
   props: {
     element: { type: Object, required: true },
     units: { type: String, default: 'metric' },
     editMode: { type: String, default: 'shape' },
+    /** Plantings of the garden and the shown year: a bed lists what it holds */
+    plantings: { type: Array, default: () => [] },
+    year: { type: Number, default: () => new Date().getFullYear() },
   },
-  emits: ['close', 'update', 'geometry', 'mode', 'delete', 'open-bed'],
+  emits: ['close', 'update', 'geometry', 'mode', 'delete', 'open-bed', 'gantt'],
   setup(props, { emit }) {
     const { t, locale } = useI18n();
     const name = ref(props.element.name);
@@ -34,6 +40,12 @@ export default {
     const length = (value) => formatLength(value, props.units, locale.value);
     const area = (value) => formatArea(value, props.units, locale.value);
     const yearNow = new Date().getFullYear();
+    const inBed = computed(() => (props.element.type === 'bed'
+      ? plantingsOfBed(props.plantings, props.element.id)
+        .filter((planting) => touchesYear(planting, props.year))
+        .sort((a, b) => a.start.localeCompare(b.start))
+        .map((planting) => ({ id: planting.id, plantId: planting.plantId, name: plantName(planting.plantId, t), when: periodText(planting, locale.value, t, props.year) }))
+      : []));
 
     function saveName() {
       const value = name.value.trim().slice(0, NAME_MAX_LENGTH);
@@ -79,7 +91,7 @@ export default {
     });
 
     return {
-      t, name, kind, result, rect, title, length, area, saveName, setRectangle, setRotation,
+      t, name, kind, result, inBed, rect, title, length, area, saveName, setRectangle, setRotation,
       setDiameter, setLineWidth, setYear, modes, modeIcons, modeHintKey, TYPE_ICONS, NAME_MAX_LENGTH, yearNow,
       roundAngle: (value) => Math.round(value * 10) / 10,
     };
@@ -95,10 +107,26 @@ export default {
       </div>
       <p class="muted small">{{ t('elements.types.' + element.type) }}</p>
 
-      <button v-if="element.type === 'bed'" type="button" class="btn btn-primary" @click="$emit('open-bed')">
-        <AppIcon name="seedling" />
-        <span>{{ t('map.panel.openBed') }}</span>
-      </button>
+      <div v-if="element.type === 'bed'" class="btn-row">
+        <button type="button" class="btn btn-primary" @click="$emit('open-bed')">
+          <AppIcon name="seedling" />
+          <span>{{ t('map.panel.openBed') }}</span>
+        </button>
+        <button type="button" class="btn btn-secondary" @click="$emit('gantt')">
+          <AppIcon name="calendar" />
+          <span>{{ t('calendar.gantt.bedButton') }}</span>
+        </button>
+      </div>
+      <section v-if="element.type === 'bed'" class="bed-contents" :aria-label="t('bed.inYear', { year })">
+        <h3 class="small">{{ t('bed.inYear', { year }) }}</h3>
+        <p v-if="!inBed.length" class="small muted">{{ t('map.panel.bedEmpty') }}</p>
+        <ul v-else class="plain-list">
+          <li v-for="planting in inBed" :key="planting.id" class="bed-contents-row">
+            <PlantIcon :plant-id="planting.plantId" :size="24" />
+            <span><strong>{{ planting.name }}</strong> <span class="muted small">{{ planting.when }}</span></span>
+          </li>
+        </ul>
+      </section>
 
       <PlantSelect
         v-if="element.type === 'tree' || element.type === 'shrub'"

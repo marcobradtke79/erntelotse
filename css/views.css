@@ -251,107 +251,472 @@
   color: var(--color-text-muted);
 }
 
-/* Calendar: year */
+/* Calendar: year plan (Gantt chart) */
 
-.year-overview {
-  overflow-x: auto;
-}
-
-.year-row {
-  display: grid;
-  grid-template-columns: minmax(120px, 200px) 1fr;
-  gap: var(--space-3);
-  align-items: center;
-  min-height: 36px;
-  min-width: 520px;
-}
-
-.year-row + .year-row {
-  border-top: 1px solid var(--color-border);
-}
-
-.year-row-label {
+.gantt {
+  --gantt-label: 216px;
   display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  min-width: 0;
-  overflow-wrap: anywhere;
-  font-size: var(--font-size-small);
+  flex-direction: column;
+  gap: var(--space-3);
 }
 
-.year-months {
-  display: grid;
-  grid-template-columns: repeat(12, 1fr);
-  font-size: 12px;
+.gantt-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-4);
+}
+
+.gantt-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.gantt-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: 36px;
+  padding: 0 var(--space-3);
+  border: 2px solid var(--task-color);
+  border-radius: var(--radius-round);
+  background: color-mix(in srgb, var(--task-color) 18%, transparent);
+  color: var(--color-text);
+  font: inherit;
+  font-size: var(--font-size-small);
   font-weight: 700;
+  cursor: pointer;
+}
+
+.gantt-chip .icon {
+  width: 16px;
+  height: 16px;
+  color: var(--task-color);
+}
+
+/* switched off: no fill, struck through – not only paler */
+.gantt-chip[aria-pressed='false'] {
+  border-style: dashed;
+  border-color: var(--color-border);
+  background: none;
+  color: var(--color-text-muted);
+  text-decoration: line-through;
+}
+
+.gantt-chip[aria-pressed='false'] .icon {
   color: var(--color-text-muted);
 }
 
-.year-track {
-  position: relative;
-  height: 22px;
-  border-radius: var(--radius-small);
-  background: repeating-linear-gradient(90deg, var(--color-surface-alt) 0 calc(100% / 12 - 1px), var(--color-border) calc(100% / 12 - 1px) calc(100% / 12));
+.gantt-scroll {
+  overflow-x: auto;
 }
 
-.year-segment {
-  position: absolute;
-  top: 3px;
+.gantt-inner {
+  min-width: 680px;
+}
+
+.gantt-line {
+  display: grid;
+  grid-template-columns: var(--gantt-label) minmax(0, 1fr);
+  align-items: center;
+  min-height: 34px;
+}
+
+/* The label column stays in place while the chart scrolls sideways */
+.gantt-label {
+  position: sticky;
+  left: 0;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  align-self: stretch;
+  min-width: 0;
+  padding: 0 var(--space-2) 0 0;
+  background: var(--color-surface);
+  font-size: var(--font-size-small);
+}
+
+.gantt-toggle {
+  border: 0;
+  color: var(--color-text);
+  font: inherit;
+  font-size: var(--font-size-small);
+  text-align: left;
+  cursor: pointer;
+}
+
+.gantt-toggle:hover {
+  background: var(--color-surface-alt);
+}
+
+.gantt-toggle > .icon {
+  flex: none;
+  width: 16px;
   height: 16px;
+  color: var(--color-text-muted);
+}
+
+.gantt-toggle .plant-icon {
+  flex: none;
+}
+
+.gantt-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gantt-row .gantt-toggle {
+  padding-left: var(--space-3);
+}
+
+.gantt-months {
+  position: relative;
+  height: 32px;
+}
+
+.gantt-month {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  padding: 0;
+  border: 0;
+  border-left: 1px solid var(--color-border);
+  background: none;
+  color: var(--color-text-muted);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  overflow: hidden;
+  cursor: zoom-in;
+}
+
+.gantt-month:hover,
+.gantt-month[aria-pressed='true'] {
+  background: var(--color-primary-soft);
+  color: var(--color-text);
+}
+
+/* By week (a season): month names over the week numbers */
+.gantt-weekhead {
+  display: flex;
+  flex-direction: column;
+}
+
+.gantt-months.is-plain {
+  height: 24px;
+}
+
+.gantt-months.is-plain .gantt-month {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  cursor: default;
+  background: none;
+  color: var(--color-text);
+}
+
+.gantt-weeks {
+  position: relative;
+  height: 24px;
+}
+
+.gantt-week-cell {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-left: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+  font-size: 12px;
+  font-weight: 700;
+  overflow: hidden;
+}
+
+.gantt-week-cell.is-now {
+  background: var(--color-accent-soft);
+  color: var(--color-text);
+}
+
+.gantt-head-label {
+  align-items: flex-end;
+  padding-bottom: 4px;
+  color: var(--color-text-muted);
+  font-weight: 700;
+}
+
+.season-header {
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  margin-bottom: var(--space-3);
+}
+
+/* earlier – title – later stay on one line; "This week" may wrap below on a phone */
+.season-header h2 {
+  flex: 0 1 auto;
+  min-width: 0;
+  margin: 0;
+  font-size: var(--font-size-section);
+  text-align: center;
+  text-transform: none;
+}
+
+@media (max-width: 599px) {
+  .season-header h2 {
+    flex: 1 1 0;
+  }
+}
+
+.gantt-body {
+  position: relative;
+}
+
+.gantt-grid {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: var(--gantt-label);
+  right: 0;
+  pointer-events: none;
+}
+
+.gantt-gridline {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--color-border);
+  opacity: 0.6;
+}
+
+.gantt-gridline.is-strong {
+  width: 2px;
+  opacity: 1;
+}
+
+.gantt-week {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  min-width: 3px;
+  background: color-mix(in srgb, var(--color-primary) 16%, transparent);
+  box-shadow: inset 0 0 0 1px var(--color-primary);
+}
+
+.gantt-today {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  margin-left: -1px;
+  background: var(--color-accent);
+  z-index: 2;
+}
+
+.gantt-group + .gantt-group {
+  margin-top: var(--space-2);
+}
+
+.gantt-group-head {
+  border-bottom: 2px solid var(--color-border);
+}
+
+.gantt-group-head .gantt-toggle > .icon:nth-child(2) {
+  color: var(--color-primary);
+}
+
+.gantt-row + .gantt-row {
+  border-top: 1px solid var(--color-border);
+}
+
+.gantt-track {
+  position: relative;
+  height: 30px;
+}
+
+.gantt-track.is-overview,
+.gantt-track.is-summary {
+  cursor: pointer;
+}
+
+/* Phases of a planting: they differ by pattern and height as well as colour */
+.gantt-phase {
+  position: absolute;
+  top: 5px;
+  height: 14px;
+  min-width: 3px;
   border-radius: 4px;
 }
 
-.year-segment.phase-grow {
-  background: color-mix(in srgb, var(--plant-color, var(--task-plant)) 45%, transparent);
-  box-shadow: inset 0 0 0 1px var(--plant-color, var(--task-plant));
+.gantt-phase.cut-start {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
 }
 
-/* Phases differ by pattern as well as colour */
-.year-segment.phase-sow,
-.year-segment-sample.phase-sow {
-  background: repeating-linear-gradient(45deg, var(--task-sow) 0 3px, transparent 3px 6px);
-  box-shadow: inset 0 0 0 1px var(--task-sow);
+.gantt-phase.cut-end {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
 }
 
-.year-segment.phase-harvest,
-.year-segment-sample.phase-harvest {
+.gantt-phase.phase-grow,
+.gantt-sample.phase-grow {
+  background: color-mix(in srgb, var(--plant-color, var(--task-plant)) 55%, transparent);
+  box-shadow: inset 0 0 0 1.5px var(--plant-color, var(--task-plant));
+}
+
+.gantt-phase.phase-pre,
+.gantt-sample.phase-pre {
+  background: repeating-linear-gradient(135deg, var(--plant-color, var(--task-sow)) 0 2px, transparent 2px 5px);
+  box-shadow: inset 0 0 0 1px var(--plant-color, var(--task-sow));
+}
+
+.gantt-phase.phase-harvest {
+  top: 13px;
+  height: 6px;
+  border-radius: 0 0 4px 4px;
   background: var(--task-harvest);
-  top: 7px;
-  height: 8px;
 }
 
-.year-segment.phase-prune,
-.year-segment-sample.phase-prune {
-  background: repeating-linear-gradient(90deg, var(--task-prune) 0 2px, transparent 2px 5px);
-  top: 7px;
-  height: 8px;
+.gantt-track.is-summary .gantt-phase.phase-harvest {
+  top: 9px;
+  border-radius: 3px;
 }
 
-.year-segment-sample {
+/* Activities of a closed row: a line of small marks under the bar */
+.gantt-mark {
+  position: absolute;
+  top: 22px;
+  height: 4px;
+  min-width: 4px;
+  border-radius: 2px;
+  background: var(--task-color);
+}
+
+/* Opened row: one lane per activity */
+.gantt-line.is-lane {
+  min-height: 28px;
+  background: color-mix(in srgb, var(--color-surface-alt) 60%, transparent);
+}
+
+.gantt-lane-label {
+  padding-left: calc(var(--space-3) + 20px);
+  background: var(--color-surface-alt);
+  color: var(--color-text);
+}
+
+.gantt-lane-label .icon {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  color: var(--task-color);
+}
+
+.is-lane .gantt-track {
+  height: 26px;
+}
+
+.gantt-bar {
+  position: absolute;
+  top: 4px;
+  height: 18px;
+  min-width: 10px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 4px;
+  background: var(--task-color);
+  color: var(--color-surface);
+  cursor: pointer;
+}
+
+.gantt-bar .icon {
+  width: 12px;
+  height: 12px;
+}
+
+.gantt-bar:hover,
+.gantt-bar.is-selected {
+  outline: 2px solid var(--color-text);
+  outline-offset: 1px;
+  z-index: 1;
+}
+
+.gantt-bar.is-done {
+  min-width: 16px;
+  background: color-mix(in srgb, var(--task-color) 55%, var(--color-surface));
+  color: var(--color-text);
+}
+
+.gantt-bar.is-skipped {
+  background: none;
+  border: 1.5px dashed var(--task-color);
+  opacity: 0.6;
+}
+
+.gantt-none {
+  margin: 0;
+  padding: var(--space-1) 0;
+}
+
+.gantt-sample {
   display: inline-block;
   width: 24px;
   height: 10px;
   border-radius: 3px;
-  position: relative;
-  top: 0 !important;
 }
 
-.year-segment-sample.phase-grow {
-  background: color-mix(in srgb, var(--task-plant) 45%, transparent);
-  box-shadow: inset 0 0 0 1px var(--task-plant);
+.gantt-sample.phase-harvest {
+  height: 6px;
+  background: var(--task-harvest);
 }
 
-.year-today {
-  position: absolute;
-  top: -2px;
-  bottom: -2px;
+.gantt-sample.is-today {
   width: 2px;
+  height: 14px;
+  margin: 0 11px;
+  border-radius: 0;
   background: var(--color-accent);
-  z-index: 1;
 }
 
-.year-overview .task-legend {
-  margin-top: var(--space-3);
+.gantt-sample.is-week {
+  background: color-mix(in srgb, var(--color-primary) 16%, transparent);
+  box-shadow: inset 0 0 0 1px var(--color-primary);
+}
+
+.gantt-detail {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border-radius: var(--radius-large);
+  background: var(--color-surface-alt);
+}
+
+.gantt-detail-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.gantt-detail-head h2 {
+  margin: 0;
+  font-size: var(--font-size-section);
+}
+
+@media (max-width: 599px) {
+  .gantt {
+    --gantt-label: 132px;
+  }
 }
 
 /* Plant pages */
@@ -765,4 +1130,146 @@
 
 .weather-source {
   margin-top: var(--space-3);
+}
+
+/* Plant page: suggested period when planning a planting */
+.plan-suggestion {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-3);
+  padding: var(--space-3);
+  border-radius: var(--radius-large);
+  background: var(--color-accent-soft);
+  font-weight: 700;
+}
+
+.plan-suggestion .icon {
+  flex: none;
+  color: var(--color-accent);
+}
+
+/* Gantt chart of one bed in a dialog */
+.bed-gantt-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-4);
+}
+
+.bed-gantt-bar .season-header {
+  margin: 0;
+}
+
+.dialog .card.gantt {
+  padding: 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
+}
+
+.gantt-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+
+/* Seed stock */
+.seeds-layout {
+  display: grid;
+  gap: var(--space-4);
+}
+
+@media (min-width: 1000px) {
+  .seeds-layout {
+    grid-template-columns: 1fr 1fr;
+    align-items: start;
+  }
+}
+
+.seeds-layout .card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.seeds-layout .card-header h2 {
+  flex: 1;
+}
+
+.seeds-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.seeds-list > li + li {
+  border-top: 1px solid var(--color-border);
+}
+
+.seed-row,
+.seed-entry {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
+}
+
+.seed-row .plant-icon {
+  flex: none;
+}
+
+.seed-row-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  overflow-wrap: anywhere;
+}
+
+.seed-row-name {
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.seed-entries {
+  margin-left: calc(32px + var(--space-3));
+}
+
+.seed-entry {
+  gap: var(--space-1);
+  border-top: 1px dashed var(--color-border);
+}
+
+.seed-warning {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  color: var(--color-warning, var(--color-accent));
+}
+
+.seed-warning .icon {
+  width: 16px;
+  height: 16px;
+  flex: none;
+}
+
+.seeds-covered {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+  font-weight: 700;
+}
+
+.seeds-covered .icon {
+  color: var(--color-success);
+}
+
+/* Plants: grown this year / planned */
+.plant-card-use {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  margin: var(--space-1) 0 0;
 }

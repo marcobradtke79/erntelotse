@@ -2,12 +2,46 @@
 // A migration for version n takes a document of version n and returns version n + 1.
 // Pure module.
 
-export const CURRENT_SCHEMA_VERSION = 1;
+import { PLANTS } from '../data/plants.js';
+import { buildCatalog } from './catalog.js';
+import { proposedPreStart } from './plantings.js';
+
+export const CURRENT_SCHEMA_VERSION = 3;
 
 /** @type {Record<number, (doc: object) => object>} */
 export const MIGRATIONS = {
-  // 1: (doc) => ({ ...doc, newField: [] }),
+  // 1 → 2: plantings store their pre-cultivation (`preStart`). Until now every plant with
+  // an indoor sowing window was assumed to be raised indoors, so those plantings keep
+  // that date (and with it their "sow indoors" task); all others get null.
+  1: (doc) => {
+    if (!Array.isArray(doc.plantings)) return doc;
+    let catalog = null;
+    try {
+      catalog = buildCatalog(PLANTS, doc.plantOverrides, doc.customPlants);
+    } catch {
+      catalog = null; // a broken document is reported by validation, not here
+    }
+    for (const planting of doc.plantings) {
+      if (!planting || typeof planting !== 'object' || 'preStart' in planting) continue;
+      const plant = catalog?.has(planting.plantId) ? catalog.get(planting.plantId) : null;
+      planting.preStart = plant && typeof planting.start === 'string' ? safePreStart(plant, planting.start) : null;
+    }
+    return doc;
+  },
+  // 2 → 3: the garden has a seed stock
+  2: (doc) => {
+    if (!Array.isArray(doc.seedStock)) doc.seedStock = [];
+    return doc;
+  },
 };
+
+function safePreStart(plant, start) {
+  try {
+    return proposedPreStart(plant, start);
+  } catch {
+    return null;
+  }
+}
 
 export class MigrationError extends Error {
   constructor(code, details = {}) {

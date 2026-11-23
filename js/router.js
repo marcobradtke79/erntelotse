@@ -12,6 +12,7 @@ import CalendarView from './views/CalendarView.js';
 import PlantsView from './views/PlantsView.js';
 import PlantDetailView from './views/PlantDetailView.js';
 import JournalView from './views/JournalView.js';
+import SeedsView from './views/SeedsView.js';
 
 const routes = [
   { path: '/', redirect: () => (gardens.index.length > 0 ? '/dashboard' : '/gardens') },
@@ -23,6 +24,7 @@ const routes = [
   { path: '/plants', component: PlantsView, meta: { titleKey: 'nav.plants' } },
   { path: '/plants/:id', component: PlantDetailView, meta: { titleKey: 'nav.plants' } },
   { path: '/journal', component: JournalView, meta: { titleKey: 'nav.journal', period: true } },
+  { path: '/seeds', component: SeedsView, meta: { titleKey: 'nav.seeds' } },
   { path: '/gardens', component: GardensView, meta: { titleKey: 'nav.gardens' } },
   { path: '/settings', component: SettingsView, meta: { titleKey: 'nav.settings' } },
   { path: '/more', component: MoreView, meta: { titleKey: 'more.title' } },

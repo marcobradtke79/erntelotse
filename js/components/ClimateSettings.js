@@ -10,6 +10,10 @@ import AppIcon from './AppIcon.js';
 export default {
   name: 'ClimateSettings',
   components: { AppIcon },
+  props: {
+    /** Without card and heading, e.g. inside the garden setup */
+    bare: { type: Boolean, default: false },
+  },
   setup() {
     const { t, locale } = useI18n();
     const garden = computed(() => gardens.active);
@@ -48,8 +52,8 @@ export default {
     return { t, garden, preset, lastFrost, PRESETS, update, choosePreset, setLastFrost, frostText, shiftText };
   },
   template: `
-    <section v-if="garden" class="card" aria-labelledby="settings-climate">
-      <div class="card-header">
+    <section v-if="garden" :class="{ card: !bare }" :aria-labelledby="bare ? null : 'settings-climate'" :aria-label="bare ? t('climate.title', { garden: garden.name }) : null">
+      <div v-if="!bare" class="card-header">
         <AppIcon name="dashboard" />
         <h2 id="settings-climate">{{ t('climate.title', { garden: garden.name }) }}</h2>
       </div>

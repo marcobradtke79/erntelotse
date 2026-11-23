@@ -18,6 +18,20 @@ describe('migrateGarden', () => {
     const error = expect(() => migrateGarden({ schemaVersion: CURRENT_SCHEMA_VERSION + 1 })).toThrow('tooNew');
     expect(error instanceof MigrationError).toBeTruthy();
   });
+  test('version 1 plantings get their pre-cultivation (kept for plants raised indoors)', () => {
+    const planting = (plantId) => ({ id: 'p_1', bedId: 'e_1', plantId, shape: { kind: 'point', at: [1, 1] }, start: '2026-05-18', end: '2026-10-04', count: null, note: '' });
+    const input = { schemaVersion: 1, name: 'A', plantings: [planting('tomato'), planting('carrot'), planting('gone')] };
+    const result = migrateGarden(input);
+    expect(result.schemaVersion).toBe(CURRENT_SCHEMA_VERSION);
+    expect(result.plantings.map((p) => p.preStart)).toEqual(['2026-03-09', null, null]);
+    expect('preStart' in input.plantings[0]).toBe(false);
+  });
+  test('version 2 gardens get an empty seed stock', () => {
+    const result = migrateGarden({ schemaVersion: 2, name: 'A', plantings: [] });
+    expect(result.schemaVersion).toBe(CURRENT_SCHEMA_VERSION);
+    expect(result.seedStock).toEqual([]);
+    expect(migrateGarden({ schemaVersion: 1, name: 'A', plantings: [] }).seedStock).toEqual([]);
+  });
   test('applies steps in order without changing the input', () => {
     const migrations = {
       1: (doc) => ({ ...doc, steps: ['1→2'] }),

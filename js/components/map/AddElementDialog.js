@@ -13,6 +13,8 @@ export default {
     open: { type: Boolean, default: false },
     units: { type: String, default: 'metric' },
     hasParcel: { type: Boolean, default: false },
+    /** Type chosen when the dialog opens (e.g. the parcel in the garden setup) */
+    initialType: { type: String, default: null },
   },
   emits: ['update:open', 'add'],
   setup(props, { emit }) {
@@ -39,7 +41,9 @@ export default {
     });
 
     watch(() => props.open, (open) => {
-      if (open && !types.value.includes(type.value)) type.value = 'bed';
+      if (!open) return;
+      if (props.initialType && types.value.includes(props.initialType)) type.value = props.initialType;
+      else if (!types.value.includes(type.value)) type.value = 'bed';
     });
 
     function submit() {

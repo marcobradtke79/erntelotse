@@ -8,6 +8,7 @@ import { UNIT_SYSTEMS } from './units.js';
 import { LANGUAGE_CODES } from '../i18n/languages.js';
 import { validateElement } from './elements.js';
 import { validatePlanting } from './plantings.js';
+import { validateSeedEntry } from './seeds.js';
 import { validateCustomPlant, validateOverrides } from './catalog.js';
 import { validateJournalEntry, validateTaskStates } from './tasks.js';
 
@@ -68,7 +69,7 @@ export function validateGarden(doc) {
     if (!isNumber(doc.climate.shiftWeeks) || Math.abs(doc.climate.shiftWeeks) > 12) problems.push({ path: 'climate.shiftWeeks', code: 'range' });
   }
 
-  for (const key of ['elements', 'plantings', 'customPlants', 'journal']) {
+  for (const key of ['elements', 'plantings', 'customPlants', 'journal', 'seedStock']) {
     checkItemsWithId(problems, key, doc[key]);
   }
   if (Array.isArray(doc.elements)) {
@@ -99,6 +100,12 @@ export function validateGarden(doc) {
     doc.journal.forEach((entry, index) => {
       if (!isObject(entry)) return;
       for (const code of validateJournalEntry(entry)) problems.push({ path: `journal[${index}]`, code: `journal.${code}` });
+    });
+  }
+  if (Array.isArray(doc.seedStock)) {
+    doc.seedStock.forEach((entry, index) => {
+      if (!isObject(entry)) return;
+      for (const code of validateSeedEntry(entry)) problems.push({ path: `seedStock[${index}]`, code: `seed.${code}` });
     });
   }
   if (isObject(doc.taskStates)) {

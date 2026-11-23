@@ -11,6 +11,8 @@ export default {
   components: { AppIcon },
   props: {
     hasLocation: { type: Boolean, default: false },
+    /** Inside the garden setup: cancelling means planning on the grid */
+    inSetup: { type: Boolean, default: false },
   },
   emits: ['fly', 'confirm', 'cancel', 'remove'],
   setup(props, { emit }) {
@@ -64,8 +66,8 @@ export default {
     return { t, query, results, busy, message, search, choose, myPosition };
   },
   template: `
-    <section class="location-bar" aria-labelledby="location-title">
-      <h2 id="location-title">{{ t(hasLocation ? 'map.location.changeTitle' : 'map.location.title') }}</h2>
+    <section class="location-bar" :aria-labelledby="inSetup ? null : 'location-title'">
+      <h2 v-if="!inSetup" id="location-title">{{ t(hasLocation ? 'map.location.changeTitle' : 'map.location.title') }}</h2>
       <p class="small">{{ t('map.location.hint') }}</p>
       <form class="location-search" role="search" @submit.prevent="search">
         <label for="location-query" class="visually-hidden">{{ t('map.location.searchLabel') }}</label>
@@ -96,7 +98,7 @@ export default {
         </button>
       </div>
       <div class="dialog-actions">
-        <button type="button" class="btn btn-text" @click="$emit('cancel')">{{ t('common.cancel') }}</button>
+        <button type="button" class="btn btn-text" @click="$emit('cancel')">{{ inSetup ? t('map.location.skipToGrid') : t('common.cancel') }}</button>
         <button type="button" class="btn btn-primary" @click="$emit('confirm')">
           <AppIcon name="pin" />
           <span>{{ t('map.location.setHere') }}</span>

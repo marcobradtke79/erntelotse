@@ -10,8 +10,9 @@
 // hint: text id – a catalog care hint (careHints.<plant>.<hint>) or a general one
 //       (sowIndoor, sowOutdoor, plantOut, harvest)
 
-import { addDays, maxDate, minDate } from './dates.js';
+import { addDays, maxDate, minDate, yearOf } from './dates.js';
 import { windowInstances } from './climate.js';
+import { defaultEnd, proposedPreStart } from './plantings.js';
 
 export const TASK_TYPES = ['sow', 'plant', 'care', 'fertilize', 'prune', 'water', 'harvest'];
 const SPAN_DAYS = 6; // a dated task (e.g. planting out) is shown for a week
@@ -20,7 +21,8 @@ function overlaps(start, end, from, to) {
   return end >= from && start <= to;
 }
 
-function hintKey(sourceId, type, hint, start) {
+/** Deterministic key of a task: its state and what it used up are stored under it */
+export function hintKey(sourceId, type, hint, start) {
   return `${sourceId}|${type}|${hint}|${start}`;
 }
 
@@ -78,23 +80,14 @@ function seasonalHarvests(source, plant, climate, since, from, to) {
   return hints;
 }
 
-/** Weeks between the first indoor sowing and the first planting out in the catalog. */
-function indoorLeadWeeks(plant) {
-  const sow = plant.windows.sowIndoor?.[0];
-  const out = plant.windows.plantOut?.[0];
-  return sow && out ? Math.max(1, out[0] - sow[0]) : 0;
-}
-
 function plantingHints(planting, plant, climate, from, to) {
   const source = { id: planting.id, kind: 'planting', plantId: planting.plantId, bedId: planting.bedId };
   const hints = [];
 
-  // Indoor sowing before planting out
-  const lead = indoorLeadWeeks(plant);
-  if (lead) {
-    const start = addDays(planting.start, -lead * 7);
-    const end = addDays(start, 13);
-    if (overlaps(start, end, from, to)) hints.push(make(source, 'sow', 'sowIndoor', start, end));
+  // Pre-cultivation chosen for this planting: sow indoors from its date on
+  if (planting.preStart) {
+    const end = minDate(addDays(planting.preStart, 13), addDays(planting.start, -1));
+    if (overlaps(planting.preStart, end, from, to)) hints.push(make(source, 'sow', 'sowIndoor', planting.preStart, end));
   }
 
   // Into the bed: planting out, or sowing directly
@@ -170,4 +163,29 @@ export function proposedStart(plant, climate, year) {
   if (!window) return null;
   const instance = windowInstances(window, climate, `${year}-01-01`, `${year}-12-31`).find((dates) => dates.start.startsWith(String(year)));
   return instance?.start ?? null;
+}
+
+/**
+ * First day on or after `date` that lies in the plant's planting-out or direct-sowing
+ * window, in that year or the next (for proposing the start of a new planting).
+ * Returns null for plants without such a window.
+ */
+export function startOnOrAfter(plant, climate, date) {
+  const window = plant.windows.plantOut?.[0] ?? plant.windows.sowOutdoor?.[0];
+  if (!window) return null;
+  const next = windowInstances(window, climate, date, `${yearOf(date) + 1}-12-31`)
+    .sort((a, b) => a.start.localeCompare(b.start))
+    .find((dates) => dates.end >= date);
+  return next ? maxDate(next.start, date) : null;
+}
+
+/**
+ * Period proposed for planting a plant from `from` on: the current season if `from` lies
+ * in the planting or sowing window, else the next one; the end follows from the growing
+ * time (null for perennials); `preStart` is when pre-cultivation would begin (null if the
+ * plant is not raised indoors – it may lie before `from`). Plants without a window start on `from`.
+ */
+export function proposedPeriod(plant, climate, from) {
+  const start = startOnOrAfter(plant, climate, from) ?? from;
+  return { start, end: defaultEnd(plant, start), preStart: proposedPreStart(plant, start) };
 }
