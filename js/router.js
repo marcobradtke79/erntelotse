@@ -19,7 +19,7 @@ import PrivacyView from './views/PrivacyView.js';
 
 const routes = [
   { path: '/', redirect: () => (gardens.index.length > 0 ? '/dashboard' : '/about') },
-  { path: '/about', component: AboutView, meta: { titleKey: 'nav.about' } },
+  { path: '/about', component: AboutView, meta: { titleKey: 'about.pageTitle' } },
   { path: '/dashboard', component: DashboardView, meta: { titleKey: 'nav.dashboard' } },
   { path: '/map', component: MapView, meta: { titleKey: 'nav.map', fullBleed: true, period: true } },
   // Under /map so that the Map navigation entry stays active

@@ -4,8 +4,36 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#FFF9EC" />
-    <meta name="description" content="Erntelotse – garden planning in your browser" />
-    <title>Erntelotse</title>
+    <meta name="description" content="Free garden planner in your browser: draw your beds on a map, plan what grows where and when, and get care hints at the right time. Works offline, no account." />
+    <title>Erntelotse – free garden planner for beds, sowing and harvest</title>
+    <link rel="canonical" href="https://marcobradtke79.github.io/erntelotse/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Erntelotse" />
+    <meta property="og:title" content="Erntelotse – free garden planner for beds, sowing and harvest" />
+    <meta property="og:description" content="Free garden planner in your browser: draw your beds on a map, plan what grows where and when, and get care hints at the right time. Works offline, no account." />
+    <meta property="og:url" content="https://marcobradtke79.github.io/erntelotse/" />
+    <meta property="og:image" content="https://marcobradtke79.github.io/erntelotse/assets/social/preview.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Erntelotse: plan your garden, bed by bed and week by week" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Erntelotse",
+        "url": "https://marcobradtke79.github.io/erntelotse/",
+        "description": "Free garden planner in your browser: draw your beds on a map, plan what grows where and when, and get care hints at the right time. Works offline, no account.",
+        "applicationCategory": "LifestyleApplication",
+        "operatingSystem": "Any",
+        "browserRequirements": "Requires JavaScript",
+        "inLanguage": ["en", "de", "fr", "es", "pt"],
+        "isAccessibleForFree": true,
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "EUR" },
+        "image": "https://marcobradtke79.github.io/erntelotse/assets/social/preview.png",
+        "author": { "@type": "Person", "name": "Marco Bradtke" }
+      }
+    </script>
     <link rel="icon" href="assets/icons/app/favicon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="assets/icons/app/apple-touch-icon.png" />
     <link rel="manifest" href="manifest.webmanifest" />
@@ -31,7 +59,14 @@
     <script type="module" src="js/main.js"></script>
   </head>
   <body>
-    <div id="app"></div>
+    <div id="app">
+      <!-- Shown until the app has started, and to crawlers that run no scripts -->
+      <main class="app-fallback">
+        <h1>Erntelotse – plan your garden, bed by bed and week by week</h1>
+        <p>Erntelotse is a free planner for your kitchen garden. You draw your garden on a map, decide what grows where and when, and the app tells you what to do at the right time: sowing, planting, fertilizing, pruning, watering and harvesting.</p>
+        <p>It keeps a seed stock with a shopping list, warns about poor crop rotation and bad neighbours, works offline and needs no account. Available in English, German, French, Spanish and Portuguese.</p>
+      </main>
+    </div>
     <noscript>Erntelotse needs JavaScript. · Erntelotse braucht JavaScript.</noscript>
   </body>
 </html>

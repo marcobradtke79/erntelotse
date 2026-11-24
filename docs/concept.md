@@ -329,6 +329,10 @@ Nothing else leaves the browser. All services are optional: a garden without a l
 
 A browser test page (`tests/index.html`) runs unit tests for the pure logic modules and the storage migrations with a small built-in harness – no test framework to install. Views are tested manually against the acceptance criteria in the implementation plan.
 
+### 7.9 Search engines
+
+Because all pages live behind `#` in one address, search engines index one page: the start page, in English. `index.html` carries what describes it – title, description, canonical address, preview data for shared links (with `assets/social/preview.png`), structured data (`WebApplication`) and a short static text that the app replaces on start. `sitemap.xml` lists the one address; `.nojekyll` keeps the Markdown files of the repository from being published as pages. Not covered: other languages in search results and a page per plant (both would need addresses of their own).
+
 ## 8. Risks and limits
 
 | Risk | Handling |

@@ -17,6 +17,7 @@ export default {
     more: 'Más',
   },
   about: {
+    pageTitle: 'Planificador de huerto gratuito: bancales, siembra y cosecha',
     title: 'Planifica tu huerto, bancal a bancal y semana a semana',
     lead: 'Erntelotse es un planificador gratuito para tu huerto. Dibujas tu jardín en un mapa, decides qué crece dónde y cuándo, y la aplicación te dice qué hacer en el momento adecuado.',
     benefitsTitle: 'Lo que obtienes',

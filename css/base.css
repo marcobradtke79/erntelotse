@@ -129,3 +129,10 @@ textarea {
     scroll-behavior: auto !important;
   }
 }
+
+/* Static text in index.html until the app has started */
+.app-fallback {
+  max-width: 60ch;
+  margin: 0 auto;
+  padding: var(--space-5) var(--space-4);
+}

@@ -17,6 +17,7 @@ export default {
     more: 'Mehr',
   },
   about: {
+    pageTitle: 'Kostenloser Gartenplaner für Beete, Aussaat und Ernte',
     title: 'Plane deinen Garten – Beet für Beet, Woche für Woche',
     lead: 'Erntelotse ist ein kostenloser Planer für deinen Nutzgarten. Du zeichnest deinen Garten auf einer Karte, legst fest, was wo und wann wächst, und die App sagt dir zur richtigen Zeit, was zu tun ist.',
     benefitsTitle: 'Das bekommst du',

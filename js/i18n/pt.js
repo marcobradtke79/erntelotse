@@ -17,6 +17,7 @@ export default {
     more: 'Mais',
   },
   about: {
+    pageTitle: 'Planeador de horta gratuito: canteiros, sementeira e colheita',
     title: 'Planeie a sua horta, canteiro a canteiro e semana a semana',
     lead: 'O Erntelotse é um planeador gratuito para a sua horta. Desenha o jardim num mapa, decide o que cresce onde e quando, e a aplicação diz o que fazer na altura certa.',
     benefitsTitle: 'O que recebe',

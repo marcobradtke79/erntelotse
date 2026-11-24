@@ -42,7 +42,8 @@ python3 tools/serve.py --open    # … and open it in the browser (--sw: with se
 - Plain `python3 -m http.server` also works but sends no cache headers, so Chrome may keep serving old CSS/JS after edits; `tools/serve.py` sends `Cache-Control: no-store`
 - **After adding, removing or changing any app file, run `node tools/precache.mjs`**: it writes the precache list and a content-hash version into `sw.js`. `node tests/node.mjs` fails while it is out of date. Without a new version, installed apps never see the change.
 - On localhost / 127.0.0.1 the service worker is not registered (and old registrations are removed), so edits show up directly. Add `?sw` before the hash (`http://localhost:8000/?sw#/dashboard`) to test offline start and updates.
-- App icons: `python3 tools/app-icons.py assets/icons/app` renders the PNGs from the favicon design (needs Pillow).
+- App icons: `python3 tools/app-icons.py assets/icons/app` renders the PNGs from the favicon design (needs Pillow). `python3 tools/social-image.py assets/social/preview.png` renders the preview image for shared links (not precached).
+- Search engines: title, description, canonical address, Open Graph data, JSON-LD and a static fallback text are in `index.html` (English; the app replaces the fallback on start). The public address appears in `index.html` and `sitemap.xml`; `node tests/node.mjs` fails if they disagree. `.nojekyll` keeps GitHub Pages from publishing the Markdown files as pages. A `robots.txt` would be ignored on a project site (it only counts at the host root).
 
 The app must be served over http(s); ES modules and the service worker do not work from `file://`.
 

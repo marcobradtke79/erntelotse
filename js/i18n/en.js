@@ -17,6 +17,7 @@ export default {
     more: 'More',
   },
   about: {
+    pageTitle: 'Free garden planner for beds, sowing and harvest',
     title: 'Plan your garden, bed by bed and week by week',
     lead: 'Erntelotse is a free planner for your kitchen garden. You draw your garden on a map, decide what grows where and when, and the app tells you what to do at the right time.',
     benefitsTitle: 'What you get',

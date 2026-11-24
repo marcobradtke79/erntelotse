@@ -6,7 +6,7 @@
 // OSM's tile policy forbids storing tiles for offline use, so they only use the normal HTTP cache.
 
 // precache:start
-const VERSION = '229bf6f9f0b5';
+const VERSION = '3cf27bd4d26a';
 const FILES = [
   './',
   './assets/icons/app/apple-touch-icon.png',

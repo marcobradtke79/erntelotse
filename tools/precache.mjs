@@ -15,7 +15,8 @@ const SW = join(ROOT, 'sw.js');
 /** Folders and single files that make up the app; everything else (tests, docs, tools) stays out. */
 const FOLDERS = ['js', 'css', 'assets', 'vendor'];
 const FILES = ['index.html', 'manifest.webmanifest'];
-const SKIP = /(^|\/)(README\.md|LICENSE[^/]*|\.DS_Store)$/;
+// assets/social: the preview image for shared links is not part of the app
+const SKIP = /(^|\/)(README\.md|LICENSE[^/]*|\.DS_Store)$|^assets\/social\//;
 
 function walk(dir) {
   return readdirSync(dir).flatMap((name) => {

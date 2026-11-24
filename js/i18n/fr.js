@@ -17,6 +17,7 @@ export default {
     more: 'Plus',
   },
   about: {
+    pageTitle: 'Planificateur de potager gratuit : plates-bandes, semis et récoltes',
     title: 'Planifie ton jardin, planche par planche et semaine après semaine',
     lead: 'Erntelotse est un planificateur gratuit pour ton potager. Tu dessines ton jardin sur une carte, tu décides ce qui pousse où et quand, et l’application te dit quoi faire au bon moment.',
     benefitsTitle: 'Ce que tu obtiens',
