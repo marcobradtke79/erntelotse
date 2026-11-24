@@ -1,6 +1,9 @@
 // Navigation entries. Primary entries are always in the bottom bar on phones;
 // secondary entries move into "More" there.
 
+/** The first entry: in the side navigation on wide screens, under "More" on phones */
+export const ABOUT_NAV = { path: '/about', labelKey: 'nav.about', icon: 'info' };
+
 export const PRIMARY_NAV = [
   { path: '/dashboard', labelKey: 'nav.dashboard', icon: 'dashboard' },
   { path: '/map', labelKey: 'nav.map', icon: 'map' },

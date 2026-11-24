@@ -2,14 +2,15 @@
 
 import { useI18n } from 'vue-i18n';
 import AppIcon from '../components/AppIcon.js';
-import { SECONDARY_NAV } from '../navigation.js';
+import LegalLinks from '../components/LegalLinks.js';
+import { ABOUT_NAV, SECONDARY_NAV } from '../navigation.js';
 
 export default {
   name: 'MoreView',
-  components: { AppIcon },
+  components: { AppIcon, LegalLinks },
   setup() {
     const { t } = useI18n();
-    return { t, items: SECONDARY_NAV };
+    return { t, items: [ABOUT_NAV, ...SECONDARY_NAV] };
   },
   template: `
     <div class="page">
@@ -24,6 +25,7 @@ export default {
           </router-link>
         </li>
       </ul>
+      <LegalLinks />
     </div>
   `,
 };

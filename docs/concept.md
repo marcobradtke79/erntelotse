@@ -29,6 +29,8 @@ Related documents: [design rules](design-rules.md) · [implementation plan](impl
 | View | Purpose |
 |---|---|
 | **Gardens** | List of garden projects; create, rename, duplicate, delete, export, import. |
+| **About** | What the app is and what it is good for: benefits, three steps to start, notes on languages, external services and the limits of the hints. First navigation entry (on phones under "More"); the start page while there is no garden. |
+| **Legal notice, Privacy** | Impressum (§ 5 DDG, § 18 (2) MStV) with the provider's name, address and contact, and the privacy notice (what stays on the device, hosting, the three external services, rights). Linked at the bottom of About and of "More". |
 | **Dashboard** | The current month for the active garden: tasks due now, overdue tasks, weather notes, what can be sown or planted this month, warnings (rotation, frost). |
 | **Map / Plan** | The garden drawn to scale. Two backgrounds: street map (OpenStreetMap) for tracing, and grid (clean metre or foot grid). Year switcher shows the plantings of any year. A satellite/aerial background is postponed (see §8). |
 | **Bed editor** | Zoomed view of one bed. Draw planting areas, place individual plants, set dates, see rotation and companion feedback, browse the bed's history. |

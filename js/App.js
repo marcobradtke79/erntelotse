@@ -1,7 +1,7 @@
 import { ref, computed, watch, nextTick } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute } from 'vue-router';
-import { PRIMARY_NAV, SECONDARY_NAV } from './navigation.js';
+import { ABOUT_NAV, PRIMARY_NAV, SECONDARY_NAV } from './navigation.js';
 import AppIcon from './components/AppIcon.js';
 import GardenSwitcher from './components/GardenSwitcher.js';
 import YearSwitcher from './components/YearSwitcher.js';
@@ -18,7 +18,7 @@ export default {
     const announcement = ref('');
 
     const pageTitle = computed(() => (route.meta.titleKey ? t(route.meta.titleKey) : ''));
-    const moreActive = computed(() => route.path === '/more' || SECONDARY_NAV.some((item) => item.path === route.path));
+    const moreActive = computed(() => route.path === '/more' || [ABOUT_NAV.path, '/imprint', '/privacy'].includes(route.path) || SECONDARY_NAV.some((item) => item.path === route.path));
 
     watch(pageTitle, (title) => {
       document.title = title ? `${title} · ${t('app.name')}` : t('app.name');
@@ -45,7 +45,7 @@ export default {
     const isActive = (path) => route.path === path || route.path.startsWith(`${path}/`);
     const showPeriod = computed(() => Boolean(route.meta.period) && Boolean(gardens.active));
 
-    return { t, main, announcement, moreActive, fullBleed, showPeriod, isActive, skipToContent, primary: PRIMARY_NAV, secondary: SECONDARY_NAV };
+    return { t, main, announcement, moreActive, fullBleed, showPeriod, isActive, skipToContent, about: ABOUT_NAV, primary: PRIMARY_NAV, secondary: SECONDARY_NAV };
   },
   template: `
     <div class="app">
@@ -63,6 +63,12 @@ export default {
 
       <nav class="app-nav" :aria-label="t('nav.label')">
         <ul>
+          <li class="nav-secondary">
+            <router-link :to="about.path" class="nav-link" :class="{ active: isActive(about.path) }" :aria-current="isActive(about.path) ? 'page' : null">
+              <AppIcon :name="about.icon" />
+              <span>{{ t(about.labelKey) }}</span>
+            </router-link>
+          </li>
           <li v-for="item in primary" :key="item.path">
             <router-link :to="item.path" class="nav-link" :class="{ active: isActive(item.path) }" :aria-current="isActive(item.path) ? 'page' : null">
               <AppIcon :name="item.icon" />

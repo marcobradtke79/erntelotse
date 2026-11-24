@@ -13,9 +13,13 @@ import PlantsView from './views/PlantsView.js';
 import PlantDetailView from './views/PlantDetailView.js';
 import JournalView from './views/JournalView.js';
 import SeedsView from './views/SeedsView.js';
+import AboutView from './views/AboutView.js';
+import ImprintView from './views/ImprintView.js';
+import PrivacyView from './views/PrivacyView.js';
 
 const routes = [
-  { path: '/', redirect: () => (gardens.index.length > 0 ? '/dashboard' : '/gardens') },
+  { path: '/', redirect: () => (gardens.index.length > 0 ? '/dashboard' : '/about') },
+  { path: '/about', component: AboutView, meta: { titleKey: 'nav.about' } },
   { path: '/dashboard', component: DashboardView, meta: { titleKey: 'nav.dashboard' } },
   { path: '/map', component: MapView, meta: { titleKey: 'nav.map', fullBleed: true, period: true } },
   // Under /map so that the Map navigation entry stays active
@@ -25,6 +29,8 @@ const routes = [
   { path: '/plants/:id', component: PlantDetailView, meta: { titleKey: 'nav.plants' } },
   { path: '/journal', component: JournalView, meta: { titleKey: 'nav.journal', period: true } },
   { path: '/seeds', component: SeedsView, meta: { titleKey: 'nav.seeds' } },
+  { path: '/imprint', component: ImprintView, meta: { titleKey: 'legal.imprint' } },
+  { path: '/privacy', component: PrivacyView, meta: { titleKey: 'legal.privacy' } },
   { path: '/gardens', component: GardensView, meta: { titleKey: 'nav.gardens' } },
   { path: '/settings', component: SettingsView, meta: { titleKey: 'nav.settings' } },
   { path: '/more', component: MoreView, meta: { titleKey: 'more.title' } },

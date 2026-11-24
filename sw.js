@@ -6,7 +6,7 @@
 // OSM's tile policy forbids storing tiles for offline use, so they only use the normal HTTP cache.
 
 // precache:start
-const VERSION = 'a361e2a6b292';
+const VERSION = '229bf6f9f0b5';
 const FILES = [
   './',
   './assets/icons/app/apple-touch-icon.png',
@@ -30,10 +30,12 @@ const FILES = [
   './js/components/EmptyState.js',
   './js/components/GardenSwitcher.js',
   './js/components/ImportButton.js',
+  './js/components/LegalLinks.js',
   './js/components/LengthInput.js',
   './js/components/PeriodBar.js',
   './js/components/PlantIcon.js',
   './js/components/PlantSelect.js',
+  './js/components/ProviderAddress.js',
   './js/components/ToastHost.js',
   './js/components/WeatherCard.js',
   './js/components/YearSwitcher.js',
@@ -67,6 +69,7 @@ const FILES = [
   './js/composables/useSeason.js',
   './js/data/families.js',
   './js/data/plants.js',
+  './js/data/provider.js',
   './js/i18n/de.js',
   './js/i18n/en.js',
   './js/i18n/es.js',
@@ -111,15 +114,18 @@ const FILES = [
   './js/stores/settings.js',
   './js/stores/toast.js',
   './js/stores/weather.js',
+  './js/views/AboutView.js',
   './js/views/BedEditorView.js',
   './js/views/CalendarView.js',
   './js/views/DashboardView.js',
   './js/views/GardensView.js',
+  './js/views/ImprintView.js',
   './js/views/JournalView.js',
   './js/views/MapView.js',
   './js/views/MoreView.js',
   './js/views/PlantDetailView.js',
   './js/views/PlantsView.js',
+  './js/views/PrivacyView.js',
   './js/views/SeedsView.js',
   './js/views/SettingsView.js',
   './manifest.webmanifest',

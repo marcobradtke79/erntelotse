@@ -21,4 +21,5 @@ export const TEST_FILES = [
   'weather.test.js',
   'gantt.test.js',
   'seeds.test.js',
+  'provider.test.js',
 ];
